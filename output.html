@@ -2,6 +2,10 @@
 <html>
 
 <head>
+    <link rel="stylesheet" type="text/css" href="lib/codemirror/lib/codemirror.css" />
+    <link rel="stylesheet" type="text/css" href="lib/codemirror/theme/solarized.css" />
+    <script type="text/javascript" src="lib/codemirror/lib/codemirror.js"></script>
+    <script type="text/javascript" src="lib/codemirror/mode/javascript/javascript.js"></script>
     <script type="text/javascript" src="lib/lazy.js/lazy.js"></script>
 
     <style type="text/css">
@@ -48,6 +52,16 @@
         background-color: #eee;
       }
 
+      .CodeMirror {
+        position: absolute;
+        top: 0;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        height: 100%;
+        width: 100%;
+      }
+
       footer {
         position: fixed;
         bottom: 0;
@@ -57,6 +71,7 @@
         font-family: sans-serif;
         color: #fff;
         line-height: 40px;
+        z-index: 10;
       }
 
       footer:before {
@@ -73,6 +88,9 @@
     </style>
 
     <script type="text/javascript">
+      var latestResult,
+          astEditor;
+
       function addRowToTable(table, values) {
         var row = document.createElement('tr');
         table.appendChild(row);
@@ -86,32 +104,118 @@
         return row;
       }
 
-      window.addEventListener('message', function(e) {
-        if (e.origin === window.location.origin) {
-          var runner = new Worker('runner.js');
+      function updateAST(data, editor) {
+        var parser = new Worker('parser2.js');
 
-          runner.postMessage(e.data);
+        parser.addEventListener('message', function(e) {
+          editor.setValue(e.data);
+        });
 
-          var tableBody = document.querySelector('table tbody');
-          tableBody.innerHTML = '';
+        parser.postMessage(data);
+      }
 
-          runner.addEventListener('message', function(e) {
-            var result = JSON.parse(e.data);
+      function updateSpecsTable(data) {
+        var runner = new Worker('runner.js');
 
-            var row = addRowToTable(tableBody, [
-              result.input,
-              result.output,
-              result.messages[0].message
-            ]);
+        var tableBody = document.querySelector('#specs table tbody');
+        tableBody.innerHTML = '';
 
-            row.className = result.result;
+        runner.addEventListener('message', function(e) {
+          var result = JSON.parse(e.data);
+
+          var row = addRowToTable(tableBody, [
+            result.input,
+            result.output,
+            result.messages[0].message
+          ]);
+
+          row.className = result.result;
+        });
+
+        runner.postMessage(data);
+      }
+
+      function updateDocs() {
+        // TODO: Implement me!
+      }
+
+      function showingAST() {
+        return document.querySelector('input[name="ast"]').checked;
+      }
+
+      function showingSpecs() {
+        return document.querySelector('input[name="specs"]').checked;
+      }
+
+      function showingDocs() {
+        return document.querySelector('input[name="docs"]').checked;
+      }
+
+      function showSection(name) {
+        var sections = document.querySelectorAll('section');
+
+        for (var i = 0; i < sections.length; ++i) {
+          if (sections[i].id === name) {
+            sections[i].style.display = 'block';
+          } else {
+            sections[i].style.display = 'none';
+          }
+        }
+      }
+
+      function updateCurrentSection() {
+        if (showingAST()) {
+          updateAST(latestResult, astEditor);
+
+        } else if (showingSpecs()) {
+          updateSpecsTable(latestResult);
+
+        } else if (showingDocs()) {
+          updateDocs();
+        }
+      }
+
+      window.addEventListener('load', function() {
+        var checkboxes = document.querySelectorAll('footer input[type="checkbox"]');
+
+        for (var i = 0; i < checkboxes.length; ++i) {
+          checkboxes[i].addEventListener('change', function(e) {
+            for (var j = 0; j < checkboxes.length; ++j) {
+              if (checkboxes[j] !== e.target) {
+                checkboxes[j].checked = false;
+              }
+            }
+
+            showSection(e.target.name);
+            updateCurrentSection();
           });
         }
+
+        // Initialize CodeMirror instance for AST view.
+        astEditor = CodeMirror.fromTextArea(document.querySelector('#ast textarea'), {
+          mode: 'javascript',
+          theme: 'solarized light',
+          lineNumbers: true,
+          readOnly: true
+        });
+
+        window.addEventListener('message', function(e) {
+          if (e.origin === window.location.origin) {
+            latestResult = e.data;
+            updateCurrentSection();
+          }
+        });
+
+        showSection('specs');
       });
     </script>
 </head>
 
 <body>
+    <section id="ast">
+        <textarea></textarea>
+    </section>
+
     <section id="specs">
         <table>
             <thead>
@@ -125,6 +229,10 @@
             <tbody>
             </tbody>
         </table>
+    </section>
+
+    <section id="docs">
+        <p>This part hasn't been implemented yet.</p>
     </section>
 
     <!-- Not implemented yet -->

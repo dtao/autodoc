@@ -2,7 +2,10 @@
 // (TODO: update the library to not explicitly require a 'window' object in the browser.)
 this.window = this;
 
-importScripts('lib/esprima/esprima.js', 'lib/lazy.js/lazy.js');
+importScripts(
+  'lib/esprima/esprima.js',
+  'lib/lazy.js/lazy.js'
+);
 
 this.onmessage = function(e) {
   var ast = esprima.parse(e.data, {

@@ -1,7 +1,10 @@
 // See parser.js.
 this.window = this;
 
-importScripts('lib/jasmine/lib/jasmine-core/jasmine.js', 'lib/lazy.js/lazy.js');
+importScripts(
+  'lib/jasmine/lib/jasmine-core/jasmine.js',
+  'lib/lazy.js/lazy.js'
+);
 
 function createReporter() {
   return {
