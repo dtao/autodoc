@@ -1,7 +1,8 @@
-/*
+/**
  * Parses a date from a string, attempting to make an intelligent guess as to the format.
  * If a year is not specified, uses the current year.
  *
+ * @examples
  * parseDate('9/13/2013')  => new Date(2013, 8, 13)
  * parseDate('2013/9/13')  => new Date(2013, 8, 13)
  * parseDate('2013-09-13') => new Date(2013, 8, 13)

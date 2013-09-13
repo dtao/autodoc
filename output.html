@@ -89,7 +89,8 @@
 
     <script type="text/javascript">
       var latestResult,
-          astEditor;
+          astEditor,
+          docsEditor;
 
       function addRowToTable(table, values) {
         var row = document.createElement('tr');
@@ -135,8 +136,14 @@
         runner.postMessage(data);
       }
 
-      function updateDocs() {
-        // TODO: Implement me!
+      function updateDocs(data, editor) {
+        var parser = new Worker('parser3.js');
+
+        parser.addEventListener('message', function(e) {
+          editor.setValue(e.data);
+        });
+
+        parser.postMessage(data);
       }
 
       function showingAST() {
@@ -171,7 +178,7 @@
           updateSpecsTable(latestResult);
 
         } else if (showingDocs()) {
-          updateDocs();
+          updateDocs(latestResult, docsEditor);
         }
       }
 
@@ -193,6 +200,13 @@
 
         // Initialize CodeMirror instance for AST view.
         astEditor = CodeMirror.fromTextArea(document.querySelector('#ast textarea'), {
+          mode: 'javascript',
+          theme: 'solarized light',
+          lineNumbers: true,
+          readOnly: true
+        });
+
+        docsEditor = CodeMirror.fromTextArea(document.querySelector('#docs textarea'), {
           mode: 'javascript',
           theme: 'solarized light',
           lineNumbers: true,
@@ -232,7 +246,7 @@
     </section>
 
     <section id="docs">
-        <p>This part hasn't been implemented yet.</p>
+        <textarea></textarea>
     </section>
 
     <!-- Not implemented yet -->
