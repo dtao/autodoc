@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Breakneck</title>
+
+    <link rel="stylesheet" type="text/css" href="bower_components/codemirror/lib/codemirror.css" />
+    <link rel="stylesheet" type="text/css" href="bower_components/codemirror/theme/solarized.css" />
+    <script type="text/javascript" src="bower_components/codemirror/lib/codemirror.js"></script>
+    <script type="text/javascript" src="bower_components/codemirror/mode/javascript/javascript.js"></script>
+
+    <style type="text/css">
+        #left {
+            position: absolute;
+            top: 1%;
+            bottom: 1%;
+            left: 1%;
+            right: 50.5%;
+        }
+
+        #right {
+            position: absolute;
+            top: 1%;
+            bottom: 1%;
+            left: 50.5%;
+            right: 1%;
+        }
+
+        .CodeMirror {
+            position: absolute;
+            top: 0;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 100%;
+            width: 100%;
+        }
+    </style>
+
+    <script type="text/javascript">
+        function debounce(delay, fn) {
+            var timeout;
+
+            return function() {
+                if (timeout) {
+                    clearTimeout(timeout);
+                }
+
+                timeout = setTimeout(fn, delay);
+            };
+        }
+
+        window.addEventListener('load', function() {
+            var worker = new Worker('worker.js');
+
+            var editor = CodeMirror.fromTextArea(document.querySelector('#left textarea'), {
+                mode: 'javascript',
+                theme: 'solarized dark',
+                lineNumbers: true
+            });
+
+            editor.on('change', debounce(500, function() {
+                worker.postMessage(editor.getValue());
+            }));
+
+            var output = CodeMirror.fromTextArea(document.querySelector('#right textarea'), {
+                mode: 'javascript',
+                theme: 'solarized light',
+                lineNumbers: true,
+                readOnly: true
+            });
+
+            worker.addEventListener('message', function(e) {
+                output.setValue(e.data);
+            });
+        });
+    </script>
+</head>
+
+<body>
+    <div id="left">
+        <textarea></textarea>
+    </div>
+
+    <div id="right">
+        <textarea></textarea>
+    </div>
+</body>
+
+</html>
