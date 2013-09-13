@@ -1,8 +1,0 @@
-docs/
-lib/
-site/
-spec/
-Gemfile*
-Rakefile*
-*.mustache
-lazy.dom.js
