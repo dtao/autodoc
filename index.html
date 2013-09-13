@@ -7,79 +7,83 @@
     <link rel="stylesheet" type="text/css" href="lib/codemirror/lib/codemirror.css" />
     <link rel="stylesheet" type="text/css" href="lib/codemirror/theme/solarized.css" />
     <script type="text/javascript" src="lib/codemirror/lib/codemirror.js"></script>
-    <script type="text/javascript" src="lib/mustache/mustache.js"></script>
     <script type="text/javascript" src="lib/codemirror/mode/javascript/javascript.js"></script>
 
     <style type="text/css">
-        #left {
-            position: absolute;
-            top: 1%;
-            bottom: 1%;
-            left: 1%;
-            right: 50.5%;
-        }
+      #left {
+        position: absolute;
+        top: 1%;
+        bottom: 1%;
+        left: 1%;
+        right: 50.5%;
+      }
 
-        #right {
-            position: absolute;
-            top: 1%;
-            bottom: 1%;
-            left: 50.5%;
-            right: 1%;
-        }
+      #right {
+        position: absolute;
+        top: 1%;
+        bottom: 1%;
+        left: 50.5%;
+        right: 1%;
+      }
 
-        .CodeMirror {
-            position: absolute;
-            top: 0;
-            bottom: 0;
-            left: 0;
-            right: 0;
-            height: 100%;
-            width: 100%;
-        }
+      .CodeMirror, iframe {
+        position: absolute;
+        top: 0;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        height: 100%;
+        width: 100%;
+
+        font-family: Consolas, Inconsolata, monospace;
+      }
+
+      iframe {
+        border: none;
+      }
     </style>
 
     <script type="text/javascript">
-        function debounce(delay, fn) {
-            var timeout;
+      function debounce(delay, fn) {
+        var timeout;
 
-            return function() {
-                if (timeout) {
-                    clearTimeout(timeout);
-                }
+        return function() {
+          if (timeout) {
+            clearTimeout(timeout);
+          }
 
-                timeout = setTimeout(fn, delay);
-            };
-        }
+          timeout = setTimeout(fn, delay);
+        };
+      }
 
-        window.addEventListener('load', function() {
-            var parser = new Worker('parser.js');
+      window.addEventListener('load', function() {
+        var parser = new Worker('parser.js');
 
-            var editor = CodeMirror.fromTextArea(document.querySelector('#left textarea'), {
-                mode: 'javascript',
-                theme: 'solarized dark',
-                lineNumbers: true
-            });
-
-            editor.on('change', debounce(500, function() {
-                parser.postMessage(editor.getValue());
-            }));
-
-            var output = CodeMirror.fromTextArea(document.querySelector('#right textarea'), {
-                mode: 'javascript',
-                theme: 'solarized light',
-                lineNumbers: true,
-                readOnly: true
-            });
-
-            var template = document.getElementById('specs-template').textContent
-                .replace(/^\s+/g, '')
-                .replace(/\s+$/g, '');
-
-            parser.addEventListener('message', function(e) {
-                var data = JSON.parse(e.data);
-                output.setValue(Mustache.render(template, data));
-            });
+        var editor = CodeMirror.fromTextArea(document.querySelector('#left textarea'), {
+          mode: 'javascript',
+          theme: 'solarized dark',
+          lineNumbers: true
         });
+
+        editor.on('change', debounce(500, function() {
+          parser.postMessage(editor.getValue());
+        }));
+
+        var exampleRequest = new XMLHttpRequest();
+        exampleRequest.open('GET', 'example.js');
+
+        exampleRequest.addEventListener('load', function() {
+          editor.setValue(exampleRequest.responseText);
+        });
+
+        exampleRequest.send();
+
+        var output = document.querySelector('#right iframe');
+
+        parser.addEventListener('message', function(e) {
+          output.contentWindow.postMessage(e.data, '*');
+        });
+      });
     </script>
 </head>
 
@@ -89,17 +93,8 @@
     </div>
 
     <div id="right">
-        <textarea></textarea>
+        <iframe src="specs.html" />
     </div>
-
-    <script id="specs-template" type="text/plain">
-        {{#examples}}
-        it("returns {{output}} for {{input}}", function() {
-            expect({{{input}}}).toEqual({{{output}}});
-        });
-
-        {{/examples}}
-    </script>
 </body>
 
 </html>

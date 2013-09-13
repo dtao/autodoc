@@ -27,5 +27,8 @@ this.onmessage = function(e) {
     .compact()
     .toArray();
 
-  postMessage(JSON.stringify({ examples: examples }, null, 2));
+  postMessage(JSON.stringify({
+    code: e.data,
+    examples: examples
+  }));
 };

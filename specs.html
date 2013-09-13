@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <script type="text/javascript" src="lib/lazy.js/lazy.js"></script>
+
+    <style type="text/css">
+      table {
+        width: 100%;
+        border-collapse: collapse;
+      }
+
+      th, td {
+        padding: 1ex 20px;
+        font-family: sans-serif;
+        text-align: left;
+        vertical-align: top;
+        width: 25%;
+      }
+
+      th {
+        border-bottom: 2px solid black;
+      }
+
+      tr.failed td:first-child {
+        border-left: 5px solid #f00;
+        padding-left: 15px;
+      }
+
+      tr.passed td:first-child {
+        border-left: 5px solid #080;
+        padding-left: 15px;
+      }
+
+      th:last-child, td:last-child {
+        width: 50%;
+      }
+
+      td:nth-child(1), td:nth-child(2) {
+        font-family: Consolas, Inconsolata, monospace;
+      }
+
+      tr:nth-child(even) {
+        background-color: #eee;
+      }
+    </style>
+
+    <script type="text/javascript">
+      function addRowToTable(table, values) {
+        var row = document.createElement('tr');
+        table.appendChild(row);
+
+        Lazy(values).each(function(value) {
+          var cell = document.createElement('td');
+          cell.textContent = value;
+          row.appendChild(cell);
+        });
+
+        return row;
+      }
+
+      window.addEventListener('message', function(e) {
+        if (e.origin === window.location.origin) {
+          var runner = new Worker('runner.js');
+
+          runner.postMessage(e.data);
+
+          var tableBody = document.querySelector('table tbody');
+          tableBody.innerHTML = '';
+
+          runner.addEventListener('message', function(e) {
+            var result = JSON.parse(e.data);
+
+            var row = addRowToTable(tableBody, [
+              result.input,
+              result.output,
+              result.messages[0].message
+            ]);
+
+            row.className = result.result;
+
+            // var messagesCell = document.createElement('td');
+            // row.appendChild(messagesCell);
+
+            // Lazy(result.messages).each(function(message) {
+            //   var paragraph = document.createElement('p');
+            //   paragraph.textContent = message.message;
+            //   messagesCell.appendChild(paragraph);
+
+            //   var trace = document.createElement('pre');
+            //   trace.textContent = message.trace;
+            //   messagesCell.appendChild(trace);
+            // });
+          });
+        }
+      });
+    </script>
+</head>
+
+<body>
+    <table>
+        <thead>
+            <tr>
+                <th>Input</th>
+                <th>Expected</th>
+                <th>Actual</th>
+            </tr>
+        </thead>
+
+        <tbody>
+        </tbody>
+    </table>
+</body>
+
+</html>
