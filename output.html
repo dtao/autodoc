@@ -43,6 +43,29 @@
       tr:nth-child(even) {
         background-color: #eee;
       }
+
+      footer {
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        padding: 0 1em;
+        font-family: sans-serif;
+        color: #fff;
+        line-height: 40px;
+      }
+
+      footer:before {
+        content: "";
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        height: 40px;
+        background-color: #000;
+        opacity: 0.5;
+        z-index: -1;
+      }
     </style>
 
     <script type="text/javascript">
@@ -78,19 +101,6 @@
             ]);
 
             row.className = result.result;
-
-            // var messagesCell = document.createElement('td');
-            // row.appendChild(messagesCell);
-
-            // Lazy(result.messages).each(function(message) {
-            //   var paragraph = document.createElement('p');
-            //   paragraph.textContent = message.message;
-            //   messagesCell.appendChild(paragraph);
-
-            //   var trace = document.createElement('pre');
-            //   trace.textContent = message.trace;
-            //   messagesCell.appendChild(trace);
-            // });
           });
         }
       });
@@ -98,18 +108,28 @@
 </head>
 
 <body>
-    <table>
-        <thead>
-            <tr>
-                <th>Input</th>
-                <th>Expected</th>
-                <th>Actual</th>
-            </tr>
-        </thead>
+    <section id="specs">
+        <table>
+            <thead>
+                <tr>
+                    <th>Input</th>
+                    <th>Expected</th>
+                    <th>Actual</th>
+                </tr>
+            </thead>
 
-        <tbody>
-        </tbody>
-    </table>
+            <tbody>
+            </tbody>
+        </table>
+    </section>
+
+    <!-- Not implemented yet -->
+    <footer>
+        <label>Show me:</label>
+        <label><input type="checkbox" name="ast" /> AST</label>
+        <label><input type="checkbox" name="specs" checked="checked" /> Specs</label>
+        <label><input type="checkbox" name="docs" /> Full Docs</label>
+    </footer>
 </body>
 
 </html>
