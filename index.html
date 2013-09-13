@@ -7,6 +7,7 @@
     <link rel="stylesheet" type="text/css" href="lib/codemirror/lib/codemirror.css" />
     <link rel="stylesheet" type="text/css" href="lib/codemirror/theme/solarized.css" />
     <script type="text/javascript" src="lib/codemirror/lib/codemirror.js"></script>
+    <script type="text/javascript" src="lib/mustache/mustache.js"></script>
     <script type="text/javascript" src="lib/codemirror/mode/javascript/javascript.js"></script>
 
     <style type="text/css">
@@ -51,7 +52,7 @@
         }
 
         window.addEventListener('load', function() {
-            var worker = new Worker('worker.js');
+            var parser = new Worker('parser.js');
 
             var editor = CodeMirror.fromTextArea(document.querySelector('#left textarea'), {
                 mode: 'javascript',
@@ -60,7 +61,7 @@
             });
 
             editor.on('change', debounce(500, function() {
-                worker.postMessage(editor.getValue());
+                parser.postMessage(editor.getValue());
             }));
 
             var output = CodeMirror.fromTextArea(document.querySelector('#right textarea'), {
@@ -70,8 +71,13 @@
                 readOnly: true
             });
 
-            worker.addEventListener('message', function(e) {
-                output.setValue(e.data);
+            var template = document.getElementById('specs-template').textContent
+                .replace(/^\s+/g, '')
+                .replace(/\s+$/g, '');
+
+            parser.addEventListener('message', function(e) {
+                var data = JSON.parse(e.data);
+                output.setValue(Mustache.render(template, data));
             });
         });
     </script>
@@ -85,6 +91,15 @@
     <div id="right">
         <textarea></textarea>
     </div>
+
+    <script id="specs-template" type="text/plain">
+        {{#examples}}
+        it("returns {{output}} for {{input}}", function() {
+            expect({{{input}}}).toEqual({{{output}}});
+        });
+
+        {{/examples}}
+    </script>
 </body>
 
 </html>
