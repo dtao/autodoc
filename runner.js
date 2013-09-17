@@ -2,9 +2,36 @@
 this.window = this;
 
 importScripts(
+  'lib/esprima/esprima.js',
   'lib/jasmine/lib/jasmine-core/jasmine.js',
   'lib/lazy.js/lazy.js'
 );
+
+function getExamplesFromData(data) {
+  var ast = esprima.parse(data, {
+    comment: true,
+    loc: true
+  });
+
+  var examples = Lazy(ast.comments)
+    .map(function(comment) { return comment.value.split('\n'); })
+    .flatten()
+    .map(function(line) {
+      var match = line.match(/^[\s\*]*(.*)\s+=>\s*(.*)\s*$/);
+      if (!match) {
+        return null;
+      }
+
+      return {
+        input: match[1],
+        output: match[2]
+      };
+    })
+    .compact()
+    .toArray();
+
+  return examples;
+}
 
 function createReporter() {
   return {
@@ -27,11 +54,11 @@ function createReporter() {
 }
 
 this.onmessage = function(e) {
-  var data = JSON.parse(e.data);
+  var data = e.data;
 
-  eval(data.code);
+  eval(data);
 
-  Lazy(data.examples).each(function(example) {
+  Lazy(getExamplesFromData(data)).each(function(example) {
     describe('blah', function() {
       var spec = it(example.input + ' should return ' + example.output, function() {
         expect(eval(example.input)).toEqual(eval(example.output));

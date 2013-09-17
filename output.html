@@ -106,7 +106,7 @@
       }
 
       function updateAST(data, editor) {
-        var parser = new Worker('parser2.js');
+        var parser = new Worker('parser.js');
 
         parser.addEventListener('message', function(e) {
           editor.setValue(e.data);
@@ -137,13 +137,13 @@
       }
 
       function updateDocs(data, editor) {
-        var parser = new Worker('parser3.js');
+        var generator = new Worker('generator.js');
 
-        parser.addEventListener('message', function(e) {
+        generator.addEventListener('message', function(e) {
           editor.setValue(e.data);
         });
 
-        parser.postMessage(data);
+        generator.postMessage(data);
       }
 
       function showingAST() {

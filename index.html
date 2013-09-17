@@ -56,33 +56,32 @@
         };
       }
 
-      window.addEventListener('load', function() {
-        var parser = new Worker('parser.js');
+      function makeGetRequest(dest, callback) {
+        var request = new XMLHttpRequest();
+        request.open('GET', dest);
 
+        request.addEventListener('load', function() {
+          callback(request.responseText);
+        });
+
+        request.send();
+      }
+
+      window.addEventListener('load', function() {
         var editor = CodeMirror.fromTextArea(document.querySelector('#left textarea'), {
           mode: 'javascript',
           theme: 'solarized dark',
           lineNumbers: true
         });
 
-        editor.on('change', debounce(500, function() {
-          parser.postMessage(editor.getValue());
-        }));
-
-        var exampleRequest = new XMLHttpRequest();
-        exampleRequest.open('GET', 'example.js');
-
-        exampleRequest.addEventListener('load', function() {
-          editor.setValue(exampleRequest.responseText);
+        makeGetRequest('example.js', function(content) {
+          editor.setValue(content);
         });
-
-        exampleRequest.send();
 
         var output = document.querySelector('#right iframe');
-
-        parser.addEventListener('message', function(e) {
-          output.contentWindow.postMessage(e.data, '*');
-        });
+        editor.on('change', debounce(500, function() {
+          output.contentWindow.postMessage(editor.getValue(), '*');
+        }));
       });
     </script>
 </head>
