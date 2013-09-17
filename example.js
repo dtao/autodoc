@@ -17,7 +17,7 @@ function parseDate(str) {
   return new Date(year, month, date);
 }
 
-/*
+/**
  * Infers the year from an array of numeric strings and removes it from the array.
  */
 function extractYear(parts) {
@@ -46,7 +46,7 @@ function inferDate(parts) {
   return x > 12 ? x : y;
 }
 
-/*
+/**
  * Splits an array using the same logic as String.prototype.split.
  *
  * splitArray([1, 2, 3], 2) => [[1], [3]]

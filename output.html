@@ -7,6 +7,8 @@
     <script type="text/javascript" src="lib/codemirror/lib/codemirror.js"></script>
     <script type="text/javascript" src="lib/codemirror/mode/javascript/javascript.js"></script>
     <script type="text/javascript" src="lib/lazy.js/lazy.js"></script>
+    <script type="text/javascript" src="lib/mustache/mustache.js"></script>
+    <script type="text/javascript" src="common.js"></script>
 
     <style type="text/css">
       body {
@@ -52,7 +54,7 @@
         background-color: #eee;
       }
 
-      .CodeMirror {
+      .CodeMirror, iframe {
         position: absolute;
         top: 0;
         bottom: 0;
@@ -88,102 +90,120 @@
     </style>
 
     <script type="text/javascript">
-      var latestResult,
-          astEditor,
-          docsEditor;
+      window.addEventListener('load', function() {
+        var sections      = document.querySelectorAll('section'),
+            checkboxes    = document.querySelectorAll('footer input[type="checkbox"]'),
+            astCheckBox   = document.querySelector('input[name="ast"]'),
+            specsCheckBox = document.querySelector('input[name="specs"]'),
+            docsCheckBox  = document.querySelector('input[name="docs"]');
 
-      function addRowToTable(table, values) {
-        var row = document.createElement('tr');
-        table.appendChild(row);
-
-        Lazy(values).each(function(value) {
-          var cell = document.createElement('td');
-          cell.textContent = value;
-          row.appendChild(cell);
+        // The CodeMirror instance where we'll display the AST.
+        var astEditor = CodeMirror.fromTextArea(document.querySelector('#ast textarea'), {
+          mode: 'javascript',
+          theme: 'solarized light',
+          lineNumbers: true,
+          readOnly: true
         });
 
-        return row;
-      }
+        // The iframe where we'll display the full documentation.
+        var docsFrame = document.querySelector('#docs iframe');
 
-      function updateAST(data, editor) {
-        var parser = new Worker('parser.js');
+        var latestResult,
+            docsTemplate;
 
-        parser.addEventListener('message', function(e) {
-          editor.setValue(e.data);
-        });
+        function addRowToTable(table, values) {
+          var row = document.createElement('tr');
+          table.appendChild(row);
 
-        parser.postMessage(data);
-      }
+          Lazy(values).each(function(value) {
+            var cell = document.createElement('td');
+            cell.textContent = value;
+            row.appendChild(cell);
+          });
 
-      function updateSpecsTable(data) {
-        var runner = new Worker('runner.js');
+          return row;
+        }
 
-        var tableBody = document.querySelector('#specs table tbody');
-        tableBody.innerHTML = '';
+        function updateAST(data) {
+          var parser = new Worker('parser.js');
 
-        runner.addEventListener('message', function(e) {
-          var result = JSON.parse(e.data);
+          parser.addEventListener('message', function(e) {
+            astEditor.setValue(e.data);
+          });
 
-          var row = addRowToTable(tableBody, [
-            result.input,
-            result.output,
-            result.messages[0].message
-          ]);
+          parser.postMessage(data);
+        }
 
-          row.className = result.result;
-        });
+        function updateSpecsTable(data) {
+          var runner = new Worker('runner.js');
 
-        runner.postMessage(data);
-      }
+          var tableBody = document.querySelector('#specs table tbody');
+          tableBody.innerHTML = '';
 
-      function updateDocs(data, editor) {
-        var generator = new Worker('generator.js');
+          runner.addEventListener('message', function(e) {
+            var result = JSON.parse(e.data);
 
-        generator.addEventListener('message', function(e) {
-          editor.setValue(e.data);
-        });
+            var row = addRowToTable(tableBody, [
+              result.input,
+              result.output,
+              result.messages[0].message
+            ]);
 
-        generator.postMessage(data);
-      }
+            row.className = result.result;
+          });
 
-      function showingAST() {
-        return document.querySelector('input[name="ast"]').checked;
-      }
+          runner.postMessage(data);
+        }
 
-      function showingSpecs() {
-        return document.querySelector('input[name="specs"]').checked;
-      }
+        function updateDocs(data) {
+          var generator = new Worker('generator.js');
 
-      function showingDocs() {
-        return document.querySelector('input[name="docs"]').checked;
-      }
+          generator.addEventListener('message', function(e) {
+            var documentation = JSON.parse(e.data),
+                frameDoc      = docsFrame.contentWindow.document,
+                frameSrc      = Mustache.render(docsTemplate, documentation);
 
-      function showSection(name) {
-        var sections = document.querySelectorAll('section');
+            frameDoc.open();
+            frameDoc.write(frameSrc);
+            frameDoc.close();
+          });
 
-        for (var i = 0; i < sections.length; ++i) {
-          if (sections[i].id === name) {
-            sections[i].style.display = 'block';
-          } else {
-            sections[i].style.display = 'none';
+          generator.postMessage(data);
+        }
+
+        function showingAST() {
+          return astCheckBox.checked;
+        }
+
+        function showingSpecs() {
+          return specsCheckBox.checked;
+        }
+
+        function showingDocs() {
+          return docsCheckBox.checked;
+        }
+
+        function showSection(name) {
+          for (var i = 0; i < sections.length; ++i) {
+            if (sections[i].id === name) {
+              sections[i].style.display = 'block';
+            } else {
+              sections[i].style.display = 'none';
+            }
           }
         }
-      }
 
-      function updateCurrentSection() {
-        if (showingAST()) {
-          updateAST(latestResult, astEditor);
+        function updateCurrentSection() {
+          if (showingAST()) {
+            updateAST(latestResult);
 
-        } else if (showingSpecs()) {
-          updateSpecsTable(latestResult);
+          } else if (showingSpecs()) {
+            updateSpecsTable(latestResult);
 
-        } else if (showingDocs()) {
-          updateDocs(latestResult, docsEditor);
+          } else if (showingDocs()) {
+            updateDocs(latestResult);
+          }
         }
-      }
-
-      window.addEventListener('load', function() {
-        var checkboxes = document.querySelectorAll('footer input[type="checkbox"]');
 
         for (var i = 0; i < checkboxes.length; ++i) {
           checkboxes[i].addEventListener('change', function(e) {
@@ -198,21 +218,6 @@
           });
         }
 
-        // Initialize CodeMirror instance for AST view.
-        astEditor = CodeMirror.fromTextArea(document.querySelector('#ast textarea'), {
-          mode: 'javascript',
-          theme: 'solarized light',
-          lineNumbers: true,
-          readOnly: true
-        });
-
-        docsEditor = CodeMirror.fromTextArea(document.querySelector('#docs textarea'), {
-          mode: 'javascript',
-          theme: 'solarized light',
-          lineNumbers: true,
-          readOnly: true
-        });
-
         window.addEventListener('message', function(e) {
           if (e.origin === window.location.origin) {
             latestResult = e.data;
@@ -221,6 +226,10 @@
         });
 
         showSection('specs');
+
+        makeGetRequest('docs.html.mustache', function(html) {
+          docsTemplate = html;
+        });
       });
     </script>
 </head>
@@ -246,7 +255,7 @@
     </section>
 
     <section id="docs">
-        <textarea></textarea>
+        <iframe></iframe>
     </section>
 
     <!-- Not implemented yet -->

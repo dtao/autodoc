@@ -8,6 +8,7 @@
     <link rel="stylesheet" type="text/css" href="lib/codemirror/theme/solarized.css" />
     <script type="text/javascript" src="lib/codemirror/lib/codemirror.js"></script>
     <script type="text/javascript" src="lib/codemirror/mode/javascript/javascript.js"></script>
+    <script type="text/javascript" src="common.js"></script>
 
     <style type="text/css">
       #left {
@@ -54,17 +55,6 @@
 
           timeout = setTimeout(fn, delay);
         };
-      }
-
-      function makeGetRequest(dest, callback) {
-        var request = new XMLHttpRequest();
-        request.open('GET', dest);
-
-        request.addEventListener('load', function() {
-          callback(request.responseText);
-        });
-
-        request.send();
       }
 
       window.addEventListener('load', function() {

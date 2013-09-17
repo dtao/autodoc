@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>{{title}}</title>
+    <link rel="stylesheet" type="text/css" href="docs.css" />
+</head>
+
+<body>
+    {{#docs}}
+    <section>
+        <h1>{{name}}</h1>
+        <p>{{description}}</p>
+
+        <script type="text/javascript">
+        {{#examples}}
+        describe('{{{description}}}', function() {
+          var result = {{{input}}};
+          expect(result).toEqual({{{output}}});
+        });
+        {{/examples}}
+        </script>
+    </section>
+    {{/docs}}
+</body>
+
+</html>

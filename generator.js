@@ -66,5 +66,5 @@ this.onmessage = function(e) {
     .compact()
     .toArray();
 
-  postMessage(JSON.stringify(docs, null, 2));
+  postMessage(JSON.stringify({ docs: docs }));
 };
