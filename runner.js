@@ -1,4 +1,4 @@
-// See parser.js.
+// This is a temporary hack to make Lazy.js work :(
 this.window = this;
 
 importScripts(
@@ -8,10 +8,7 @@ importScripts(
 );
 
 function getExamplesFromData(data) {
-  var ast = esprima.parse(data, {
-    comment: true,
-    loc: true
-  });
+  var ast = esprima.parse(data, { comment: true });
 
   var examples = Lazy(ast.comments)
     .map(function(comment) { return comment.value.split('\n'); })
