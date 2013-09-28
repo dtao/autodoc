@@ -85,3 +85,13 @@ table {
     }
   }
 }
+
+#color-reference {
+  display: none;
+
+  .primary { @extend .btn, .btn-primary; }
+  .success { @extend .btn, .btn-success; }
+  .info { @extend .btn, .btn-info; }
+  .warning { @extend .btn, .btn-warning; }
+  .danger { @extend .btn, .btn-danger; }
+}
