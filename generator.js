@@ -4,10 +4,15 @@ this.window = this;
 importScripts(
   'lib/esprima/esprima.js',
   'lib/doctrine/doctrine.js',
-  'lib/lazy.js/lazy.js'
+  'lib/lazy.js/lazy.js',
+  'lib/marked/lib/marked.js'
 );
 
 var exampleId = 1;
+
+function parseComment(comment) {
+  return doctrine.parse('/*' + comment.value + '*/', { unwrap: true });
+}
 
 function getExamples(doc) {
   var examplesTag = Lazy(doc.tags).findWhere({ title: 'examples' });
@@ -33,6 +38,33 @@ function getExamples(doc) {
     .toArray();
 }
 
+function getLibraryInfo(comments) {
+  var docWithFileOverview = Lazy(comments)
+    .map(parseComment)
+    .compact()
+    .filter(function(doc) {
+      return Lazy(doc.tags).where({ title: 'fileOverview' }).any();
+    })
+    .first();
+
+  var libraryName = 'Untitled Library',
+      libraryDesc = '[No description]';
+
+  if (docWithFileOverview) {
+    libraryDesc = Lazy(docWithFileOverview.tags).findWhere({ title: 'fileOverview' }).description;
+
+    var libraryNameTag = Lazy(docWithFileOverview.tags).findWhere({ title: 'name' });
+    if (libraryNameTag) {
+      libraryName = libraryNameTag.description;
+    }
+  }
+
+  return {
+    name: libraryName,
+    description: libraryDesc
+  };
+}
+
 this.onmessage = function(e) {
   var code = e.data;
 
@@ -48,15 +80,20 @@ this.onmessage = function(e) {
     })
     .toObject();
 
-  var docs = Lazy(ast.comments)
+  var comments = ast.comments;
+
+  var docs = Lazy(comments)
     .map(function(comment) {
       var fn = functions[comment.loc.end.line + 1];
       if (typeof fn === 'undefined') {
         return null;
       }
 
-      var doc = doctrine.parse('/*' + comment.value + '*/', { unwrap: true });
+      var doc = parseComment(comment);
       if (typeof doc === 'undefined') {
+        return null;
+      }
+      if (!doc.description && doc.examples.length === 0) {
         return null;
       }
 
@@ -72,7 +109,11 @@ this.onmessage = function(e) {
     .compact()
     .toArray();
 
+  var libraryInfo = getLibraryInfo(comments);
+
   postMessage(JSON.stringify({
+    name: libraryInfo.name,
+    description: libraryInfo.description,
     code: code,
     docs: docs
   }));
