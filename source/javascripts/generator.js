@@ -12,6 +12,50 @@ function parseComment(comment) {
   return doctrine.parse('/*' + comment.value + '*/', { unwrap: true });
 }
 
+function formatType(type) {
+  switch (type.type) {
+    case 'NameExpression':
+      return type.name;
+    case 'TypeApplication':
+      return formatType(type.expression) + '.<' + Lazy(type.applications).map(formatType).join('|') + '>';
+    case 'AllLiteral':
+      return '*';
+    default:
+      throw 'WTF!';
+  }
+}
+
+function getParams(doc) {
+  var paramTags = Lazy(doc.tags).where({ title: 'param' });
+
+  return paramTags
+    .map(function(tag) {
+      return {
+        name: tag.name,
+        type: formatType(tag.type),
+        description: tag.description || ''
+      };
+    })
+    .toArray();
+}
+
+function getReturns(doc) {
+  var returnTag = Lazy(doc.tags).findWhere({ title: 'returns' });
+
+  if (typeof returnTag === 'undefined') {
+    return {};
+  }
+
+  return {
+    type: formatType(returnTag.type),
+    description: returnTag.description || ''
+  };
+}
+
+function getSignature(name, params) {
+  return 'function ' + name + '(' + Lazy(params).pluck('name').join(', ') + ')';
+}
+
 function splitCommentLines(doc, tagName, callback) {
   var tag = Lazy(doc.tags).findWhere({ title: tagName });
 
@@ -112,12 +156,20 @@ this.onmessage = function(e) {
         return null;
       }
 
-      var examples   = getExamples(doc),
+      var name       = fn[0].id.name,
+          params     = getParams(doc),
+          returns    = getReturns(doc),
+          signature  = getSignature(name, params),
+          examples   = getExamples(doc),
           benchmarks = getBenchmarks(doc);
 
       return {
-        name: fn[0].id.name,
+        name: name,
         description: marked(doc.description),
+        params: params,
+        returns: returns,
+        hasSignature: params.length > 0 || !!returns,
+        signature: signature,
         examples: examples,
         hasExamples: examples.length > 0,
         benchmarks: benchmarks,

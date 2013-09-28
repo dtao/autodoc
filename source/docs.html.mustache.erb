@@ -47,8 +47,48 @@
 
                     {{{description}}}
 
+                    {{#hasSignature}}
+                    <div class="signature">
+                        <h3>Signature</h3>
+
+                        <pre><code>{{{signature}}}</code></pre>
+
+                        <table id="{{name}}-parameters">
+                            <thead>
+                                <tr>
+                                    <th>Name</th>
+                                    <th>Type(s)</th>
+                                    <th>Description</th>
+                                </tr>
+                            </thead>
+
+                            <tbody>
+                                {{#params}}
+                                <tr>
+                                    <td>{{name}}</td>
+                                    <td>{{type}}</td>
+                                    <td>{{description}}</td>
+                                </tr>
+                                {{/params}}
+
+                            </tbody>
+
+                            <tfoot>
+                                {{#returns}}
+                                <tr>
+                                    <td>returns</td>
+                                    <td>{{type}}</td>
+                                    <td>{{description}}</td>
+                                </tr>
+                                {{/returns}}
+                            </tfoot>
+                        </table>
+                    </div>
+                    {{/hasSignature}}
+
                     {{#hasExamples}}
                     <div class="examples">
+                        <h3>Examples</h3>
                         <table id="{{name}}-examples">
                             <thead>
                                 <tr>
@@ -73,6 +113,7 @@
 
                     {{#hasBenchmarks}}
                     <div class="perf">
+                        <h3>Benchmarks</h3>
                         <table id="{{name}}-perf-tests">
                             <!-- Gah, HighTables is stupid... doesn't account for <thead> :( -->
                             <tr>

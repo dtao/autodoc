@@ -36,6 +36,16 @@ table {
   @extend .table, .table-striped, .table-hover;
 }
 
+.signature {
+  table {
+    tfoot {
+      tr {
+        @extend .warning;
+      }
+    }
+  }
+}
+
 .examples {
   table {
     th, td {
