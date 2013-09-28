@@ -55,6 +55,32 @@ function clone(array) {
 }
 
 /**
+ * Inserts an element into an array. This duplicates the native functionality of `Array.prototype.splice`.
+ *
+ * @param {Array.<*>} array The array you want to insert an element into.
+ * @param {number} index The index where you want the element inserted.
+ * @param {*} element The element to insert.
+ * @returns {Array.<*>} The array with the element inserted.
+ *
+ * @examples
+ * insert([1, 2], 1, 'foo') => [1, 'foo', 2]
+ *
+ * @benchmarks
+ * redundant.js => insert([1, 2, 3, 4, 5], 2, 'foo')
+ * native       => [1, 2, 3, 4, 5].splice(2, 0, 'foo')
+ */
+function insert(array, index, element) {
+  array.push(array[array.length - 1]);
+  
+  for (var i = array.length - 1; i > index; --i) {
+    array[i] = array[i - 1];
+  }
+  
+  array[index] = element;
+  return array;
+}
+
+/**
  * Splits a string by a given delimiter. This duplicates `String.prototype.split`.
  *
  * @param {string} string The string to split.
