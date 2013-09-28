@@ -7,7 +7,7 @@ main {
 header {
   @extend .page-header;
 
-  p {
+  .description {
     @extend .lead;
   }
 }

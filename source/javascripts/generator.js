@@ -58,7 +58,7 @@ function getLibraryInfo(comments) {
 
   return {
     name: libraryName,
-    description: libraryDesc
+    description: marked(libraryDesc)
   };
 }
 

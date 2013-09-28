@@ -1,6 +1,15 @@
 /**
- * @fileOverview A bunch of math functions
- * @name math.js
+ * @name Breakneck example
+ *
+ * @fileOverview
+ * Check out this *sweet* example. It parses everything on the left and
+ * automagically generates stuff on the right:
+ *
+ * - documentation (using comments in [JsDoc](http://usejsdoc.org/) format)
+ * - specs (using the `@examples` tag)
+ * - perf tests (coming soon!)
+ *
+ * *OMG*, right?
  */
 
 /**
