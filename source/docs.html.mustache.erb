@@ -29,6 +29,8 @@
             </div>
         </header>
 
+        <div id="spec-failures"></div>
+
         <div class="columns">
             <div class="left-column">
                 <nav>
@@ -173,38 +175,6 @@
         <div class="warning"></div>
         <div class="danger"></div>
     </div>
-
-    <script type="text/javascript">
-      var jasmineEnv = jasmine.getEnv();
-
-        jasmineEnv.addReporter({
-          reportSpecResults: function(spec) {
-            var matchingRow = document.getElementById('example-' + spec.exampleId);
-            var resultCell = matchingRow.querySelector('td:last-child');
-
-            if (spec.results().passed()) {
-                resultCell.textContent = 'Passed';
-                return;
-            }
-
-            matchingRow.className = 'danger';
-
-            var errorsList = document.createElement('UL');
-            resultCell.appendChild(errorsList);
-
-            Lazy(spec.results().getItems())
-              .filter(function(item) { return item.passed && !item.passed(); })
-              .pluck('message')
-              .each(function(errorMessage) {
-                var errorListItem = document.createElement('LI');
-                errorListItem.textContent = errorMessage;
-                errorsList.appendChild(errorListItem);
-              });
-          }
-        });
-
-      jasmineEnv.execute();
-    </script>
 </body>
 
 </html>

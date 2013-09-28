@@ -12,6 +12,14 @@ header {
   }
 }
 
+#spec-failures {
+  @extend .alert, .alert-danger;
+
+  &:empty {
+    display: none;
+  }
+}
+
 .columns {
   @extend .row;
 

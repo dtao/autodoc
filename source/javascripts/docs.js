@@ -3,14 +3,6 @@ $(document).ready(function() {
     colors: getColors()
   });
 
-  function showSection(section) {
-    // Hide all other sections.
-    $('section').hide();
-
-    // Show just the target section.
-    $(section).show();
-  }
-
   function getColors() {
     var palette = $('#color-reference');
 
@@ -21,6 +13,50 @@ $(document).ready(function() {
       .toArray();
 
     return colors;
+  }
+
+  function showSection(section) {
+    // Hide all other sections.
+    $('section').hide();
+
+    // Show just the target section.
+    $(section).show();
+  }
+
+  function runSpecs() {
+    var failureNotices = $('#spec-failures');
+
+    var jasmineEnv = jasmine.getEnv();
+
+    jasmineEnv.addReporter({
+      reportSpecResults: function(spec) {
+        var matchingRow = $('#example-' + spec.exampleId);
+        var resultCell = $('td:last-child', matchingRow);
+
+        if (spec.results().passed()) {
+            resultCell.text('Passed');
+            return;
+        }
+
+        matchingRow.addClass('danger');
+
+        var errorsList = $('<ul>').appendTo(resultCell);
+        Lazy(spec.results().getItems())
+          .filter(function(item) { return item.passed && !item.passed(); })
+          .pluck('message')
+          .each(function(errorMessage) {
+            $('<li>')
+              .text(errorMessage)
+              .appendTo(errorsList);
+
+            $('<p>')
+              .text(errorMessage)
+              .appendTo(failureNotices);
+          });
+      }
+    });
+
+    jasmineEnv.execute();
   }
 
   $(document).on('click', 'nav a', function(e) {
@@ -73,4 +109,5 @@ $(document).ready(function() {
   });
 
   showSection($('section:first-of-type'));
+  runSpecs();
 });
