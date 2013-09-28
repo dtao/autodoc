@@ -20018,15 +20018,35 @@ $(document).ready(function() {
               .text(errorMessage)
               .appendTo(errorsList);
 
-            $('<p>')
+            var notice = $('<p>')
               .text(errorMessage)
               .appendTo(failureNotices);
+
+            var link = $('<a>')
+              .attr('href', '#example-' + spec.exampleId)
+              .text('See specs')
+              .appendTo(notice);
           });
       }
     });
 
     jasmineEnv.execute();
   }
+
+  $(document).on('click', '#spec-failures a', function(e) {
+    e.preventDefault();
+
+    var exampleTarget = $(this).attr('href'),
+        targetExample = $(exampleTarget),
+        parentSection = targetExample.closest('section');
+
+    // Show the section where the example is located.
+    showSection(parentSection);
+
+    // Highlight the example.
+    targetExample.addClass('highlight');
+    setTimeout(function() { targetExample.removeClass('highlight'); }, 750);
+  });
 
   $(document).on('click', 'nav a', function(e) {
     e.preventDefault();
@@ -20079,4 +20099,8 @@ $(document).ready(function() {
 
   showSection($('section:first-of-type'));
   runSpecs();
+});
+
+$(window).load(function() {
+  window.parent.postMessage('loaded', window.location.origin);
 });

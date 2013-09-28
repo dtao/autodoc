@@ -468,6 +468,18 @@ View-port and gutter both get little noise background to give it a real feel.
   margin-left: 2px;
 }
 
+#right.loading:after {
+  display: block;
+  content: "";
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: #fff url("/images/gears.gif") no-repeat center;
+  opacity: 0.5;
+}
+
 #splitter {
   position: absolute;
   top: 0;

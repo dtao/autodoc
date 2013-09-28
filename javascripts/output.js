@@ -10737,9 +10737,7 @@ window.addEventListener('load', function() {
     var generator = new Worker('/javascripts/generator.js');
 
     generator.addEventListener('message', function(e) {
-      // Replace the iframe.
-      docsFrame.parentNode.replaceChild(parentDoc.createElement('IFRAME'), docsFrame);
-      docsFrame = parentDoc.querySelector('#docs iframe');
+      resetDocsFrame();
 
       var documentation = JSON.parse(e.data),
           frameDoc      = docsFrame.contentWindow.document,
@@ -10748,11 +10746,7 @@ window.addEventListener('load', function() {
       frameDoc.open();
       frameDoc.write(frameSrc);
       frameDoc.close();
-
-      docsFrame.parentNode.removeAttribute('class');
     });
-
-    docsFrame.parentNode.className = 'loading';
 
     generator.postMessage(data);
 
@@ -10760,6 +10754,11 @@ window.addEventListener('load', function() {
     setTimeout(function() {
       generator.terminate();
     }, 3000);
+  }
+
+  function resetDocsFrame() {
+    docsFrame.parentNode.replaceChild(parentDoc.createElement('IFRAME'), docsFrame);
+    docsFrame = parentDoc.querySelector('#docs iframe');
   }
 
   function showingAST() {
@@ -10804,8 +10803,14 @@ window.addEventListener('load', function() {
 
   window.addEventListener('message', function(e) {
     if (e.origin === window.location.origin) {
-      latestResult = e.data;
-      updateCurrentSection();
+      if (e.data === 'loaded') {
+        // Pass it on.
+        window.parent.postMessage(e.data, window.location.origin);
+
+      } else {
+        latestResult = e.data;
+        updateCurrentSection();
+      }
     }
   });
 
@@ -10815,3 +10820,4 @@ window.addEventListener('load', function() {
     docsTemplate = html;
   });
 });
+  

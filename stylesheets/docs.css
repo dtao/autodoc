@@ -8208,28 +8208,43 @@ body {
 /* line 22, /Users/dan/Projects/breakneck/source/stylesheets/docs.scss */
 #spec-failures:empty {
   display: none; }
+/* line 26, /Users/dan/Projects/breakneck/source/stylesheets/docs.scss */
+#spec-failures a {
+  float: right;
+  color: #ffb; }
+  /* line 30, /Users/dan/Projects/breakneck/source/stylesheets/docs.scss */
+  #spec-failures a:hover {
+    color: #ffff88; }
 
-/* line 39, /Users/dan/Projects/breakneck/source/stylesheets/docs.scss */
+/* line 48, /Users/dan/Projects/breakneck/source/stylesheets/docs.scss */
 nav {
   border-right: 1px solid black; }
 
-/* line 63, /Users/dan/Projects/breakneck/source/stylesheets/docs.scss */
+/* line 72, /Users/dan/Projects/breakneck/source/stylesheets/docs.scss */
 .examples table th, .examples table td {
   width: 40%; }
-  /* line 66, /Users/dan/Projects/breakneck/source/stylesheets/docs.scss */
+  /* line 75, /Users/dan/Projects/breakneck/source/stylesheets/docs.scss */
   .examples table th:last-child, .examples table td:last-child {
     width: 20%; }
+/* line 81, /Users/dan/Projects/breakneck/source/stylesheets/docs.scss */
+.examples table tr td {
+  transition: color 0.5s;
+  transition: background-color 0.5s; }
+/* line 86, /Users/dan/Projects/breakneck/source/stylesheets/docs.scss */
+.examples table tr.highlight td {
+  color: #000;
+  background-color: #ff8 !important; }
 
-/* line 73, /Users/dan/Projects/breakneck/source/stylesheets/docs.scss */
+/* line 94, /Users/dan/Projects/breakneck/source/stylesheets/docs.scss */
 .perf {
   position: relative; }
-  /* line 80, /Users/dan/Projects/breakneck/source/stylesheets/docs.scss */
+  /* line 101, /Users/dan/Projects/breakneck/source/stylesheets/docs.scss */
   .perf table {
     display: none; }
-    /* line 84, /Users/dan/Projects/breakneck/source/stylesheets/docs.scss */
+    /* line 105, /Users/dan/Projects/breakneck/source/stylesheets/docs.scss */
     .perf table th:last-child, .perf table td:last-child {
       text-align: right; }
-  /* line 91, /Users/dan/Projects/breakneck/source/stylesheets/docs.scss */
+  /* line 112, /Users/dan/Projects/breakneck/source/stylesheets/docs.scss */
   .perf.loading:after {
     display: block;
     content: "";
@@ -8240,10 +8255,10 @@ nav {
     right: 0;
     background: white url("/images/gears.gif") no-repeat center;
     opacity: 0.5; }
-  /* line 105, /Users/dan/Projects/breakneck/source/stylesheets/docs.scss */
+  /* line 126, /Users/dan/Projects/breakneck/source/stylesheets/docs.scss */
   .perf.loading table, .perf.loaded table {
     display: table; }
 
-/* line 111, /Users/dan/Projects/breakneck/source/stylesheets/docs.scss */
+/* line 132, /Users/dan/Projects/breakneck/source/stylesheets/docs.scss */
 #color-reference {
   display: none; }
