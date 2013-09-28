@@ -57,6 +57,11 @@ window.addEventListener('load', function() {
     docsFrame.parentNode.className = 'loading';
 
     generator.postMessage(data);
+
+    // Give the worker 3 seconds to finish.
+    setTimeout(function() {
+      generator.terminate();
+    }, 3000);
   }
 
   function showingAST() {
