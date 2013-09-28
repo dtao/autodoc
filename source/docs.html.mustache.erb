@@ -69,29 +69,28 @@
                             </tbody>
                         </table>
                     </div>
+                    {{/hasExamples}}
 
+                    {{#hasBenchmarks}}
                     <div class="perf">
                         <table id="{{name}}-perf-tests">
-                            <thead>
-                                <tr>
-                                    <th>Input</th>
-                                    <th>Ops/second</th>
-                                </tr>
-                            </thead>
+                            <!-- Gah, HighTables is stupid... doesn't account for <thead> :( -->
+                            <tr>
+                                <th>Implementation</th>
+                                <th>Ops/second</th>
+                            </tr>
 
-                            <tbody>
-                                {{#examples}}
-                                <tr id="perf-test-{{id}}">
-                                    <td>{{{input}}}</td>
-                                    <td></td>
-                                </tr>
-                                {{/examples}}
-                            </tbody>
+                            {{#benchmarks}}
+                            <tr id="perf-test-{{id}}">
+                                <td>{{{name}}}</td>
+                                <td></td>
+                            </tr>
+                            {{/benchmarks}}
                         </table>
 
-                        <button>Run performance tests</button>
+                        <button>Run performance benchmarks</button>
                     </div>
-                    {{/hasExamples}}
+                    {{/hasBenchmarks}}
 
                     <script type="text/javascript">
                       describe('{{{name}}}', function() {
@@ -110,14 +109,14 @@
                       });
 
                       benchmarks['{{name}}'] = [
-                        {{#examples}}
-                        new Benchmark('{{input}}', {
+                        {{#benchmarks}}
+                        new Benchmark('{{name}}', {
                             id: {{id}},
                             fn: function() {
-                                {{{input}}};
+                                {{{impl}}};
                             }
                         }),
-                        {{/examples}}
+                        {{/benchmarks}}
                       ];
                     </script>
                 </section>

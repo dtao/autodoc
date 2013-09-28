@@ -5,34 +5,52 @@ importScripts(
   '/lib/marked/lib/marked.js'
 );
 
-var exampleId = 1;
+var exampleIdCounter   = 1,
+    benchmarkIdCounter = 1;
 
 function parseComment(comment) {
   return doctrine.parse('/*' + comment.value + '*/', { unwrap: true });
 }
 
-function getExamples(doc) {
-  var examplesTag = Lazy(doc.tags).findWhere({ title: 'examples' });
+function splitCommentLines(doc, tagName, callback) {
+  var tag = Lazy(doc.tags).findWhere({ title: tagName });
 
-  if (typeof examplesTag === 'undefined') {
+  if (typeof tag === 'undefined') {
     return [];
   }
 
-  return Lazy(examplesTag.description.split('\n'))
+  return Lazy(tag.description.split('\n'))
     .map(function(line) {
-      var match = line.match(/^(.*)\s*=>\s*(.*)$/);
-      if (!match) {
-        return null;
-      }
-
-      return {
-        id: exampleId++,
-        input: match[1].replace(/^\s+/, ''),
-        output: match[2].replace(/\s+$/, '')
-      };
+      return line.match(/^(.*)\s*=>\s*(.*)$/);
     })
     .compact()
+    .map(function(match) {
+      return callback(
+        match[1],
+        match[2]
+      );
+    })
     .toArray();
+}
+
+function getExamples(doc) {
+  return splitCommentLines(doc, 'examples', function(left, right) {
+    return {
+      id: exampleIdCounter++,
+      input: left,
+      output: right
+    };
+  });
+}
+
+function getBenchmarks(doc) {
+  return splitCommentLines(doc, 'benchmarks', function(left, right) {
+    return {
+      id: benchmarkIdCounter++,
+      name: left,
+      impl: right
+    };
+  });
 }
 
 function getLibraryInfo(comments) {
@@ -94,13 +112,16 @@ this.onmessage = function(e) {
         return null;
       }
 
-      var examples = getExamples(doc);
+      var examples   = getExamples(doc),
+          benchmarks = getBenchmarks(doc);
 
       return {
         name: fn[0].id.name,
         description: marked(doc.description),
         examples: examples,
-        hasExamples: examples.length > 0
+        hasExamples: examples.length > 0,
+        benchmarks: benchmarks,
+        hasBenchmarks: benchmarks.length > 0
       };
     })
     .compact()

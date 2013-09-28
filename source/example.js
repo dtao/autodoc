@@ -7,9 +7,7 @@
  *
  * - documentation (using comments in [JsDoc](http://usejsdoc.org/) format)
  * - specs (using the `@examples` tag)
- * - perf tests
- *
- * *OMG*, right?
+ * - benchmarks (using the `@benchmarks` tag)
  */
 
 /**
@@ -22,6 +20,10 @@
  * sum([])        => 0
  * sum([1])       => 1
  * sum([1, 2, 3]) => 6
+ *
+ * @benchmarks
+ * iterative approach => sum([1, 2, 3, 4, 5])
+ * recursive approach => sumRecursive([1, 2, 3, 4, 5])
  */
 function sum(array) {
   var sum = 0;
@@ -29,6 +31,13 @@ function sum(array) {
     sum += array[i];
   }
   return sum;
+}
+
+function sumRecursive(array) {
+  if (array.length === 0) {
+    return 0;
+  }
+  return array[0] + sumRecursive(array.slice(1));
 }
 
 /**

@@ -64,8 +64,7 @@ $(document).ready(function() {
       var chartContainer = $('<div>')
         .addClass('bar-chart')
         .attr('data-source', '#' + dataTable.attr('id'))
-        .attr('data-transpose', true)
-        .insertAfter(dataTable);
+        .insertBefore(dataTable);
 
       HighTables.renderChart(chartContainer[0]);
     });
