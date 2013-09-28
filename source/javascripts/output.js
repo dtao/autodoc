@@ -50,7 +50,11 @@ window.addEventListener('load', function() {
       frameDoc.open();
       frameDoc.write(frameSrc);
       frameDoc.close();
+
+      docsFrame.parentNode.removeAttribute('class');
     });
+
+    docsFrame.parentNode.className = 'loading';
 
     generator.postMessage(data);
   }
