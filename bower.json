@@ -2,6 +2,7 @@
   "name": "breakneck",
   "version": "0.0.1",
   "dependencies": {
+    "benchmark": ">= 1.0.0",
     "bootstrap": ">= 3.0.0",
     "codemirror": ">= 3.16.0",
     "doctrine": ">= 0.0.5",
