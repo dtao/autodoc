@@ -106,7 +106,8 @@
         });
 
         // The iframe where we'll display the full documentation.
-        var docsFrame = document.querySelector('#docs iframe');
+        var docsFrame = document.querySelector('#docs iframe'),
+            parentDoc = document;
 
         var latestResult,
             docsTemplate;
@@ -159,6 +160,10 @@
           var generator = new Worker('generator.js');
 
           generator.addEventListener('message', function(e) {
+            // Replace the iframe.
+            docsFrame.parentNode.replaceChild(parentDoc.createElement('IFRAME'), docsFrame);
+            docsFrame = parentDoc.querySelector('#docs iframe');
+
             var documentation = JSON.parse(e.data),
                 frameDoc      = docsFrame.contentWindow.document,
                 frameSrc      = Mustache.render(docsTemplate, documentation);

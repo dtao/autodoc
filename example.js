@@ -48,7 +48,8 @@ function inferDate(parts) {
 
 /**
  * Splits an array using the same logic as String.prototype.split.
- *
+ * 
+ * @examples
  * splitArray([1, 2, 3], 2) => [[1], [3]]
  */
 function splitArray(array, delimiter) {

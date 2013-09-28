@@ -7,6 +7,8 @@ importScripts(
   'lib/lazy.js/lazy.js'
 );
 
+var exampleId = 1;
+
 function getExamples(doc) {
   var examplesTag = Lazy(doc.tags).findWhere({ title: 'examples' });
 
@@ -22,6 +24,7 @@ function getExamples(doc) {
       }
 
       return {
+        id: exampleId++,
         input: match[1].replace(/^\s+/, ''),
         output: match[2].replace(/\s+$/, '')
       };
@@ -31,7 +34,9 @@ function getExamples(doc) {
 }
 
 this.onmessage = function(e) {
-  var ast = esprima.parse(e.data, {
+  var code = e.data;
+
+  var ast = esprima.parse(code, {
     comment: true,
     loc: true
   });
@@ -60,11 +65,15 @@ this.onmessage = function(e) {
       return {
         name: fn[0].id.name,
         description: doc.description,
-        examples: examples
+        examples: examples,
+        hasExamples: examples.length > 0
       };
     })
     .compact()
     .toArray();
 
-  postMessage(JSON.stringify({ docs: docs }));
+  postMessage(JSON.stringify({
+    code: code,
+    docs: docs
+  }));
 };

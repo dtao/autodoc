@@ -3,25 +3,113 @@
 
 <head>
     <title>{{title}}</title>
-    <link rel="stylesheet" type="text/css" href="docs.css" />
+    <link rel="stylesheet" type="text/css" href="lib/bootstrap/dist/css/bootstrap.css" />
+    <script type="text/javascript" src="lib/jasmine/lib/jasmine-core/jasmine.js"></script>
+    <script type="text/javascript" src="lib/lazy.js/lazy.js"></script>
+
+    <script type="text/javascript">
+      {{{code}}}
+    </script>
 </head>
 
 <body>
-    {{#docs}}
-    <section>
-        <h1>{{name}}</h1>
-        <p>{{description}}</p>
+    <div class="container">
+        <div class="page-header jumbotron">
+            <h1 contenteditable="true">Library name</h1>
+            <p class="lead" contenteditable="true">Library Description</p>
+        </div>
 
-        <script type="text/javascript">
-        {{#examples}}
-        describe('{{{description}}}', function() {
-          var result = {{{input}}};
-          expect(result).toEqual({{{output}}});
+        <div class="row">
+            <div class="col-lg-3">
+                <ul class="nav">
+                    {{#docs}}
+                    <li><a href="#{{name}}">{{name}}</a></li>
+                    {{/docs}}
+                </ul>
+            </div>
+
+            <div class="col-lg-9">
+                {{#docs}}
+                <section>
+                    <h1 id="{{name}}">{{name}}</h1>
+                    <p>{{description}}</p>
+
+                    {{#hasExamples}}
+                    <h2>Specs</h2>
+                    <table class="table table-striped table-hover">
+                        <thead>
+                            <tr>
+                                <th>Input</th>
+                                <th>Expected</th>
+                                <th>Actual</th>
+                            </tr>
+                        </thead>
+
+                        <tbody>
+                            {{#examples}}
+                            <tr id="example-{{id}}">
+                                <td>{{{input}}}</td>
+                                <td>{{{output}}}</td>
+                                <td></td>
+                            </tr>
+                            {{/examples}}
+                        </tbody>
+                    </table>
+                    {{/hasExamples}}
+
+                    <script type="text/javascript">
+                      describe('{{{name}}}', function() {
+                        {{#examples}}
+                        (function() {
+                          var spec = it('returns {{output}} for {{input}}', function() {
+                            var result = {{{input}}};
+                            expect(result).toEqual({{{output}}});
+                          });
+
+                          spec.exampleId = {{id}};
+                          spec.input = '{{input}}';
+                          spec.output = '{{output}}';
+                        }());
+                        {{/examples}}
+                      });
+                    </script>
+                </section>
+                {{/docs}}
+            </div>
+        </div>
+    </div>
+
+    <script type="text/javascript">
+      var jasmineEnv = jasmine.getEnv();
+
+        jasmineEnv.addReporter({
+          reportSpecResults: function(spec) {
+            var matchingRow = document.getElementById('example-' + spec.exampleId);
+            var resultCell = matchingRow.querySelector('td:last-child');
+
+            if (spec.results().passed()) {
+                resultCell.textContent = 'Passed';
+                return;
+            }
+
+            matchingRow.className = 'danger';
+
+            var errorsList = document.createElement('UL');
+            resultCell.appendChild(errorsList);
+
+            Lazy(spec.results().getItems())
+              .filter(function(item) { return item.passed && !item.passed(); })
+              .pluck('message')
+              .each(function(errorMessage) {
+                var errorListItem = document.createElement('LI');
+                errorListItem.textContent = errorMessage;
+                errorsList.appendChild(errorListItem);
+              });
+          }
         });
-        {{/examples}}
-        </script>
-    </section>
-    {{/docs}}
+
+      jasmineEnv.execute();
+    </script>
 </body>
 
 </html>
