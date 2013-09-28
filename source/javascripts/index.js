@@ -11,6 +11,11 @@ window.addEventListener('load', function() {
   splitter.addEventListener('drag', function(e) {
     var x = e.screenX - window.screenLeft;
 
+    // Sanity check: prevent choppiness by disallowing large jumps.
+    if (Math.abs(x - splitter.offsetLeft) > 100) {
+      return;
+    }
+
     splitter.style.left = x + 'px';
     left.style.right = (window.innerWidth - x) + 'px';
     right.style.left = x + 'px';
