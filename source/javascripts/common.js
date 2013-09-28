@@ -8,25 +8,3 @@ function makeGetRequest(dest, callback) {
 
   request.send();
 }
-
-function whenInitialized(variableName, callback) {
-  var storedValue = this[variableName];
-
-  if (typeof storedValue !== 'undefined') {
-    callback(storedValue);
-    return;
-  }
-
-  Object.defineProperty(this, variableName, {
-    enumerable: true,
-
-    get: function() {
-      return storedValue;
-    },
-
-    set: function(value) {
-      storedValue = value;
-      callback(storedValue);
-    }
-  });
-}
