@@ -1,3 +1,10 @@
+//= require lib/jasmine
+//= require lib/benchmark
+//= require lib/jquery
+//= require lib/lazy
+//= require lib/highcharts
+//= require lib/hightables
+
 $(document).ready(function() {
   Highcharts.setOptions({
     colors: getColors()

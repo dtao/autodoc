@@ -1,7 +1,7 @@
 importScripts(
-  '/lib/esprima/esprima.js',
-  '/lib/jasmine/lib/jasmine-core/jasmine.js',
-  '/lib/lazy.js/lazy.js'
+  'lib/esprima.js',
+  'lib/jasmine.js',
+  'lib/lazy.js'
 );
 
 function getExamplesFromData(data) {

@@ -1,5 +1,5 @@
 importScripts(
-  '/lib/esprima/esprima.js'
+  'lib/esprima.js'
 );
 
 this.onmessage = function(e) {

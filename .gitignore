@@ -11,7 +11,7 @@
 /build
 
 # Ignore Bower dependencies
-/source/lib
+lib/
 
 # Ignore Sass' cache
 /.sass-cache

@@ -1,8 +1,8 @@
 importScripts(
-  '/lib/esprima/esprima.js',
-  '/lib/doctrine/doctrine.js',
-  '/lib/lazy.js/lazy.js',
-  '/lib/marked/lib/marked.js'
+  'lib/esprima.js',
+  'lib/doctrine.js',
+  'lib/lazy.js',
+  'lib/marked.js'
 );
 
 var exampleIdCounter   = 1,
