@@ -2,13 +2,13 @@
 <html>
 
 <head>
-    <link rel="stylesheet" type="text/css" href="lib/codemirror/lib/codemirror.css" />
-    <link rel="stylesheet" type="text/css" href="lib/codemirror/theme/solarized.css" />
-    <script type="text/javascript" src="lib/codemirror/lib/codemirror.js"></script>
-    <script type="text/javascript" src="lib/codemirror/mode/javascript/javascript.js"></script>
-    <script type="text/javascript" src="lib/lazy.js/lazy.js"></script>
-    <script type="text/javascript" src="lib/mustache/mustache.js"></script>
-    <script type="text/javascript" src="common.js"></script>
+    <%= stylesheet_link_tag "/lib/codemirror/lib/codemirror" %>
+    <%= stylesheet_link_tag "/lib/codemirror/theme/solarized" %>
+    <%= javascript_include_tag "/lib/codemirror/lib/codemirror" %>
+    <%= javascript_include_tag "/lib/codemirror/mode/javascript/javascript" %>
+    <%= javascript_include_tag "/lib/lazy.js/lazy" %>
+    <%= javascript_include_tag "/lib/mustache/mustache" %>
+    <%= javascript_include_tag "common" %>
 
     <style type="text/css">
       body {
@@ -126,7 +126,7 @@
         }
 
         function updateAST(data) {
-          var parser = new Worker('parser.js');
+          var parser = new Worker('/javascripts/parser.js');
 
           parser.addEventListener('message', function(e) {
             astEditor.setValue(e.data);
@@ -136,7 +136,7 @@
         }
 
         function updateSpecsTable(data) {
-          var runner = new Worker('runner.js');
+          var runner = new Worker('/javascripts/runner.js');
 
           var tableBody = document.querySelector('#specs table tbody');
           tableBody.innerHTML = '';
@@ -157,7 +157,7 @@
         }
 
         function updateDocs(data) {
-          var generator = new Worker('generator.js');
+          var generator = new Worker('/javascripts/generator.js');
 
           generator.addEventListener('message', function(e) {
             // Replace the iframe.
@@ -232,7 +232,7 @@
 
         showSection('specs');
 
-        makeGetRequest('docs.html.mustache', function(html) {
+        makeGetRequest('/docs.html.mustache', function(html) {
           docsTemplate = html;
         });
       });

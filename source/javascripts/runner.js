@@ -1,10 +1,7 @@
-// This is a temporary hack to make Lazy.js work :(
-this.window = this;
-
 importScripts(
-  'lib/esprima/esprima.js',
-  'lib/jasmine/lib/jasmine-core/jasmine.js',
-  'lib/lazy.js/lazy.js'
+  '/lib/esprima/esprima.js',
+  '/lib/jasmine/lib/jasmine-core/jasmine.js',
+  '/lib/lazy.js/lazy.js'
 );
 
 function getExamplesFromData(data) {

@@ -1,11 +1,8 @@
-// See runner.js.
-this.window = this;
-
 importScripts(
-  'lib/esprima/esprima.js',
-  'lib/doctrine/doctrine.js',
-  'lib/lazy.js/lazy.js',
-  'lib/marked/lib/marked.js'
+  '/lib/esprima/esprima.js',
+  '/lib/doctrine/doctrine.js',
+  '/lib/lazy.js/lazy.js',
+  '/lib/marked/lib/marked.js'
 );
 
 var exampleId = 1;
