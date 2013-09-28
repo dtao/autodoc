@@ -1,73 +1,173 @@
 /**
- * Parses a date from a string, attempting to make an intelligent guess as to the format.
- * If a year is not specified, uses the current year.
- * 
- * @examples
- * parseDate('9/13/2013')  => new Date(2013, 8, 13)
- * parseDate('2013/9/13')  => new Date(2013, 8, 13)
- * parseDate('2013-09-13') => new Date(2013, 8, 13)
- * parseDate('9/13')       => new Date(2013, 8, 13)
- * parseDate('29/6/1984')  => new Date(1984, 5, 29)
+ * @fileOverview A bunch of math functions
+ * @name math.js
  */
-function parseDate(str) {
-  var parts = str.split(/[\/\-]/),
-      year  = extractYear(parts),
-      month = inferMonth(parts),
-      date  = inferDate(parts);
-  return new Date(year, month, date);
+
+/**
+ * Sums the elements of an array.
+ *
+ * @param {Array.<number>} array
+ * @returns {number}
+ *
+ * @examples
+ * sum([])        => 0
+ * sum([1])       => 1
+ * sum([1, 2, 3]) => 6
+ */
+function sum(array) {
+  var sum = 0;
+  for (var i = 0; i < array.length; ++i) {
+    sum += array[i];
+  }
+  return sum;
 }
 
 /**
- * Infers the year from an array of numeric strings and removes it from the array.
+ * Calculates the mean (average value) of the elements in an array.
+ *
+ * @param {Array.<number>} array
+ * @returns {number}
+ *
+ * @examples
+ * mean([])           => undefined
+ * mean([1])          => 1
+ * mean([1, 2, 3])    => 2
+ * mean([1, 2, 3, 4]) => 2.5
  */
-function extractYear(parts) {
-  if (parts.length < 3) {
-    return new Date().getFullYear();
+function mean(array) {
+  if (array.length === 0) {
+    return undefined;
   }
-  
-  if (parts[0].length === 4) {
-    return Number(parts.splice(0, 1)[0]);
-  }
-  
-  return Number(parts.splice(2, 1)[0]);
-}
-
-function inferMonth(parts) {
-  var x = Number(parts[0]),
-      y = Number(parts[1]);
-  return x <= 12 ? (x - 1) : (y - 1);
-}
-
-function inferDate(parts) {
-  if (parts.length > 2) {
-  }
-  var x = Number(parts[0]),
-      y = Number(parts[1]);
-  return x > 12 ? x : y;
+  return sum(array) / array.length;
 }
 
 /**
- * Splits an array using the same logic as String.prototype.split.
- * 
+ * Calculates the median (middle value) of the elements in an array. If the
+ * array has an even number of elements, averages the middle two values.
+ *
+ * @param {Array.<number>} array
+ * @returns {number}
+ *
  * @examples
- * splitArray([1, 2, 3], 2) => [[1], [3]]
+ * median([])              => undefined
+ * median([1])             => 1
+ * median([1, 4, 5])       => 4
+ * median([1, 4, 5, 1000]) => 4.5
  */
-function splitArray(array, delimiter) {
-  var chunks = [],
-      chunk  = [],
-      i      = -1;
+function median(array) {
+  var values = clone(array);
 
-  while (++i < array.length) {
-    if (array[i] === delimiter) {
-      chunks.push(chunk);
-      chunk = [];
+  // Sort the values numerically.
+  values.sort(function(x, y) { return x - y; });
 
-    } else {
-      chunk.push(array[i]);
-    }
+  var middle = Math.floor(values.length / 2);
+
+  return isEven(values.length) ?
+    mean(values.slice(middle - 1, middle + 1)) :
+    values[middle];
+}
+
+/**
+ * Calculates the mode (most common value) of the elements in an array.
+ *
+ * @param {Array.<number>} array
+ * @returns {number}
+ *
+ * @examples
+ * mode([])              => undefined
+ * mode([1])             => 1
+ * mode([1, 1, 2])       => 1
+ * mode([1, 1, 2, 2, 2]) => 2
+ */
+function mode(array) {
+  var values = {},
+      mode,
+      count = 0;
+
+  for (var i = 0; i < array.length; ++i) {
+    (function(value) {
+      values[value] = values[value] || 0;
+      values[value] += 1;
+      if (values[value] > count) {
+        mode = value;
+        ++count;
+      }
+    }(array[i]));
   }
+  
+  return mode;
+}
 
-  chunks.push(chunk);
+/**
+ * Checks if a number is divisible by a given factor.
+ *
+ * @param {number} value
+ * @param {number} factor
+ * @returns {boolean}
+ *
+ * @examples
+ * isDivisibleBy(10, 5) => true
+ * isDivisibleBy(10, 3) => false
+ * isDivisibleBy(3, 9)  => false
+ */
+function isDivisibleBy(value, factor) {
+  return value % factor === 0;
+}
 
-  return chunks;
+/**
+ * Checks if a number is a factor of a given value.
+ *
+ * @param {number} factor
+ * @param {number} value
+ * @returns {boolean}
+ *
+ * isFactorOf(5, 10) => true
+ * isFactorOf(3, 10) => false
+ * isFactorOf(9, 3)  => false
+ */
+function isFactorOf(factor, value) {
+  return isDivisibleBy(value, factor);
+}
+
+/**
+ * Checks if a number is even (divisible by 2).
+ *
+ * @param {number} value
+ * @returns {boolean}
+ *
+ * @examples
+ * isEven(1)    => false
+ * isEven(2)    => true
+ * isEven(1024) => true
+ */
+function isEven(value) {
+  return isDivisibleBy(value, 2);
+}
+
+/**
+ * Checks if a number is odd (not divisible by 2).
+ *
+ * @param {number} value
+ * @returns {boolean}
+ *
+ * @examples
+ * isOdd(1)    => true
+ * isOdd(2)    => false
+ * isOdd(1024) => false
+ */
+function isOdd(value) {
+  return !isEven(value);
+}
+
+/**
+ * Creates a shallow copy of an array.
+ *
+ * @param {Array.<*>} array
+ * @returns {Array}
+ *
+ * @examples
+ * clone([1, 2, 3]) => [1, 2, 3]
+ */
+function clone(array) {
+  return array.slice(0);
 }
