@@ -5,85 +5,6 @@
     <%= stylesheet_link_tag "output" %>
     <%= javascript_include_tag "output" %>
 
-    <style type="text/css">
-      body {
-        padding: 10px;
-      }
-
-      table {
-        width: 100%;
-        border-collapse: collapse;
-      }
-
-      th, td {
-        padding: 1ex 20px;
-        font-family: sans-serif;
-        text-align: left;
-        vertical-align: top;
-        width: 25%;
-      }
-
-      th {
-        border-bottom: 2px solid black;
-      }
-
-      tr.failed td:first-child {
-        border-left: 5px solid #f00;
-        padding-left: 15px;
-      }
-
-      tr.passed td:first-child {
-        border-left: 5px solid #080;
-        padding-left: 15px;
-      }
-
-      th:last-child, td:last-child {
-        width: 50%;
-      }
-
-      td:nth-child(1), td:nth-child(2) {
-        font-family: Consolas, Inconsolata, monospace;
-      }
-
-      tr:nth-child(even) {
-        background-color: #eee;
-      }
-
-      .CodeMirror, iframe {
-        position: absolute;
-        top: 0;
-        bottom: 0;
-        left: 0;
-        right: 0;
-        height: 100%;
-        width: 100%;
-      }
-
-      footer {
-        position: fixed;
-        bottom: 0;
-        left: 0;
-        right: 0;
-        padding: 0 1em;
-        font-family: sans-serif;
-        color: #fff;
-        line-height: 40px;
-        z-index: 10;
-      }
-
-      footer:before {
-        content: "";
-        position: fixed;
-        bottom: 0;
-        left: 0;
-        right: 0;
-        height: 40px;
-        background-color: #000;
-        opacity: 0.75;
-        z-index: -1;
-      }
-    </style>
-
     <script type="text/javascript">
       window.addEventListener('load', function() {
         var sections      = document.querySelectorAll('section'),
@@ -201,7 +122,6 @@
         <iframe></iframe>
     </section>
 
-    <!-- Not implemented yet -->
     <footer>
         <label>Show me:</label>
         <label><input type="checkbox" name="ast" /> AST</label>
