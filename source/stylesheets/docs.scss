@@ -24,11 +24,11 @@ header {
   @extend .row;
 
   .left-column {
-    @extend .col-lg-2;
+    @extend .col-md-2;
   }
 
   .right-column {
-    @extend .col-lg-10;
+    @extend .col-md-10;
   }
 }
 
