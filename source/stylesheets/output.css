@@ -56,26 +56,8 @@ tr:nth-child(even) {
   width: 100%;
 }
 
-footer {
-  position: fixed;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  padding: 0 1em;
-  font-family: sans-serif;
-  color: #fff;
-  line-height: 40px;
-  z-index: 10;
-}
+/* Don't want to see this right now */
 
-footer:before {
-  content: "";
-  position: fixed;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  height: 40px;
-  background-color: #000;
-  opacity: 0.75;
-  z-index: -1;
+footer {
+  display: none;
 }
