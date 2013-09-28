@@ -1,5 +1,9 @@
 @import "bootstrap";
 
+body {
+  padding-bottom: 100px;
+}
+
 main {
   @extend .container;
 }
