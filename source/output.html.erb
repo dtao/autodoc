@@ -94,7 +94,6 @@
         var sections      = document.querySelectorAll('section'),
             checkboxes    = document.querySelectorAll('footer input[type="checkbox"]'),
             astCheckBox   = document.querySelector('input[name="ast"]'),
-            specsCheckBox = document.querySelector('input[name="specs"]'),
             docsCheckBox  = document.querySelector('input[name="docs"]');
 
         // The CodeMirror instance where we'll display the AST.
@@ -112,19 +111,6 @@
         var latestResult,
             docsTemplate;
 
-        function addRowToTable(table, values) {
-          var row = document.createElement('tr');
-          table.appendChild(row);
-
-          Lazy(values).each(function(value) {
-            var cell = document.createElement('td');
-            cell.textContent = value;
-            row.appendChild(cell);
-          });
-
-          return row;
-        }
-
         function updateAST(data) {
           var parser = new Worker('/javascripts/parser.js');
 
@@ -133,27 +119,6 @@
           });
 
           parser.postMessage(data);
-        }
-
-        function updateSpecsTable(data) {
-          var runner = new Worker('/javascripts/runner.js');
-
-          var tableBody = document.querySelector('#specs table tbody');
-          tableBody.innerHTML = '';
-
-          runner.addEventListener('message', function(e) {
-            var result = JSON.parse(e.data);
-
-            var row = addRowToTable(tableBody, [
-              result.input,
-              result.output,
-              result.messages[0].message
-            ]);
-
-            row.className = result.result;
-          });
-
-          runner.postMessage(data);
         }
 
         function updateDocs(data) {
@@ -180,10 +145,6 @@
           return astCheckBox.checked;
         }
 
-        function showingSpecs() {
-          return specsCheckBox.checked;
-        }
-
         function showingDocs() {
           return docsCheckBox.checked;
         }
@@ -201,9 +162,6 @@
         function updateCurrentSection() {
           if (showingAST()) {
             updateAST(latestResult);
-
-          } else if (showingSpecs()) {
-            updateSpecsTable(latestResult);
 
           } else if (showingDocs()) {
             updateDocs(latestResult);
@@ -230,7 +188,7 @@
           }
         });
 
-        showSection('specs');
+        showSection('docs');
 
         makeGetRequest('/docs.html.mustache', function(html) {
           docsTemplate = html;
@@ -244,21 +202,6 @@
         <textarea></textarea>
     </section>
 
-    <section id="specs">
-        <table>
-            <thead>
-                <tr>
-                    <th>Input</th>
-                    <th>Expected</th>
-                    <th>Actual</th>
-                </tr>
-            </thead>
-
-            <tbody>
-            </tbody>
-        </table>
-    </section>
-
     <section id="docs">
         <iframe></iframe>
     </section>
@@ -267,8 +210,7 @@
     <footer>
         <label>Show me:</label>
         <label><input type="checkbox" name="ast" /> AST</label>
-        <label><input type="checkbox" name="specs" checked="checked" /> Specs</label>
-        <label><input type="checkbox" name="docs" /> Full Docs</label>
+        <label><input type="checkbox" name="docs" checked="checked" /> Full Docs</label>
     </footer>
 </body>
 
