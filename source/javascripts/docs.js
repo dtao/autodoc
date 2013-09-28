@@ -138,3 +138,7 @@ $(document).ready(function() {
   showSection($('section:first-of-type'));
   runSpecs();
 });
+
+$(window).load(function() {
+  window.parent.postMessage('loaded', window.location.origin);
+});

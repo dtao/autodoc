@@ -6,37 +6,6 @@
 
     <%= stylesheet_link_tag "index" %>
     <%= javascript_include_tag "index" %>
-
-    <script type="text/javascript">
-      function debounce(delay, fn) {
-        var timeout;
-
-        return function() {
-          if (timeout) {
-            clearTimeout(timeout);
-          }
-
-          timeout = setTimeout(fn, delay);
-        };
-      }
-
-      window.addEventListener('load', function() {
-        var editor = CodeMirror.fromTextArea(document.querySelector('#left textarea'), {
-          mode: 'javascript',
-          theme: 'solarized dark',
-          lineNumbers: true
-        });
-
-        makeGetRequest('/example2.js', function(content) {
-          editor.setValue(content);
-        });
-
-        var output = document.querySelector('#right iframe');
-        editor.on('change', debounce(500, function() {
-          output.contentWindow.postMessage(editor.getValue(), '*');
-        }));
-      });
-    </script>
 </head>
 
 <body>
