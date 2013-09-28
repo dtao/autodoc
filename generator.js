@@ -64,7 +64,7 @@ this.onmessage = function(e) {
 
       return {
         name: fn[0].id.name,
-        description: doc.description,
+        description: marked(doc.description),
         examples: examples,
         hasExamples: examples.length > 0
       };
