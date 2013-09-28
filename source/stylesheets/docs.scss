@@ -1,0 +1,39 @@
+@import "bootstrap";
+
+main {
+  @extend .container;
+}
+
+header {
+  @extend .page-header;
+
+  p {
+    @extend .lead;
+  }
+}
+
+.columns {
+  @extend .row;
+
+  .left-column {
+    @extend .col-lg-2;
+  }
+
+  .right-column {
+    @extend .col-lg-10;
+  }
+}
+
+nav {
+  border-right: 1px solid black;
+
+  ul {
+    @extend .nav;
+  }
+}
+
+table {
+  @extend .table;
+  @extend .table-striped;
+  @extend .table-hover;
+}
