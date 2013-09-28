@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>{{title}}</title>
+
+    <%= stylesheet_link_tag "docs" %>
+    <%= javascript_include_tag "docs" %>
+
+    <script type="text/javascript">
+      {{{code}}}
+
+      var benchmarks = {};
+    </script>
+</head>
+
+<body>
+    <main>
+        <header>
+            <h1>{{name}}</h1>
+            <div class="description">
+                {{{description}}}
+            </div>
+        </header>
+
+        <div id="spec-failures"></div>
+
+        <div class="columns">
+            <div class="left-column">
+                <nav>
+                    <ul>
+                        {{#docs}}
+                        <li><a href="#{{name}}">{{name}}</a></li>
+                        {{/docs}}
+                    </ul>
+                </nav>
+            </div>
+
+            <div class="right-column">
+                {{#docs}}
+                <section id="{{name}}">
+                    <h1>{{name}}</h1>
+
+                    {{{description}}}
+
+                    {{#hasSignature}}
+                    <div class="signature">
+                        <h3>Signature</h3>
+
+                        <pre><code>{{{signature}}}</code></pre>
+
+                        <table id="{{name}}-parameters">
+                            <thead>
+                                <tr>
+                                    <th>Name</th>
+                                    <th>Type(s)</th>
+                                    <th>Description</th>
+                                </tr>
+                            </thead>
+
+                            <tbody>
+                                {{#params}}
+                                <tr>
+                                    <td>{{name}}</td>
+                                    <td>{{type}}</td>
+                                    <td>{{description}}</td>
+                                </tr>
+                                {{/params}}
+
+                            </tbody>
+
+                            <tfoot>
+                                {{#returns}}
+                                <tr>
+                                    <td>returns</td>
+                                    <td>{{type}}</td>
+                                    <td>{{description}}</td>
+                                </tr>
+                                {{/returns}}
+                            </tfoot>
+                        </table>
+                    </div>
+                    {{/hasSignature}}
+
+                    {{#hasExamples}}
+                    <div class="examples">
+                        <h3>Examples</h3>
+                        <table id="{{name}}-examples">
+                            <thead>
+                                <tr>
+                                    <th>Input</th>
+                                    <th>Expected</th>
+                                    <th>Actual</th>
+                                </tr>
+                            </thead>
+
+                            <tbody>
+                                {{#examples}}
+                                <tr id="example-{{id}}">
+                                    <td>{{{input}}}</td>
+                                    <td>{{{output}}}</td>
+                                    <td></td>
+                                </tr>
+                                {{/examples}}
+                            </tbody>
+                        </table>
+                    </div>
+                    {{/hasExamples}}
+
+                    {{#hasBenchmarks}}
+                    <div class="perf">
+                        <h3>Benchmarks</h3>
+                        <table id="{{name}}-perf-tests">
+                            <!-- Gah, HighTables is stupid... doesn't account for <thead> :( -->
+                            <tr>
+                                <th>Implementation</th>
+                                <th>Ops/second</th>
+                            </tr>
+
+                            {{#benchmarks}}
+                            <tr id="perf-test-{{id}}">
+                                <td>{{{name}}}</td>
+                                <td></td>
+                            </tr>
+                            {{/benchmarks}}
+                        </table>
+
+                        <button>Run performance benchmarks</button>
+                    </div>
+                    {{/hasBenchmarks}}
+
+                    <script type="text/javascript">
+                      describe('{{{name}}}', function() {
+                        {{#examples}}
+                        (function() {
+                          var spec = it('returns {{output}} for {{input}}', function() {
+                            var result = {{{input}}};
+                            expect(result).toEqual({{{output}}});
+                          });
+
+                          spec.exampleId = {{id}};
+                          spec.input = '{{input}}';
+                          spec.output = '{{output}}';
+                        }());
+                        {{/examples}}
+                      });
+
+                      benchmarks['{{name}}'] = [
+                        {{#benchmarks}}
+                        new Benchmark('{{name}}', {
+                            id: {{id}},
+                            fn: function() {
+                                {{{impl}}};
+                            }
+                        }),
+                        {{/benchmarks}}
+                      ];
+                    </script>
+                </section>
+                {{/docs}}
+            </div>
+        </div>
+    </main>
+
+    <div id="color-reference">
+        <div class="primary"></div>
+        <div class="success"></div>
+        <div class="info"></div>
+        <div class="warning"></div>
+        <div class="danger"></div>
+    </div>
+</body>
+
+</html>

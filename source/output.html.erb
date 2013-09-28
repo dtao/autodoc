@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <%= stylesheet_link_tag "output" %>
+    <%= javascript_include_tag "output" %>
+</head>
+
+<body>
+    <section id="ast">
+        <textarea></textarea>
+    </section>
+
+    <section id="docs">
+        <iframe></iframe>
+    </section>
+
+    <footer>
+        <label>Show me:</label>
+        <label><input type="checkbox" name="ast" /> AST</label>
+        <label><input type="checkbox" name="docs" checked="checked" /> Full Docs</label>
+    </footer>
+</body>
+
+</html>

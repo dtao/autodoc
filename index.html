@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Breakneck</title>
+
+    <link href="/stylesheets/index.css" media="screen" rel="stylesheet" type="text/css" />
+    <script src="/javascripts/index.js" type="text/javascript"></script>
+
+    <script type="text/javascript">
+      function debounce(delay, fn) {
+        var timeout;
+
+        return function() {
+          if (timeout) {
+            clearTimeout(timeout);
+          }
+
+          timeout = setTimeout(fn, delay);
+        };
+      }
+
+      window.addEventListener('load', function() {
+        var editor = CodeMirror.fromTextArea(document.querySelector('#left textarea'), {
+          mode: 'javascript',
+          theme: 'solarized dark',
+          lineNumbers: true
+        });
+
+        makeGetRequest('/example2.js', function(content) {
+          editor.setValue(content);
+        });
+
+        var output = document.querySelector('#right iframe');
+        editor.on('change', debounce(500, function() {
+          output.contentWindow.postMessage(editor.getValue(), '*');
+        }));
+      });
+    </script>
+</head>
+
+<body>
+    <div id="left">
+        <textarea></textarea>
+    </div>
+
+    <div id="splitter" draggable="true"></div>
+
+    <div id="right">
+        <iframe src="output.html" />
+    </div>
+</body>
+
+</html>
