@@ -7,7 +7,7 @@
  *
  * - documentation (using comments in [JsDoc](http://usejsdoc.org/) format)
  * - specs (using the `@examples` tag)
- * - perf tests (coming soon!)
+ * - perf tests
  *
  * *OMG*, right?
  */
@@ -29,6 +29,48 @@ function sum(array) {
     sum += array[i];
   }
   return sum;
+}
+
+/**
+ * Finds the greatest value in an array.
+ *
+ * @param {Array.<number>} array
+ * @returns {number}
+ *
+ * @examples
+ * max([])        => undefined
+ * max([1])       => 1
+ * max([1, 3, 2]) => 3
+ */
+function max(array) {
+  var max = array[0];
+  for (var i = 1; i < array.length; ++i) {
+    if (array[i] > max) {
+      max = array[i];
+    }
+  }
+  return max;
+}
+
+/**
+ * Finds the smallest value in an array.
+ *
+ * @param {Array.<number>} array
+ * @returns {number}
+ *
+ * @examples
+ * min([])        => undefined
+ * min([1])       => 1
+ * min([2, 1, 3]) => 1
+ */
+function min(array) {
+  var min = array[0];
+  for (var i = 1; i < array.length; ++i) {
+    if (array[i] < min) {
+      min = array[i];
+    }
+  }
+  return min;
 }
 
 /**
@@ -130,6 +172,7 @@ function isDivisibleBy(value, factor) {
  * @param {number} value
  * @returns {boolean}
  *
+ * @examples
  * isFactorOf(5, 10) => true
  * isFactorOf(3, 10) => false
  * isFactorOf(9, 3)  => false

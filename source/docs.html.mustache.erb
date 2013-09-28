@@ -6,10 +6,17 @@
 
     <%= stylesheet_link_tag "docs" %>
     <%= javascript_include_tag "/lib/jasmine/lib/jasmine-core/jasmine" %>
+    <%= javascript_include_tag "/lib/benchmark/benchmark" %>
+    <%= javascript_include_tag "/lib/jquery/jquery" %>
     <%= javascript_include_tag "/lib/lazy.js/lazy" %>
+    <%= javascript_include_tag "/lib/highcharts/highcharts" %>
+    <%= javascript_include_tag "/lib/hightables/hightables" %>
+    <%= javascript_include_tag "docs" %>
 
     <script type="text/javascript">
       {{{code}}}
+
+      var benchmarks = {};
     </script>
 </head>
 
@@ -35,32 +42,55 @@
 
             <div class="right-column">
                 {{#docs}}
-                <section>
-                    <h1 id="{{name}}">{{name}}</h1>
+                <section id="{{name}}">
+                    <h1>{{name}}</h1>
 
                     {{{description}}}
 
                     {{#hasExamples}}
-                    <h2>Specs</h2>
-                    <table>
-                        <thead>
-                            <tr>
-                                <th>Input</th>
-                                <th>Expected</th>
-                                <th>Actual</th>
-                            </tr>
-                        </thead>
+                    <div class="examples">
+                        <table id="{{name}}-examples">
+                            <thead>
+                                <tr>
+                                    <th>Input</th>
+                                    <th>Expected</th>
+                                    <th>Actual</th>
+                                </tr>
+                            </thead>
 
-                        <tbody>
-                            {{#examples}}
-                            <tr id="example-{{id}}">
-                                <td>{{{input}}}</td>
-                                <td>{{{output}}}</td>
-                                <td></td>
-                            </tr>
-                            {{/examples}}
-                        </tbody>
-                    </table>
+                            <tbody>
+                                {{#examples}}
+                                <tr id="example-{{id}}">
+                                    <td>{{{input}}}</td>
+                                    <td>{{{output}}}</td>
+                                    <td></td>
+                                </tr>
+                                {{/examples}}
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <div class="perf">
+                        <table id="{{name}}-perf-tests">
+                            <thead>
+                                <tr>
+                                    <th>Input</th>
+                                    <th>Ops/second</th>
+                                </tr>
+                            </thead>
+
+                            <tbody>
+                                {{#examples}}
+                                <tr id="perf-test-{{id}}">
+                                    <td>{{{input}}}</td>
+                                    <td></td>
+                                </tr>
+                                {{/examples}}
+                            </tbody>
+                        </table>
+
+                        <button>Run performance tests</button>
+                    </div>
                     {{/hasExamples}}
 
                     <script type="text/javascript">
@@ -78,6 +108,17 @@
                         }());
                         {{/examples}}
                       });
+
+                      benchmarks['{{name}}'] = [
+                        {{#examples}}
+                        new Benchmark('{{input}}', {
+                            id: {{id}},
+                            fn: function() {
+                                {{{input}}};
+                            }
+                        }),
+                        {{/examples}}
+                      ];
                     </script>
                 </section>
                 {{/docs}}
