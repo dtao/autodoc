@@ -89,6 +89,27 @@ function insert(array, index, element) {
 }
 
 /**
+ * Gets the keys of an object. This duplicates the native `Object.keys` method.
+ *
+ * @param {Object} object The object whose keys you want to get.
+ * @returns {Array.<string>} The keys of the object.
+ *
+ * @examples
+ * keys({ foo: 1, bar: 2 }) => ['foo', 'bar']
+ *
+ * @benchmarks
+ * redundant.js => keys({ foo: 1, bar: 2, baz: 3 })
+ * native       => Object.keys({ foo: 1, bar: 2, baz: 3 })
+ */
+function keys(object) {
+  var keys = [];
+  for (var key in object) {
+    keys.push(key);
+  }
+  return keys;
+}
+
+/**
  * Splits a string by a given delimiter. This duplicates `String.prototype.split`.
  *
  * @param {string} string The string to split.
