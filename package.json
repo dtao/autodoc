@@ -1,0 +1,24 @@
+{
+  "name": "breakneck",
+  "version": "0.1.0",
+  "description": "Auto-generate docs, specs, and benchmarks from JSDoc-style comments",
+  "main": "benchmark.js",
+  "scripts": {
+    "test": "mocha --compilers coffee:coffee-script"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/dtao/breakneck.git"
+  },
+  "author": "Dan Tao",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/dtao/breakneck/issues"
+  },
+  "devDependencies": {
+    "coffee-script": ">= 1.6.3",
+    "mocha": ">= 1.13.0",
+    "should": ">= 1.3.0",
+    "sinon": ">= 1.7.3"
+  }
+}
