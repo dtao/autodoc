@@ -243,6 +243,24 @@
   };
 
   /**
+   * Gets the text from a given comment tag and splits it into lines.
+   *
+   * @param {Object} doc
+   * @param {string} tagName
+   * @returns {Array.<string>}
+   */
+  Breakneck.getCommentLines = function(doc, tagName) {
+    var Lazy = context.Lazy,
+        tag  = Lazy(doc.tags).findWhere({ title: tagName });
+
+    if (typeof tag === 'undefined') {
+      return [];
+    }
+
+    return tag.description.split('\n');
+  };
+
+  /**
    * @typedef {Object} ExampleInfo
    * @property {number} id
    * @property {string} input
@@ -256,14 +274,33 @@
    * @returns {Array.<ExampleInfo>}
    */
   Breakneck.getExamples = function(doc) {
-    var exampleIdCounter = 1;
-    return Breakneck.splitCommentLines(doc, 'examples', function(left, right) {
-      return {
-        id: exampleIdCounter++,
-        input: left,
-        output: right
-      };
-    });
+    var Lazy = context.Lazy;
+
+    var commentLines = Breakneck.getCommentLines(doc, 'examples');
+
+    return Lazy(commentLines)
+      .map(Breakneck.parseExample)
+      .compact()
+      .toArray();
+  };
+
+  /**
+   * Given a line like 'input => output', parses this into a { id, input, output } object.
+   *
+   * @param {string} line
+   * @returns {ExampleInfo|null}
+   */
+  Breakneck.parseExample = function(line) {
+    var parts = line.match(/^(.*)\s*=>\s*(.*)$/);
+
+    if (!parts) {
+      return null;
+    }
+
+    return {
+      input: trim(parts[1]),
+      output: trim(parts[2])
+    };
   };
 
   /**
@@ -330,6 +367,10 @@
         return context.marked(markdown);
       }
     };
+  }
+
+  function trim(string) {
+    return string.replace(/^\s+/, '').replace(/\s+$/, '');
   }
 
   if (typeof module === 'object') {
