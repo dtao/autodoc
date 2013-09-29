@@ -332,6 +332,10 @@
     };
   }
 
-  context.Breakneck = Breakneck;
+  if (typeof module === 'object') {
+    module.exports = Breakneck;
+  } else {
+    context.Breakneck = Breakneck;
+  }
 
 }(typeof global !== 'undefined' ? global : this));
