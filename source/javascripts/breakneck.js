@@ -322,7 +322,7 @@
    */
   Breakneck.parseComment = function(comment, commentParser) {
     return commentParser.parse('/*' + comment.value + '*/', { unwrap: true });
-  }
+  };
 
   function defaultMarkdownParser() {
     return {
