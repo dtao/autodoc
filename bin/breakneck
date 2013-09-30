@@ -1,0 +1,61 @@
+#!/usr/bin/env node
+
+var fs          = require('fs'),
+    esprima     = require('esprima'),
+    doctrine    = require('doctrine'),
+    marked      = require('marked'),
+    Lazy        = require('lazy.js'),
+    Breakneck   = require('breakneck'),
+    stringTable = require('string-table');
+
+global.doctrine = doctrine;
+global.esprima  = esprima;
+global.Lazy     = Lazy;
+global.marked   = marked;
+
+require('colors');
+require('should');
+
+function getLast(arr) {
+  return arr[arr.length - 1];
+}
+
+var file = fs.readFileSync(getLast(process.argv), 'utf-8');
+
+var libraryInfo = Breakneck.parse(file);
+
+// Evaluate the file
+eval(file);
+
+// Run the tests
+Lazy(libraryInfo.docs)
+  .filter(function(doc) { return doc.hasExamples; })
+  .each(function(doc) {
+
+    console.log(doc.name);
+
+    var outcomes = [];
+    Lazy(doc.examples).each(function(example) {
+      var outcome = {
+        'case': example.input,
+        'expected': example.output
+      };
+
+      try {
+        var actual   = eval(example.input),
+            expected = eval(example.output);
+
+        actual.should.eql(expected);
+
+        outcome.result = 'PASS'.green;
+
+      } catch (e) {
+        outcome.result = e.message.red;
+      }
+
+      outcomes.push(outcome);
+    });
+
+    console.log(stringTable.create(outcomes));
+
+  });

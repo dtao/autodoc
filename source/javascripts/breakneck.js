@@ -17,8 +17,8 @@
   Breakneck.parse = function(code, options) {
     options = options || {};
 
-    var codeParser     = options.codeParser || context.esprima,
-        commentParser  = options.commentParser || context.doctrine,
+    var codeParser     = options.codeParser     || context.esprima,
+        commentParser  = options.commentParser  || context.doctrine,
         markdownParser = options.markdownParser || defaultMarkdownParser(),
         Lazy           = context.Lazy;
 

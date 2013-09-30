@@ -3,6 +3,9 @@
   "version": "0.1.0",
   "description": "Auto-generate docs, specs, and benchmarks from JSDoc-style comments",
   "main": "benchmark.js",
+  "bin": {
+    "breakneck": "bin/breakneck"
+  },
   "scripts": {
     "test": "mocha --compilers coffee:coffee-script"
   },
@@ -15,8 +18,16 @@
   "bugs": {
     "url": "https://github.com/dtao/breakneck/issues"
   },
+  "dependencies": {
+    "colors": "*",
+    "doctrine": "*",
+    "esprima": "*",
+    "lazy.js": ">= 0.1.1",
+    "marked": "*",
+    "string-table": ">= 0.1.2"
+  },
   "devDependencies": {
-    "coffee-script": ">= 1.6.3",
+    "coffee-script": ">= 1.6.1",
     "mocha": ">= 1.13.0",
     "should": ">= 1.3.0",
     "sinon": ">= 1.7.3"
