@@ -217,8 +217,6 @@
    * @returns {Array.<ParameterInfo>} An array of { name, type, description } objects.
    */
   Breakneck.getParams = function(doc) {
-    var Lazy = context.Lazy;
-
     return Lazy(doc.tags)
       .where({ title: 'param' })
       .map(function(tag) {
@@ -245,8 +243,7 @@
    * @returns {ReturnInfo} A { type, description } object.
    */
   Breakneck.getReturns = function(doc) {
-    var Lazy      = context.Lazy,
-        returnTag = Lazy(doc.tags).findWhere({ title: 'returns' });
+    var returnTag = Lazy(doc.tags).findWhere({ title: 'returns' });
 
     if (typeof returnTag === 'undefined') {
       return {};
@@ -294,8 +291,6 @@
    * @returns {LibraryInfo}
    */
   Breakneck.getLibraryInfo = function(comments, commentParser) {
-    var Lazy = context.Lazy;
-
     var docWithFileOverview = Lazy(comments)
       .map(function(comment) {
         return Breakneck.parseComment(comment, commentParser);
@@ -378,8 +373,7 @@
    * @returns {Array.<string>}
    */
   Breakneck.getCommentLines = function(doc, tagName) {
-    var Lazy = context.Lazy,
-        tag  = Lazy(doc.tags).findWhere({ title: tagName });
+    var tag = Lazy(doc.tags).findWhere({ title: tagName });
 
     if (typeof tag === 'undefined') {
       return [];
