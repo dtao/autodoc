@@ -443,14 +443,25 @@
       case 'NameExpression':
         return type.name;
 
-      case 'TypeApplication':
-        return Breakneck.formatType(type.expression) + '.<' + Lazy(type.applications).map(Breakneck.formatType).join('|') + '>';
-
       case 'AllLiteral':
         return '*';
 
+      case 'TypeApplication':
+        return Breakneck.formatType(type.expression) + '.<' + Lazy(type.applications).map(Breakneck.formatType).join('|') + '>';
+
+      case 'RecordType':
+        return '{' + Lazy(type.fields).map(function(field) {
+          return field.key + ':' + Breakneck.formatType(field.value);
+        }).join(', ');
+
       case 'OptionalType':
         return Breakneck.formatType(type.expression) + '?';
+
+      case 'UnionType':
+        return Lazy(type.elements).map(Breakneck.formatType).join('|');
+
+      case 'RestType':
+        return '...' + Breakneck.formatType(type.expression);
 
       case 'FunctionType':
         return 'function(' + Lazy(type.params).map(Breakneck.formatType).join(', ') + '):' + Breakneck.formatType(type.result);
