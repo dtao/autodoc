@@ -274,7 +274,7 @@
    * @returns {string}
    */
   Breakneck.getSignature = function(name, params) {
-    return 'function ' + name + '(' + Lazy(params).pluck('name').join(', ') + ')';
+    return 'function(' + Lazy(params).pluck('name').join(', ') + ')';
   };
 
   /**
