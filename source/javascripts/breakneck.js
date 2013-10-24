@@ -2,6 +2,11 @@
 
   var Lazy = context.Lazy;
 
+  // Auto-require Lazy if it isn't already defined and we're in Node.
+  if (typeof Lazy === 'undefined' && typeof require === 'function') {
+    Lazy = require('lazy.js');
+  }
+
   // Define a custom type of sequence that recursively walks the nodes of an
   // AST.
   Lazy.Sequence.define('nodes', {
