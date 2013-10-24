@@ -1,18 +1,4 @@
 $(document).ready(function() {
-  Highcharts.setOptions({
-    colors: getColors()
-  });
-
-  function getColors() {
-    var palette = $('#color-reference');
-
-    var colors = _.map(['primary', 'info', 'success', 'warning', 'danger', 'default'], function(brand) {
-      return $('.' + brand, palette).css('background-color');
-    });
-
-    return colors;
-  }
-
   function showSection(section) {
     // Hide all other sections.
     $('section').hide();
