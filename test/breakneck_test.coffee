@@ -25,6 +25,19 @@ describe 'Breakneck', ->
       node = parse('Foo.prototype.bar = function() {}')
       Breakneck.getIdentifierName(node).should.eql('Foo#bar')
 
+  describe 'parseName', ->
+    it 'includes the original name in the returned data', ->
+      Breakneck.parseName('Foo#bar').name.should.eql('Foo#bar')
+
+    it 'takes a long name and also provides a short name', ->
+      Breakneck.parseName('Foo#bar').shortName.should.eql('bar')
+
+    it 'includes the namespace', ->
+      Breakneck.parseName('Foo.Bar#baz').namespace.should.eql('Foo.Bar')
+
+    it 'also provides a convenient dash-separated identifier', ->
+      Breakneck.parseName('Foo#bar').identifier.should.eql('Foo-bar')
+
   describe 'parsePair', ->
     it 'splits a line across the string "//=>"', ->
       Breakneck.parsePair('foo(bar)//=>5').should.eql({

@@ -105,7 +105,7 @@
 
                             <tbody>
                                 {{#examples.examples}}
-                                <tr id="example-{{id}}">
+                                <tr id="example-{{identifier}}-{{id}}">
                                     <td>{{{input}}}</td>
                                     <td>{{{output}}}</td>
                                     <td></td>
@@ -127,7 +127,7 @@
                             </tr>
 
                             {{#benchmarks.benchmarks}}
-                            <tr id="perf-test-{{id}}">
+                            <tr id="perf-test-{{identifier}}-{{id}}">
                                 <td>{{{name}}}</td>
                                 <td></td>
                             </tr>
@@ -151,7 +151,7 @@
                             expect(result).toEqual({{{output}}});
                           });
 
-                          spec.exampleId = {{id}};
+                          spec.exampleId = '{{identifier}}-{{id}}';
                           spec.input = '{{input}}';
                           spec.output = '{{output}}';
                         }());
@@ -169,7 +169,7 @@
 
                           {{#benchmarks}}
                           new Benchmark('{{name}}', {
-                              id: {{id}},
+                              id: '{{identifier}}-{{id}}',
                               fn: function() {
                                   {{{impl}}};
                               }

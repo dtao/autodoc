@@ -111,7 +111,7 @@
           return null;
         }
 
-        var name        = Breakneck.getIdentifierName(fn[0]),
+        var name        = Breakneck.parseName(Breakneck.getIdentifierName(fn[0])),
             description = markdownParser.parse(doc.description),
             params      = Breakneck.getParams(doc),
             returns     = Breakneck.getReturns(doc),
@@ -121,7 +121,9 @@
             benchmarks  = Breakneck.getBenchmarks(doc);
 
         return {
-          name: name,
+          name: name.name,
+          shortName: name.shortName,
+          identifier: name.identifier,
           description: description,
           params: params,
           returns: returns,
@@ -168,6 +170,36 @@
 
       default: return null;
     }
+  };
+
+  /**
+   * @typedef {Object} NameInfo
+   * @property {string} name
+   * @property {string} shortName
+   */
+
+  /**
+   * Takes, e.g., 'Foo#bar' and returns { name: 'Foo#bar', shortName: 'bar' }
+   *
+   * @param {string} name
+   * @returns {NameInfo}
+   */
+  Breakneck.parseName = function(name) {
+    var parts = name.split(/[\.#]/),
+
+        // e.g., the short name for 'Lib.utils.func' should be 'func'
+        shortName = parts.pop(),
+
+        // a name like 'foo#bar#baz' wouldn't make sense; so we can safely join
+        // w/ '.' to recreate the namespace
+        namespace = parts.join('.');
+
+    return {
+      name: name,
+      shortName: shortName,
+      namespace: namespace,
+      identifier: name.replace(/[\.#]/g, '-')
+    };
   };
 
   /**
