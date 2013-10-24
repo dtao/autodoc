@@ -18,11 +18,16 @@ require('should');
 var packagePath = path.join(__dirname, '../package.json'),
     packageInfo = JSON.parse(fs.readFileSync(packagePath));
 
+function split(str) {
+  return str.split(/,\s*/);
+}
+
 commander
   .version(packageInfo.version)
   .usage(packageInfo.name + ' [options] [file]')
   .option('-t, --test', 'Run tests')
   .option('-o, --output', 'Specify an output directory (defaults to "docs")')
+  .option('-j, --javascripts <sources>', 'Specify additional JS dependencies (comma-separated)', split)
   .parse(process.argv);
 
 function getLast(arr) {
@@ -76,8 +81,12 @@ if (commander.test) {
   return;
 }
 
+var templateData = Lazy(libraryInfo)
+  .extend({ javascripts: commander.javascripts })
+  .toObject();
+
 var template  = fs.readFileSync(path.join(__dirname, '../resources/docs.html.mustache'), 'utf-8'),
-    html      = Mustache.render(template, libraryInfo),
+    html      = Mustache.render(template, templateData),
     outputDir = commander.output || 'docs';
 
 function copyFile(source, destination) {
