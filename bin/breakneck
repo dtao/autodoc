@@ -18,7 +18,12 @@ global.marked   = marked;
 require('colors');
 require('should');
 
+var packagePath = path.join(__dirname, '../package.json'),
+    packageInfo = JSON.parse(fs.readFileSync(packagePath));
+
 commander
+  .version(packageInfo.version)
+  .usage(packageInfo.name + ' [options] [file]')
   .option('-t, --test', 'Run tests')
   .parse(process.argv);
 
@@ -72,5 +77,7 @@ if (commander.test) {
   runTests();
   return;
 }
+
+delete libraryInfo.code;
 
 console.log(JSON.stringify(libraryInfo, null, 2));
