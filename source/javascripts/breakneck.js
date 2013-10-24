@@ -115,6 +115,7 @@
             description = markdownParser.parse(doc.description),
             params      = Breakneck.getParams(doc),
             returns     = Breakneck.getReturns(doc),
+            isCtor      = Breakneck.hasTag(doc, 'constructor'),
             signature   = Breakneck.getSignature(name, params),
             examples    = Breakneck.getExamples(doc),
             benchmarks  = Breakneck.getBenchmarks(doc);
@@ -124,6 +125,7 @@
           description: description,
           params: params,
           returns: returns,
+          isConstructor: isCtor,
           hasSignature: params.length > 0 || !!returns,
           signature: signature,
           examples: examples,
@@ -223,6 +225,17 @@
       description: returnTag.description || ''
     };
   };
+
+  /**
+   * Simply determines whether a doc has a tag or doesn't.
+   *
+   * @param {Object} doc The doclet to check.
+   * @param {string} tagName The tag name to look for.
+   * @returns {boolean} Whether or not the doclet has the tag.
+   */
+  Breakneck.hasTag = function(doc, tagName) {
+    return !!Lazy(doc.tags).findWhere({ title: tagName });
+  },
 
   /**
    * Produces a string representing the signature of a function.

@@ -76,6 +76,7 @@
 
                             </tbody>
 
+                            {{^isConstructor}}
                             <tfoot>
                                 {{#returns}}
                                 <tr>
@@ -85,6 +86,7 @@
                                 </tr>
                                 {{/returns}}
                             </tfoot>
+                            {{/isConstructor}}
                         </table>
                     </div>
                     {{/hasSignature}}
