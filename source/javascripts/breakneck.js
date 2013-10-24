@@ -127,9 +127,9 @@
           hasSignature: params.length > 0 || !!returns,
           signature: signature,
           examples: examples,
-          hasExamples: examples.length > 0,
+          hasExamples: examples.examples.length > 0,
           benchmarks: benchmarks,
-          hasBenchmarks: benchmarks.length > 0
+          hasBenchmarks: benchmarks.benchmarks.length > 0
         };
       })
       .compact()
@@ -280,9 +280,14 @@
   };
 
   /**
-   * @callback PairCallback
-   * @param {string} left
-   * @param {string} right
+   * @typedef PairInfo
+   * @property {string} left
+   * @property {string} right
+   */
+
+  /**
+   * @callback DataCallback
+   * @param {{preamble:string, pairs:Array.<PairInfo>}} data
    * @returns {*}
    */
 
@@ -293,29 +298,31 @@
    *
    * @param {Object} doc
    * @param {string} tagName
-   * @param {PairCallback} callback
+   * @param {DataCallback} callback
    * @returns {Array.<*>} An array of whatever the callback returns.
    */
-  Breakneck.splitCommentLines = function(doc, tagName, callback) {
-    var Lazy = context.Lazy,
-        tag  = Lazy(doc.tags).findWhere({ title: tagName });
+  Breakneck.parseCommentLines = function(doc, tagName, callback) {
+    var commentLines = Breakneck.getCommentLines(doc, tagName);
 
-    if (typeof tag === 'undefined') {
-      return [];
-    }
+    var initialLines = [],
+        pairs        = [];
 
-    return Lazy(tag.description.split('\n'))
-      .map(function(line) {
-        return line.match(/^(.*)\s*=>\s*(.*)$/);
-      })
-      .compact()
-      .map(function(match) {
-        return callback(
-          match[1],
-          match[2]
-        );
-      })
-      .toArray();
+    Lazy(commentLines)
+      .each(function(line) {
+        var pair = Breakneck.parsePair(line);
+
+        if (!pair && pairs.length === 0) {
+          initialLines.push(line);
+
+        } else if (pair) {
+          pairs.push(pair);
+        }
+      });
+
+    return callback({
+      preamble: initialLines.join('\n'),
+      pairs: pairs
+    });
   };
 
   /**
@@ -337,6 +344,25 @@
   };
 
   /**
+   * Given a line like 'input // => output', parses this into a { left, right } pair.
+   *
+   * @param {string} line
+   * @returns {PairInfo|null}
+   */
+  Breakneck.parsePair = function(line) {
+    var parts = line.match(/^(.*)\s*\/\/[ ]*(?:=>)?\s*(.*)$/);
+
+    if (!parts) {
+      return null;
+    }
+
+    return {
+      left: trim(parts[1]),
+      right: trim(parts[2])
+    };
+  };
+
+  /**
    * @typedef {Object} ExampleInfo
    * @property {number} id
    * @property {string} input
@@ -344,39 +370,31 @@
    */
 
   /**
-   * Produces an array of { id, input, output } objects representing simple examples of a function.
-   *
-   * @param {Object} doc
-   * @returns {Array.<ExampleInfo>}
+   * @typedef {Object} ExampleCollection
+   * @property {string} setup
+   * @property {Array.<ExampleInfo>} examples
    */
-  Breakneck.getExamples = function(doc) {
-    var Lazy = context.Lazy;
-
-    var commentLines = Breakneck.getCommentLines(doc, 'examples');
-
-    return Lazy(commentLines)
-      .map(Breakneck.parseExample)
-      .compact()
-      .toArray();
-  };
 
   /**
-   * Given a line like 'input => output', parses this into a { id, input, output } object.
+   * Produces a { setup, examples } object providing some examples of a function.
    *
-   * @param {string} line
-   * @returns {ExampleInfo|null}
+   * @param {Object} doc
+   * @returns {ExampleCollection}
    */
-  Breakneck.parseExample = function(line) {
-    var parts = line.match(/^(.*)\s*=>\s*(.*)$/);
-
-    if (!parts) {
-      return null;
-    }
-
-    return {
-      input: trim(parts[1]),
-      output: trim(parts[2])
-    };
+  Breakneck.getExamples = function(doc) {
+    var exampleIdCounter = 1;
+    return Breakneck.parseCommentLines(doc, 'examples', function(data) {
+      return {
+        setup: data.preamble,
+        examples: Lazy(data.pairs).map(function(pair) {
+          return {
+            id: exampleIdCounter++,
+            input: pair.left,
+            output: pair.right
+          };
+        }).toArray()
+      };
+    });
   };
 
   /**
@@ -387,18 +405,29 @@
    */
 
   /**
-   * Produces an array of { id, name, impl } objects representing benchmarks for a function.
+   * @typedef {Object} BenchmarkCollection
+   * @property {string} setup
+   * @property {Array.<BenchmarkInfo>} benchmarks
+   */
+
+  /**
+   * Produces a { setup, benchmarks } object providing some benchmarks for a function.
    *
    * @param {Object} doc
-   * @returns {Array.<BenchmarkInfo>}
+   * @returns {BenchmarkCollection}
    */
   Breakneck.getBenchmarks = function(doc) {
     var benchmarkIdCounter = 1;
-    return Breakneck.splitCommentLines(doc, 'benchmarks', function(left, right) {
+    return Breakneck.parseCommentLines(doc, 'benchmarks', function(data) {
       return {
-        id: benchmarkIdCounter++,
-        name: left,
-        impl: right
+        setup: data.preamble,
+        benchmarks: Lazy(data.pairs).map(function(pair) {
+          return {
+            id: benchmarkIdCounter++,
+            impl: pair.left,
+            name: pair.right
+          };
+        }).toArray()
       };
     });
   };

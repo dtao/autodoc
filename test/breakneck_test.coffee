@@ -21,17 +21,33 @@ describe 'Breakneck', ->
       node = parse('foo.bar = function() {}')
       Breakneck.getIdentifierName(node).should.eql('foo.bar')
 
-  describe 'parseExample', ->
-    it 'splits a line across the string "=>"', ->
-      Breakneck.parseExample('foo(bar)=>5').should.eql({
+    it 'replaces ".prototype." with "#"', ->
+      node = parse('Foo.prototype.bar = function() {}')
+      Breakneck.getIdentifierName(node).should.eql('Foo#bar')
+
+  describe 'parsePair', ->
+    it 'splits a line across the string "//=>"', ->
+      Breakneck.parsePair('foo(bar)//=>5').should.eql({
         input: 'foo(bar)'
         output: '5'
       })
 
     it 'trims leading and trailing whitespace from each side', ->
-      Breakneck.parseExample(' bar(baz) => 10 ').should.eql({
+      Breakneck.parsePair(' bar(baz) //=> 10 ').should.eql({
         input: 'bar(baz)'
         output: '10'
+      })
+
+    it 'allows whitespace between the // and =>', ->
+      Breakneck.parsePair('foo // => bar').should.eql({
+        input: 'foo'
+        output: 'bar'
+      })
+
+    it "doesn't actually require a '=>' at all", ->
+      Breakneck.parsePair('foo // bar').should.eql({
+        input: 'foo'
+        output: 'bar'
       })
 
   describe 'parseComment', ->
