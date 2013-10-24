@@ -102,7 +102,7 @@
         // Attempt to parse the comment. If it can't be parsed, or it appears to
         // be basically empty, then skip it.
         var doc = Breakneck.parseComment(comment, commentParser);
-        if (typeof doc === 'undefined' || (!doc.description && (!doc.examples || doc.examples.length === 0))) {
+        if (typeof doc === 'undefined' || !doc.description) {
           return null;
         }
 
