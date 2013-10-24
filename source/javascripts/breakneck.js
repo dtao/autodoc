@@ -32,7 +32,15 @@
     // in the code (this is so that we can associate each function with its
     // accompanying doc comments, if any).
     var functions = Lazy(ast.body)
-      .where({ type: 'FunctionDeclaration' })
+      .filter(function(node) {
+        if (node.type === 'FunctionDeclaration') {
+          return true;
+        }
+        if (node.type === 'AssignmentExpression' && node.right.type === 'FunctionExpression') {
+          return true;
+        }
+        return false;
+      })
       .groupBy(function(node) {
         return node.loc.start.line;
       })
@@ -56,7 +64,7 @@
           return null;
         }
 
-        var name        = fn[0].id.name,
+        var name        = Breakneck.getIdentifier(fn[0]).name,
             description = markdownParser.parse(doc.description),
             params      = Breakneck.getParams(doc),
             returns     = Breakneck.getReturns(doc),
@@ -90,6 +98,21 @@
       code: code,
       docs: docs
     };
+  };
+
+  /**
+   * Gets an identifier from a node.
+   *
+   * @param {Object} object
+   * @return {Object}
+   */
+  Breakneck.getIdentifier = function(node) {
+    switch (node.type) {
+      case 'Identifier': return node;
+      case 'MemberExpression': return Breakneck.getIdentifier(node.property);
+      case 'FunctionDeclaration': return node.id;
+      default: return null;
+    }
   };
 
   /**
