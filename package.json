@@ -21,7 +21,7 @@
   "dependencies": {
     "colors": "*",
     "commander": "*",
-    "doctrine": "*",
+    "doctrine": "git://github.com/dtao/doctrine.git",
     "esprima": "*",
     "lazy.js": ">= 0.1.1",
     "marked": "*",
