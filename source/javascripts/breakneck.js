@@ -64,7 +64,7 @@
           return null;
         }
 
-        var name        = Breakneck.getIdentifier(fn[0]).name,
+        var name        = Breakneck.getIdentifierName(fn[0]),
             description = markdownParser.parse(doc.description),
             params      = Breakneck.getParams(doc),
             returns     = Breakneck.getReturns(doc),
@@ -101,16 +101,22 @@
   };
 
   /**
-   * Gets an identifier from a node.
+   * Gets the name of whatever identifier is associated with this node (if any).
    *
    * @param {Object} object
    * @return {Object}
    */
-  Breakneck.getIdentifier = function(node) {
+  Breakneck.getIdentifierName = function(node) {
     switch (node.type) {
-      case 'Identifier': return node;
-      case 'MemberExpression': return Breakneck.getIdentifier(node.property);
-      case 'FunctionDeclaration': return node.id;
+      case 'Identifier': return node.name;
+      case 'AssignmentExpression': return Breakneck.getIdentifierName(node.left);
+      case 'MemberExpression': return Breakneck.getIdentifierName(node.property);
+      case 'FunctionDeclaration': return node.id.name;
+      case 'VariableDeclaration': return node.declarations[0].id.name;
+      case 'VariableDeclarator': return node.id.name;
+
+      case 'ExpressionStatement': return Breakneck.getIdentifierName(node.expression);
+
       default: return null;
     }
   };
