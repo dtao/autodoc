@@ -19,6 +19,12 @@
 
     <script type="text/javascript">
       var benchmarks = {};
+
+      if (typeof window.assertEquality === 'undefined') {
+        window.assertEquality = function(actual, expected) {
+          expect(expected).toEqual(actual);
+        };
+      }
     </script>
 </head>
 
@@ -152,7 +158,7 @@
                         (function() {
                           var spec = it('returns {{output}} for {{input}}', function() {
                             var result = {{{input}}};
-                            expect(result).toEqual({{{output}}});
+                            assertEquality(result, {{{output}}});
                           });
 
                           spec.exampleId = '{{identifier}}-{{id}}';
