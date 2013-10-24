@@ -41,26 +41,26 @@ describe 'Breakneck', ->
   describe 'parsePair', ->
     it 'splits a line across the string "//=>"', ->
       Breakneck.parsePair('foo(bar)//=>5').should.eql({
-        input: 'foo(bar)'
-        output: '5'
+        left: 'foo(bar)'
+        right: '5'
       })
 
     it 'trims leading and trailing whitespace from each side', ->
       Breakneck.parsePair(' bar(baz) //=> 10 ').should.eql({
-        input: 'bar(baz)'
-        output: '10'
+        left: 'bar(baz)'
+        right: '10'
       })
 
     it 'allows whitespace between the // and =>', ->
       Breakneck.parsePair('foo // => bar').should.eql({
-        input: 'foo'
-        output: 'bar'
+        left: 'foo'
+        right: 'bar'
       })
 
     it "doesn't actually require a '=>' at all", ->
       Breakneck.parsePair('foo // bar').should.eql({
-        input: 'foo'
-        output: 'bar'
+        left: 'foo'
+        right: 'bar'
       })
 
   describe 'parseComment', ->
