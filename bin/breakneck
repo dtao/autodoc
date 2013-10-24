@@ -24,7 +24,7 @@ function split(str) {
 
 commander
   .version(packageInfo.version)
-  .usage(packageInfo.name + ' [options] [file]')
+  .usage('[options] [file]')
   .option('-t, --test', 'Run tests')
   .option('-o, --output', 'Specify an output directory (defaults to "docs")')
   .option('-j, --javascripts <sources>', 'Specify additional JS dependencies (comma-separated)', split)
