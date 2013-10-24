@@ -157,7 +157,7 @@
     switch (node.type) {
       case 'Identifier': return node.name;
       case 'AssignmentExpression': return Breakneck.getIdentifierName(node.left);
-      case 'MemberExpression': return Breakneck.getIdentifierName(node.property);
+      case 'MemberExpression': return (Breakneck.getIdentifierName(node.object) + '.' + Breakneck.getIdentifierName(node.property)).replace(/\.prototype\./, '#');
       case 'FunctionDeclaration': return node.id.name;
       case 'VariableDeclaration': return node.declarations[0].id.name;
       case 'VariableDeclarator': return node.id.name;

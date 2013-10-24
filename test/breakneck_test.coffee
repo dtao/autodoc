@@ -19,7 +19,7 @@ describe 'Breakneck', ->
 
     it 'gets the name of an object member assigned a function expression', ->
       node = parse('foo.bar = function() {}')
-      Breakneck.getIdentifierName(node).should.eql('bar')
+      Breakneck.getIdentifierName(node).should.eql('foo.bar')
 
   describe 'parseExample', ->
     it 'splits a line across the string "=>"', ->
