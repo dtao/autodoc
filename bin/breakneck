@@ -1,19 +1,15 @@
 #!/usr/bin/env node
 
+global.doctrine = require('doctrine');
+global.esprima  = require('esprima');
+global.Lazy     = require('lazy.js');
+global.marked   = require('marked');
+
 var fs          = require('fs'),
     path        = require('path'),
-    esprima     = require('esprima'),
-    doctrine    = require('doctrine'),
-    marked      = require('marked'),
-    Lazy        = require('lazy.js'),
     Breakneck   = require(path.join(__dirname, '../source/javascripts/breakneck')),
     stringTable = require('string-table'),
     commander   = require('commander');
-
-global.doctrine = doctrine;
-global.esprima  = esprima;
-global.Lazy     = Lazy;
-global.marked   = marked;
 
 require('colors');
 require('should');

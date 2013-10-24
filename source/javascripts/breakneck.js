@@ -1,5 +1,48 @@
 (function(context) {
 
+  var Lazy = context.Lazy;
+
+  // Define a custom type of sequence that recursively walks the nodes of an
+  // AST.
+  Lazy.Sequence.define('nodes', {
+    each: function(fn) {
+      var self = this;
+
+      self.parent.each(function(node) {
+        if (fn(node) === false) {
+          return false;
+        }
+
+        var children = self.getNodeChildren(node);
+        if (children.length > 0) {
+          return Lazy(children).nodes().each(fn);
+        }
+      });
+    },
+
+    getNodeChildren: function(node) {
+      switch (node.type) {
+        case 'FunctionDeclaration':
+        case 'FunctionExpression':
+          return [node.body];
+
+        case 'BlockStatement':
+          return node.body;
+
+        case 'ExpressionStatement':
+          return [node.expression];
+
+        case 'AssignmentExpression':
+          return node.right.type === 'FunctionExpression' ? [node.right] : [];
+
+        case 'CallExpression':
+          return node.callee.type === 'FunctionExpression' ? [node.callee] : [];
+
+        default: return [];
+      }
+    }
+  });
+
   /**
    * @namespace Breakneck
    */
@@ -19,8 +62,7 @@
 
     var codeParser     = options.codeParser     || context.esprima,
         commentParser  = options.commentParser  || context.doctrine,
-        markdownParser = options.markdownParser || defaultMarkdownParser(),
-        Lazy           = context.Lazy;
+        markdownParser = options.markdownParser || defaultMarkdownParser();
 
     // Generate the abstract syntax tree.
     var ast = codeParser.parse(code, {
@@ -31,7 +73,7 @@
     // Extract all of the function from the AST, and map them to their location
     // in the code (this is so that we can associate each function with its
     // accompanying doc comments, if any).
-    var functions = Lazy(ast.body)
+    var functions = Lazy(ast.body).nodes()
       .filter(function(node) {
         if (node.type === 'FunctionDeclaration') {
           return true;
@@ -60,7 +102,7 @@
         // Attempt to parse the comment. If it can't be parsed, or it appears to
         // be basically empty, then skip it.
         var doc = Breakneck.parseComment(comment, commentParser);
-        if (typeof doc === 'undefined' || (!doc.description && doc.examples.length === 0)) {
+        if (typeof doc === 'undefined' || (!doc.description && (!doc.examples || doc.examples.length === 0))) {
           return null;
         }
 
@@ -373,8 +415,14 @@
       case 'AllLiteral':
         return '*';
 
+      case 'OptionalType':
+        return Breakneck.formatType(type.expression) + '?';
+
+      case 'FunctionType':
+        return 'function(' + Lazy(type.params).map(Breakneck.formatType).join(', ') + '):' + Breakneck.formatType(type.result);
+
       default:
-        throw 'Unable to format type ' + type.type + '!';
+        throw 'Unable to format type ' + type.type + '!\n\n' + JSON.stringify(type, null, 2);
     }
   };
 
