@@ -1,12 +1,14 @@
 #!/usr/bin/env node
 
 var fs          = require('fs'),
+    path        = require('path'),
     esprima     = require('esprima'),
     doctrine    = require('doctrine'),
     marked      = require('marked'),
     Lazy        = require('lazy.js'),
-    Breakneck   = require('breakneck'),
-    stringTable = require('string-table');
+    Breakneck   = require(path.join(__dirname, '../source/javascripts/breakneck')),
+    stringTable = require('string-table'),
+    commander   = require('commander');
 
 global.doctrine = doctrine;
 global.esprima  = esprima;
@@ -16,6 +18,10 @@ global.marked   = marked;
 require('colors');
 require('should');
 
+commander
+  .option('-t, --test', 'Run tests')
+  .parse(process.argv);
+
 function getLast(arr) {
   return arr[arr.length - 1];
 }
@@ -24,38 +30,47 @@ var file = fs.readFileSync(getLast(process.argv), 'utf-8');
 
 var libraryInfo = Breakneck.parse(file);
 
-// Evaluate the file
-eval(file);
+function runTests() {
+  // Evaluate the file
+  eval(file);
 
-// Run the tests
-Lazy(libraryInfo.docs)
-  .filter(function(doc) { return doc.hasExamples; })
-  .each(function(doc) {
+  // Run the tests
+  Lazy(libraryInfo.docs)
+    .filter(function(doc) { return doc.hasExamples; })
+    .each(function(doc) {
 
-    console.log(doc.name);
+      console.log(doc.name);
 
-    var outcomes = [];
-    Lazy(doc.examples).each(function(example) {
-      var outcome = {
-        'case': example.input,
-        'expected': example.output
-      };
+      var outcomes = [];
+      Lazy(doc.examples).each(function(example) {
+        var outcome = {
+          'case': example.input,
+          'expected': example.output
+        };
 
-      try {
-        var actual   = eval(example.input),
-            expected = eval(example.output);
+        try {
+          var actual   = eval(example.input),
+              expected = eval(example.output);
 
-        actual.should.eql(expected);
+          actual.should.eql(expected);
 
-        outcome.result = 'PASS'.green;
+          outcome.result = 'PASS'.green;
 
-      } catch (e) {
-        outcome.result = e.message.red;
-      }
+        } catch (e) {
+          outcome.result = e.message.red;
+        }
 
-      outcomes.push(outcome);
+        outcomes.push(outcome);
+      });
+
+      console.log(stringTable.create(outcomes));
+
     });
+}
 
-    console.log(stringTable.create(outcomes));
+if (commander.test) {
+  runTests();
+  return;
+}
 
-  });
+console.log(JSON.stringify(libraryInfo, null, 2));

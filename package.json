@@ -20,11 +20,12 @@
   },
   "dependencies": {
     "colors": "*",
+    "commander": "*",
     "doctrine": "*",
     "esprima": "*",
     "lazy.js": ">= 0.1.1",
     "marked": "*",
-    "string-table": ">= 0.1.2"
+    "string-table": ">= 0.1.5"
   },
   "devDependencies": {
     "coffee-script": ">= 1.6.1",
