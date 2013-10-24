@@ -9,7 +9,8 @@ var fs          = require('fs'),
     path        = require('path'),
     Breakneck   = require(path.join(__dirname, '../source/javascripts/breakneck')),
     stringTable = require('string-table'),
-    commander   = require('commander');
+    commander   = require('commander'),
+    Mustache    = require('mustache');
 
 require('colors');
 require('should');
@@ -21,6 +22,7 @@ commander
   .version(packageInfo.version)
   .usage(packageInfo.name + ' [options] [file]')
   .option('-t, --test', 'Run tests')
+  .option('-o, --output', 'Specify an output directory (defaults to "docs")')
   .parse(process.argv);
 
 function getLast(arr) {
@@ -74,6 +76,16 @@ if (commander.test) {
   return;
 }
 
-delete libraryInfo.code;
+var template  = fs.readFileSync(path.join(__dirname, '../resources/docs.html.mustache'), 'utf-8'),
+    html      = Mustache.render(template, libraryInfo),
+    outputDir = commander.output || 'docs';
 
-console.log(JSON.stringify(libraryInfo, null, 2));
+function copyFile(source, destination) {
+  fs.createReadStream(source).pipe(fs.createWriteStream(destination));
+}
+
+fs.writeFileSync(path.join(outputDir, 'index.html'), html);
+copyFile(path.join(__dirname, '../resources/docs.css'), path.join(outputDir, 'docs.css'));
+copyFile(path.join(__dirname, '../resources/docs.js'), path.join(outputDir, 'docs.js'));
+
+console.log('Docs written to ' + outputDir + '.');

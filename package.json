@@ -25,6 +25,7 @@
     "esprima": "*",
     "lazy.js": ">= 0.1.1",
     "marked": "*",
+    "mustache": ">= 0.7.2",
     "should": ">= 1.3.0",
     "string-table": ">= 0.1.5"
   },

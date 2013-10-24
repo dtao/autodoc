@@ -1,10 +1,3 @@
-//= require lib/jasmine
-//= require lib/benchmark
-//= require lib/jquery
-//= require lib/lazy
-//= require lib/highcharts
-//= require lib/hightables
-
 $(document).ready(function() {
   Highcharts.setOptions({
     colors: getColors()
@@ -13,11 +6,9 @@ $(document).ready(function() {
   function getColors() {
     var palette = $('#color-reference');
 
-    var colors = Lazy(['primary', 'info', 'success', 'warning', 'danger', 'default'])
-      .map(function(brand) {
-        return $('.' + brand, palette).css('background-color');
-      })
-      .toArray();
+    var colors = _.map(['primary', 'info', 'success', 'warning', 'danger', 'default'], function(brand) {
+      return $('.' + brand, palette).css('background-color');
+    });
 
     return colors;
   }
@@ -48,7 +39,7 @@ $(document).ready(function() {
         matchingRow.addClass('danger');
 
         var errorsList = $('<ul>').appendTo(resultCell);
-        Lazy(spec.results().getItems())
+        _(spec.results().getItems())
           .filter(function(item) { return item.passed && !item.passed(); })
           .pluck('message')
           .each(function(errorMessage) {
@@ -98,11 +89,11 @@ $(document).ready(function() {
     var suite  = new Benchmark.Suite();
 
     // Get the method name from the section heading.
-    var section = $(this).closest('section');
-    var method  = $('h1', section).text();
+    var section  = $(this).closest('section');
+    var methodId = section.attr('id');
 
     // Gather up all the benchmarks we want to run for this method.
-    Lazy(benchmarks[method]).each(function(benchmark, name) {
+    _.each(benchmarks[methodId], function(benchmark, name) {
       suite.add(benchmark);
     });
 
