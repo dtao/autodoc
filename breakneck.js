@@ -113,8 +113,8 @@
 
         var name        = Breakneck.parseName(Breakneck.getIdentifierName(fn[0])),
             description = markdownParser.parse(doc.description),
-            params      = Breakneck.getParams(doc),
-            returns     = Breakneck.getReturns(doc),
+            params      = Breakneck.getParams(doc, markdownParser),
+            returns     = Breakneck.getReturns(doc, markdownParser),
             isCtor      = Breakneck.hasTag(doc, 'constructor'),
             signature   = Breakneck.getSignature(name, params),
             examples    = Breakneck.getExamples(doc),
@@ -141,7 +141,7 @@
 
     // This is kind of stupid... for now, I'm just assuming the library will
     // have a @fileOverview tag and @name tag in the header comments.
-    var libraryInfo = Breakneck.getLibraryInfo(ast.comments, commentParser);
+    var libraryInfo = Breakneck.getLibraryInfo(ast.comments, commentParser, markdownParser);
 
     return {
       name: libraryInfo.name,
@@ -203,6 +203,11 @@
   };
 
   /**
+   * @typedef {Object} MarkdownParser
+   * @property {function(string):string} parse
+   */
+
+  /**
    * @typedef {Object} ParameterInfo
    * @property {string} name
    * @property {string} type
@@ -214,16 +219,17 @@
    * parameters of a function definition.
    *
    * @param {Object} doc The doclet for the function.
+   * @param {MarkdownParser} markdownParser A Markdown parser.
    * @returns {Array.<ParameterInfo>} An array of { name, type, description } objects.
    */
-  Breakneck.getParams = function(doc) {
+  Breakneck.getParams = function(doc, markdownParser) {
     return Lazy(doc.tags)
       .where({ title: 'param' })
       .map(function(tag) {
         return {
           name: tag.name,
           type: Breakneck.formatType(tag.type),
-          description: tag.description || ''
+          description: markdownParser.parse(tag.description || '')
         };
       })
       .toArray();
@@ -240,9 +246,10 @@
    * function definition.
    *
    * @param {Object} doc The doclet for the function.
+   * @param {MarkdownParser} markdownParser A Markdown parser.
    * @returns {ReturnInfo} A { type, description } object.
    */
-  Breakneck.getReturns = function(doc) {
+  Breakneck.getReturns = function(doc, markdownParser) {
     var returnTag = Lazy(doc.tags).findWhere({ title: 'returns' });
 
     if (typeof returnTag === 'undefined') {
@@ -251,7 +258,7 @@
 
     return {
       type: Breakneck.formatType(returnTag.type),
-      description: returnTag.description || ''
+      description: markdownParser.parse(returnTag.description || '')
     };
   };
 
@@ -288,9 +295,10 @@
    *
    * @param {Array.<string>} comments
    * @param {Object} commentParser
+   * @param {Object} markdownParser
    * @returns {LibraryInfo}
    */
-  Breakneck.getLibraryInfo = function(comments, commentParser) {
+  Breakneck.getLibraryInfo = function(comments, commentParser, markdownParser) {
     var docWithFileOverview = Lazy(comments)
       .map(function(comment) {
         return Breakneck.parseComment(comment, commentParser);
@@ -315,7 +323,7 @@
 
     return {
       name: libraryName,
-      description: marked(libraryDesc)
+      description: markdownParser.parse(libraryDesc)
     };
   };
 
@@ -525,7 +533,9 @@
   function defaultMarkdownParser() {
     return {
       parse: function(markdown) {
-        return context.marked(markdown);
+        return context.marked(markdown).replace(/\{@link ([^\}]*)}/g, function(string, match) {
+          return '<a href="#' + match.replace(/[\.#]/g, '-') + '">' + match + '</a>';
+        });
       }
     };
   }
