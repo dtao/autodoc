@@ -95,7 +95,11 @@ var template = fs.readFileSync(path.join(__dirname, '../resources/docs.html.must
     docsHtml = Mustache.render(template, templateData);
 
 function copyFile(source, destination) {
-  fs.createReadStream(source).pipe(fs.createWriteStream(destination));
+  // Don't obliterate files that are already there.
+  // TODO: Think about this a bit more.
+  if (!fs.existsSync(destination)) {
+    fs.createReadStream(source).pipe(fs.createWriteStream(destination));
+  }
 }
 
 if (!fs.existsSync(outputDir)) {
