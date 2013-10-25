@@ -16,11 +16,12 @@ $(document).ready(function() {
         var resultCell = $('td:last-child', matchingRow);
 
         if (spec.results().passed()) {
-            resultCell.text('Passed');
-            return;
+          matchingRow.addClass('success');
+          resultCell.text('Passed');
+          return;
         }
 
-        matchingRow.addClass('danger');
+        matchingRow.addClass('failure');
 
         var errorsList = $('<ul>').appendTo(resultCell);
         _(spec.results().getItems())
