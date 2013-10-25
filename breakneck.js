@@ -253,7 +253,7 @@
     var returnTag = Lazy(doc.tags).findWhere({ title: 'returns' });
 
     if (typeof returnTag === 'undefined') {
-      return {};
+      return null;
     }
 
     return {
