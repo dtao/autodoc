@@ -124,6 +124,7 @@
           name: name.name,
           shortName: name.shortName,
           identifier: name.identifier,
+          namespace: name.namespace,
           description: description,
           params: params,
           returns: returns,
