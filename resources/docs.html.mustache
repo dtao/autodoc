@@ -106,6 +106,12 @@
                     {{#hasExamples}}
                     <div class="examples">
                         <h3>Examples</h3>
+
+                        {{#examples}}
+                        {{#setup}}
+                        <pre><code>// setup code&#10;{{{setup}}}</code></pre>
+
+                        {{/setup}}
                         <table id="{{name}}-examples">
                             <thead>
                                 <tr>
@@ -116,21 +122,28 @@
                             </thead>
 
                             <tbody>
-                                {{#examples.examples}}
+                                {{#examples}}
                                 <tr id="example-{{identifier}}-{{id}}">
                                     <td>{{{input}}}</td>
                                     <td>{{{output}}}</td>
                                     <td></td>
                                 </tr>
-                                {{/examples.examples}}
+                                {{/examples}}
                             </tbody>
                         </table>
+                        {{/examples}}
                     </div>
                     {{/hasExamples}}
 
                     {{#hasBenchmarks}}
                     <div class="perf">
                         <h3>Benchmarks</h3>
+
+                        {{#benchmarks}}
+                        {{#setup}}
+                        <pre><code>// setup code&#10;{{{setup}}}</code></pre>
+
+                        {{/setup}}
                         <table id="{{identifier}}-perf-tests">
                             <!-- Gah, HighTables is stupid... doesn't account for <thead> :( -->
                             <tr>
@@ -138,15 +151,16 @@
                                 <th>Ops/second</th>
                             </tr>
 
-                            {{#benchmarks.benchmarks}}
+                            {{#benchmarks}}
                             <tr id="perf-test-{{identifier}}-{{id}}">
                                 <td>{{{name}}}</td>
                                 <td></td>
                             </tr>
-                            {{/benchmarks.benchmarks}}
+                            {{/benchmarks}}
                         </table>
 
                         <button>Run performance benchmarks</button>
+                        {{/benchmarks}}
                     </div>
                     {{/hasBenchmarks}}
 
