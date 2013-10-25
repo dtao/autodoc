@@ -1,4 +1,10 @@
 $(document).ready(function() {
+  function highlightCode() {
+    $('pre code').each(function() {
+      $(this).html(hljs.highlight('javascript', this.textContent).value);
+    });
+  }
+
   function runSpecs() {
     var failureNotices = $('#spec-failures');
 
@@ -97,6 +103,7 @@ $(document).ready(function() {
     suite.run({ async: true });
   });
 
+  highlightCode();
   runSpecs();
 });
 

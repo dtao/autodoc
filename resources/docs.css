@@ -634,7 +634,6 @@ code {
 
 pre {
   display: block;
-  padding: 10px;
   margin: 0 0 10.5px;
   font-size: 14px;
   line-height: 1.428571429;
@@ -649,12 +648,7 @@ pre.prettyprint {
   margin-bottom: 21px; }
 
 pre code {
-  padding: 0;
-  font-size: inherit;
-  color: inherit;
-  white-space: pre-wrap;
-  background-color: transparent;
-  border: 0; }
+  white-space: pre-wrap; }
 
 .pre-scrollable {
   max-height: 340px;
