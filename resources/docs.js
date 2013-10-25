@@ -116,3 +116,8 @@ $(document).ready(function() {
 $(window).load(function() {
   window.parent.postMessage('loaded', window.location.origin);
 });
+
+$(window).error(function(e) {
+  var failureNotices = $('#spec-failures');
+  $('<p>').text(e.message).appendTo(failureNotices);
+});
