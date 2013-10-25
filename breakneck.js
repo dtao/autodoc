@@ -116,7 +116,7 @@
             params      = Breakneck.getParams(doc, markdownParser),
             returns     = Breakneck.getReturns(doc, markdownParser),
             isCtor      = Breakneck.hasTag(doc, 'constructor'),
-            signature   = Breakneck.getSignature(name, params),
+            signature   = Breakneck.getSignature(name.shortName, params),
             examples    = Breakneck.getExamples(doc),
             benchmarks  = Breakneck.getBenchmarks(doc);
 
@@ -281,7 +281,7 @@
    * @returns {string}
    */
   Breakneck.getSignature = function(name, params) {
-    return 'function(' + Lazy(params).pluck('name').join(', ') + ')';
+    return 'function ' + name + '(' + Lazy(params).pluck('name').join(', ') + ')';
   };
 
   /**
