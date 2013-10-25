@@ -84,18 +84,19 @@ if (commander.test) {
 
 var groupedByNamespace = Lazy(libraryInfo.docs)
   .groupBy('namespace')
-  .filter(function(group) {
-    // Only include specified namespaces, if the option has been provided.
-    return !commander.namespaces || Lazy(commander.namespaces).contains(group[0]);
-  })
-  .map(function(group) {
+  .toObject();
+
+// Only include specified namespaces, if the option has been provided.
+var namespaces = Lazy(commander.namespaces || Object.keys(groupedByNamespace))
+  .map(function(namespace) {
     // Find the corresponding constructor, if one exists.
-    var constructorMethod = Lazy(libraryInfo.docs).findWhere({ name: group[0] });
+    var constructorMethod = Lazy(libraryInfo.docs).findWhere({ name: namespace }),
+        members           = groupedByNamespace[namespace];
 
     return {
-      namespace: group[0],
+      namespace: namespace,
       constructorMethod: constructorMethod,
-      methods: group[1]
+      members: members
     };
   })
   .toArray();
@@ -103,7 +104,7 @@ var groupedByNamespace = Lazy(libraryInfo.docs)
 var templateData = Lazy(libraryInfo)
   .extend({
     javascripts: commander.javascripts,
-    namespaces: groupedByNamespace
+    namespaces: namespaces
   })
   .toObject();
 
