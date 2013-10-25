@@ -74,6 +74,11 @@ $(document).ready(function() {
       suite.add(benchmark);
     });
 
+    // Remove the current bar chart and clear any currently perf results,
+    // if we're re-running the benchmarks.
+    $('.bar-chart', section).remove();
+    $('.perf td:last-child', section).empty();
+
     // Populate the perf table as benchmarks are run.
     suite.on('cycle', function(e) {
       var benchmark = e.target;
