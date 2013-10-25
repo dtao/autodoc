@@ -85,9 +85,14 @@ var templateData = Lazy(libraryInfo)
   .extend({ javascripts: commander.javascripts })
   .toObject();
 
-var template  = fs.readFileSync(path.join(__dirname, '../resources/docs.html.mustache'), 'utf-8'),
-    html      = Mustache.render(template, templateData),
-    outputDir = commander.output || 'docs';
+var outputDir = commander.output || 'docs';
+
+if (fs.existsSync(path.join(outputDir, 'doc_helper.js'))) {
+  templateData.javascripts.push('doc_helper.js');
+}
+
+var template = fs.readFileSync(path.join(__dirname, '../resources/docs.html.mustache'), 'utf-8'),
+    docsHtml = Mustache.render(template, templateData);
 
 function copyFile(source, destination) {
   fs.createReadStream(source).pipe(fs.createWriteStream(destination));
@@ -97,9 +102,9 @@ if (!fs.existsSync(outputDir)) {
   fs.mkdirSync(outputDir);
 }
 
-fs.writeFileSync(path.join(outputDir, 'index.html'), html);
+fs.writeFileSync(path.join(outputDir, 'index.html'), docsHtml);
 copyFile(path.join(__dirname, '../resources/docs.css'), path.join(outputDir, 'docs.css'));
 copyFile(path.join(__dirname, '../resources/gears.gif'), path.join(outputDir, 'gears.gif'));
 copyFile(path.join(__dirname, '../resources/docs.js'), path.join(outputDir, 'docs.js'));
 
-console.log('Docs written to ' + outputDir + '.');
+console.log('Docs written to ' + outputDir + '/');
