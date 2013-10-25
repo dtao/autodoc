@@ -1,12 +1,4 @@
 $(document).ready(function() {
-  function showSection(section) {
-    // Hide all other sections.
-    $('section').hide();
-
-    // Show just the target section.
-    $(section).show();
-  }
-
   function runSpecs() {
     var failureNotices = $('#spec-failures');
 
@@ -56,18 +48,11 @@ $(document).ready(function() {
         parentSection = targetExample.closest('section');
 
     // Show the section where the example is located.
-    showSection(parentSection);
+    parentSection[0].scrollIntoView();
 
     // Highlight the example.
     targetExample.addClass('highlight');
     setTimeout(function() { targetExample.removeClass('highlight'); }, 750);
-  });
-
-  $(document).on('click', 'nav a', function(e) {
-    e.preventDefault();
-
-    var targetSection = $(this).attr('href');
-    showSection($(targetSection));
   });
 
   $(document).on('click', '.perf button', function() {
@@ -112,7 +97,6 @@ $(document).ready(function() {
     suite.run({ async: true });
   });
 
-  showSection($('section:first-of-type'));
   runSpecs();
 });
 
