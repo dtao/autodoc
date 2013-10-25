@@ -93,6 +93,10 @@ function copyFile(source, destination) {
   fs.createReadStream(source).pipe(fs.createWriteStream(destination));
 }
 
+if (!fs.existsSync(outputDir)) {
+  fs.mkdirSync(outputDir);
+}
+
 fs.writeFileSync(path.join(outputDir, 'index.html'), html);
 copyFile(path.join(__dirname, '../resources/docs.css'), path.join(outputDir, 'docs.css'));
 copyFile(path.join(__dirname, '../resources/gears.gif'), path.join(outputDir, 'gears.gif'));
