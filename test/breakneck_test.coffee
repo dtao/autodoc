@@ -1,8 +1,9 @@
 require('should')
 
+path      = require('path')
 sinon     = require('sinon')
 esprima   = require('esprima')
-Breakneck = require('../source/javascripts/breakneck.js')
+Breakneck = require(path.join(__dirname, '../breakneck.js'))
 
 describe 'Breakneck', ->
   describe 'getIdentifierName', ->
