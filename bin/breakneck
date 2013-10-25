@@ -27,6 +27,7 @@ commander
   .usage('[options] [file]')
   .option('-t, --test', 'Run tests')
   .option('-o, --output', 'Specify an output directory (defaults to "docs")')
+  .option('-n, --namespaces <namespaces>', 'Provide a comma-separated list of the namespaces to document (defaults to all, in alphabetical order)', split)
   .option('-j, --javascripts <sources>', 'Specify additional JS dependencies (comma-separated)', split)
   .parse(process.argv);
 
@@ -81,8 +82,29 @@ if (commander.test) {
   return;
 }
 
+var groupedByNamespace = Lazy(libraryInfo.docs)
+  .groupBy('namespace')
+  .filter(function(group) {
+    // Only include specified namespaces, if the option has been provided.
+    return !commander.namespaces || Lazy(commander.namespaces).contains(group[0]);
+  })
+  .map(function(group) {
+    // Find the corresponding constructor, if one exists.
+    var constructorMethod = Lazy(libraryInfo.docs).findWhere({ name: group[0] });
+
+    return {
+      namespace: group[0],
+      constructorMethod: constructorMethod,
+      methods: group[1]
+    };
+  })
+  .toArray();
+
 var templateData = Lazy(libraryInfo)
-  .extend({ javascripts: commander.javascripts })
+  .extend({
+    javascripts: commander.javascripts,
+    namespaces: groupedByNamespace
+  })
   .toObject();
 
 var outputDir = commander.output || 'docs';

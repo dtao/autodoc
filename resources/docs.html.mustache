@@ -46,9 +46,19 @@
             <div class="index">
                 <nav>
                     <ul>
-                        {{#docs}}
+                        {{#namespaces}}
+                        <li class="nav-header">
+                            {{#constructorMethod}}
+                            <a href="#{{identifier}}">{{name}}</a>
+                            {{/constructorMethod}}
+                            {{^constructorMethod}}
+                            {{namespace}}
+                            {{/constructorMethod}}
+                        </li>
+                        {{#methods}}
                         <li><a href="#{{identifier}}">{{shortName}}</a></li>
-                        {{/docs}}
+                        {{/methods}}
+                        {{/namespaces}}
                     </ul>
                 </nav>
             </div>
