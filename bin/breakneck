@@ -1,16 +1,16 @@
 #!/usr/bin/env node
 
-global.doctrine = require('doctrine');
-global.esprima  = require('esprima');
-global.Lazy     = require('lazy.js');
-global.marked   = require('marked');
+global.doctrine  = require('doctrine');
+global.esprima   = require('esprima');
+global.localLazy = require('lazy.js');
+global.marked    = require('marked');
 
-var fs          = require('fs'),
-    path        = require('path'),
-    Breakneck   = require(path.join(__dirname, '../breakneck')),
-    stringTable = require('string-table'),
-    commander   = require('commander'),
-    Mustache    = require('mustache');
+var fs           = require('fs'),
+    path         = require('path'),
+    Breakneck    = require(path.join(__dirname, '../breakneck')),
+    stringTable  = require('string-table'),
+    commander    = require('commander'),
+    Mustache     = require('mustache');
 
 require('colors');
 require('should');
@@ -25,10 +25,12 @@ function split(str) {
 commander
   .version(packageInfo.version)
   .usage('[options] [file]')
-  .option('-t, --test', 'Run tests')
-  .option('-o, --output', 'Specify an output directory (defaults to "docs")')
-  .option('-n, --namespaces <namespaces>', 'Provide a comma-separated list of the namespaces to document (defaults to all, in alphabetical order)', split)
-  .option('-j, --javascripts <sources>', 'Specify additional JS dependencies (comma-separated)', split)
+  .option('-t, --test', 'run tests')
+  .option('-p, --perf', 'run performance benchmarks')
+  .option('-v, --variable <name>', 'provide a name for the variable traditionally used by the library (e.g., jQuery, $, _) -- used for tests and benchmarks')
+  .option('-o, --output <destination>', 'specify an output directory (defaults to "docs")')
+  .option('-n, --namespaces <names>', 'provide a comma-separated list of the namespaces to document (defaults to all, in alphabetical order)', split)
+  .option('-j, --javascripts <sources>', 'specify additional JS dependencies (comma-separated)', split)
   .parse(process.argv);
 
 if (process.argv.length <= 2) {
@@ -40,23 +42,53 @@ function getLast(arr) {
   return arr[arr.length - 1];
 }
 
-var file = fs.readFileSync(getLast(process.argv), 'utf-8');
-
-var libraryInfo = Breakneck.parse(file);
+var filePath     = getLast(process.argv),
+    outputDir    = commander.output || 'docs',
+    javascripts  = commander.javascripts || [],
+    helperPath   = path.join(outputDir, 'doc_helper.js'),
+    helperExists = fs.existsSync(helperPath),
+    libraryInfo  = Breakneck.parse(fs.readFileSync(filePath, 'utf-8'));
 
 function runTests() {
-  // Evaluate the file
-  eval(file);
+  console.log("\n\n----- NOTE: This doesn't really work very well just yet :( -----\n\n");
+
+  // Load the file itself
+  if (commander.variable) {
+    eval('var ' + commander.variable + ' = require("' + filePath + '");');
+  } else {
+    require(filePath);
+  }
+
+  // Require doc_helper.js, if it exists
+  if (helperExists) {
+    // Need to eval here rather than use require, because otherwise Node will
+    // wrap it up in a closure. (Yeah, yeah, I know...)
+    eval(fs.readFileSync(helperPath, 'utf-8'));
+  }
+
+  if (typeof assertEquality !== 'function') {
+    assertEquality = function(actual, expected) {
+      (actual || '[null or undefined]').should.eql(expected);
+    };
+  }
 
   // Run the tests
-  Lazy(libraryInfo.docs)
+  localLazy(libraryInfo.docs)
     .filter(function(doc) { return doc.hasExamples; })
     .each(function(doc) {
 
-      console.log(doc.name);
+      console.log(doc.name + '\n');
 
       var outcomes = [];
-      Lazy(doc.examples).each(function(example) {
+
+      // Run any necessary setup code
+      // TODO: Think of a way to like put this in a closure or something...
+      eval(doc.examples.setup);
+
+      // Also display it, just because why not?
+      console.log(doc.examples.setup);
+
+      localLazy(doc.examples.examples).each(function(example) {
         var outcome = {
           'case': example.input,
           'expected': example.output
@@ -66,7 +98,7 @@ function runTests() {
           var actual   = eval(example.input),
               expected = eval(example.output);
 
-          actual.should.eql(expected);
+          assertEquality(actual, expected);
 
           outcome.result = 'PASS'.green;
 
@@ -77,9 +109,13 @@ function runTests() {
         outcomes.push(outcome);
       });
 
-      console.log(stringTable.create(outcomes));
+      console.log(stringTable.create(outcomes) + '\n');
 
     });
+}
+
+function runBenchmarks() {
+  console.log("\n\n----- Running benchmarks isn't implemented yet. -----\n\n");
 }
 
 if (commander.test) {
@@ -87,17 +123,20 @@ if (commander.test) {
   return;
 }
 
-var groupedByNamespace = Lazy(libraryInfo.docs)
+if (commander.perf) {
+  runBenchmarks();
+  return;
+}
+
+var groupedByNamespace = localLazy(libraryInfo.docs)
   .groupBy('namespace')
   .toObject();
 
-
-
 // Only include specified namespaces, if the option has been provided.
-var namespaces = Lazy(commander.namespaces || Object.keys(groupedByNamespace))
+var namespaces = localLazy(commander.namespaces || Object.keys(groupedByNamespace))
   .map(function(namespace) {
     // Find the corresponding constructor, if one exists.
-    var constructorMethod = Lazy(libraryInfo.docs).findWhere({ name: namespace }),
+    var constructorMethod = localLazy(libraryInfo.docs).findWhere({ name: namespace }),
         members           = groupedByNamespace[namespace];
 
     return {
@@ -108,16 +147,14 @@ var namespaces = Lazy(commander.namespaces || Object.keys(groupedByNamespace))
   })
   .toArray();
 
-var templateData = Lazy(libraryInfo)
+var templateData = localLazy(libraryInfo)
   .extend({
-    javascripts: commander.javascripts,
+    javascripts: javascripts,
     namespaces: namespaces
   })
   .toObject();
 
-var outputDir = commander.output || 'docs';
-
-if (fs.existsSync(path.join(outputDir, 'doc_helper.js'))) {
+if (helperExists) {
   templateData.javascripts.push('doc_helper.js');
 }
 
@@ -139,6 +176,6 @@ if (!fs.existsSync(outputDir)) {
 fs.writeFileSync(path.join(outputDir, 'index.html'), docsHtml);
 copyFile(path.join(__dirname, '../resources/docs.css'), path.join(outputDir, 'docs.css'));
 copyFile(path.join(__dirname, '../resources/gears.gif'), path.join(outputDir, 'gears.gif'));
-copyFile(path.join(__dirname, '../resources/docs.js'), path.join(outputDir, 'docs.js'), true);
+copyFile(path.join(__dirname, '../resources/docs.js'), path.join(outputDir, 'docs.js'));
 
 console.log('Docs written to ' + outputDir + '/');
