@@ -37,9 +37,6 @@
     <main>
         <header>
             <h1>{{name}}</h1>
-            <div class="description">
-                {{{description}}}
-            </div>
         </header>
 
         <!-- Notification area for failing specs -->
@@ -57,8 +54,12 @@
             </div>
 
             <article>
+                <section class="description">
+                    {{{description}}}
+                </section>
+
                 {{#docs}}
-                <section id="{{identifier}}">
+                <section class="method" id="{{identifier}}">
                     <h1>
                         {{shortName}}
                         <small>{{name}}</small>
