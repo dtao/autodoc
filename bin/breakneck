@@ -7,7 +7,7 @@ global.marked   = require('marked');
 
 var fs          = require('fs'),
     path        = require('path'),
-    Breakneck   = require(path.join(__dirname, '../source/javascripts/breakneck')),
+    Breakneck   = require(path.join(__dirname, '../breakneck')),
     stringTable = require('string-table'),
     commander   = require('commander'),
     Mustache    = require('mustache');

@@ -2,7 +2,7 @@
   "name": "breakneck",
   "version": "0.1.0",
   "description": "Auto-generate docs, specs, and benchmarks from JSDoc-style comments",
-  "main": "source/javascripts/breakneck.js",
+  "main": "breakneck.js",
   "bin": {
     "breakneck": "bin/breakneck"
   },
