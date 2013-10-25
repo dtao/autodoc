@@ -39,6 +39,12 @@ describe 'Breakneck', ->
     it 'also provides a convenient dash-separated identifier', ->
       Breakneck.parseName('Foo#bar').identifier.should.eql('Foo-bar')
 
+    it 'for constructors/namespaces, sets the name to the namespace', ->
+      Breakneck.parseName('Foo').name.should.eql('Foo')
+
+    it 'for constructors/namespaces, sets the identifier to the namespace', ->
+      Breakneck.parseName('Foo').identifier.should.eql('Foo')
+
   describe 'parsePair', ->
     it 'splits a line across the string "//=>"', ->
       Breakneck.parsePair('foo(bar)//=>5').should.eql({
