@@ -22,6 +22,9 @@
     <script type="text/javascript">
       var benchmarks = {};
 
+      // A client library may have defined a custom assertEquality method, e.g.
+      // in doc_helper.js; so we'll only use this default implementation if
+      // necessary.
       if (typeof window.assertEquality === 'undefined') {
         window.assertEquality = function(actual, expected) {
           expect(expected).toEqual(actual);
@@ -39,10 +42,11 @@
             </div>
         </header>
 
+        <!-- Notification area for failing specs -->
         <div id="spec-failures"></div>
 
-        <div class="columns">
-            <div class="left-column">
+        <div class="layout">
+            <div class="index">
                 <nav>
                     <ul>
                         {{#docs}}
@@ -52,7 +56,7 @@
                 </nav>
             </div>
 
-            <div class="right-column">
+            <article>
                 {{#docs}}
                 <section id="{{identifier}}">
                     <h1>
@@ -204,7 +208,7 @@
                     </script>
                 </section>
                 {{/docs}}
-            </div>
+            </article>
         </div>
     </main>
 </body>
