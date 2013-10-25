@@ -350,9 +350,9 @@
    * @returns {Array.<*>} An array of whatever the callback returns.
    */
   Breakneck.parseCommentLines = function(doc, tagName, callback) {
-    var commentLines = Breakneck.getCommentLines(doc, tagName);
-
-    var initialLines = [],
+    var comment      = Breakneck.getTagDescription(doc, tagName),
+        commentLines = comment.split('\n'),
+        initialLines = [],
         pairs        = [];
 
     Lazy(commentLines)
@@ -368,26 +368,27 @@
       });
 
     return callback({
+      content: comment,
       preamble: initialLines.join('\n'),
       pairs: pairs
     });
   };
 
   /**
-   * Gets the text from a given comment tag and splits it into lines.
+   * Gets the text from a given comment tag.
    *
    * @param {Object} doc
    * @param {string} tagName
-   * @returns {Array.<string>}
+   * @returns {string}
    */
-  Breakneck.getCommentLines = function(doc, tagName) {
+  Breakneck.getTagDescription = function(doc, tagName) {
     var tag = Lazy(doc.tags).findWhere({ title: tagName });
 
     if (typeof tag === 'undefined') {
-      return [];
+      return '';
     }
 
-    return tag.description.split('\n');
+    return tag.description;
   };
 
   /**
@@ -418,6 +419,7 @@
 
   /**
    * @typedef {Object} ExampleCollection
+   * @property {string} code
    * @property {string} setup
    * @property {Array.<ExampleInfo>} examples
    */
@@ -432,6 +434,7 @@
     var exampleIdCounter = 1;
     return Breakneck.parseCommentLines(doc, 'examples', function(data) {
       return {
+        code: data.content,
         setup: data.preamble,
         examples: Lazy(data.pairs).map(function(pair) {
           return {
@@ -453,6 +456,7 @@
 
   /**
    * @typedef {Object} BenchmarkCollection
+   * @property {string} code
    * @property {string} setup
    * @property {Array.<BenchmarkInfo>} benchmarks
    */
@@ -467,6 +471,7 @@
     var benchmarkIdCounter = 1;
     return Breakneck.parseCommentLines(doc, 'benchmarks', function(data) {
       return {
+        code: data.content,
         setup: data.preamble,
         benchmarks: Lazy(data.pairs).map(function(pair) {
           return {

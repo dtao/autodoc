@@ -108,10 +108,8 @@
                         <h3>Examples</h3>
 
                         {{#examples}}
-                        {{#setup}}
-                        <pre><code>// setup code&#10;{{{setup}}}</code></pre>
+                        <pre><code>{{{code}}}</code></pre>
 
-                        {{/setup}}
                         <table id="{{name}}-examples">
                             <thead>
                                 <tr>
@@ -140,10 +138,8 @@
                         <h3>Benchmarks</h3>
 
                         {{#benchmarks}}
-                        {{#setup}}
-                        <pre><code>// setup code&#10;{{{setup}}}</code></pre>
+                        <pre><code>{{{code}}}</code></pre>
 
-                        {{/setup}}
                         <table id="{{identifier}}-perf-tests">
                             <!-- Gah, HighTables is stupid... doesn't account for <thead> :( -->
                             <tr>
