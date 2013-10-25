@@ -117,7 +117,7 @@ $(window).load(function() {
   window.parent.postMessage('loaded', window.location.origin);
 });
 
-$(window).error(function(e) {
+window.addEventListener('error', function(e) {
   var failureNotices = $('#spec-failures');
   $('<p>').text(e.message).appendTo(failureNotices);
 });
