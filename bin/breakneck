@@ -86,6 +86,8 @@ var groupedByNamespace = Lazy(libraryInfo.docs)
   .groupBy('namespace')
   .toObject();
 
+
+
 // Only include specified namespaces, if the option has been provided.
 var namespaces = Lazy(commander.namespaces || Object.keys(groupedByNamespace))
   .map(function(namespace) {
@@ -117,10 +119,10 @@ if (fs.existsSync(path.join(outputDir, 'doc_helper.js'))) {
 var template = fs.readFileSync(path.join(__dirname, '../resources/docs.html.mustache'), 'utf-8'),
     docsHtml = Mustache.render(template, templateData);
 
-function copyFile(source, destination) {
+function copyFile(source, destination, force) {
   // Don't obliterate files that are already there.
   // TODO: Think about this a bit more.
-  if (!fs.existsSync(destination)) {
+  if (force || !fs.existsSync(destination)) {
     fs.createReadStream(source).pipe(fs.createWriteStream(destination));
   }
 }
@@ -132,6 +134,6 @@ if (!fs.existsSync(outputDir)) {
 fs.writeFileSync(path.join(outputDir, 'index.html'), docsHtml);
 copyFile(path.join(__dirname, '../resources/docs.css'), path.join(outputDir, 'docs.css'));
 copyFile(path.join(__dirname, '../resources/gears.gif'), path.join(outputDir, 'gears.gif'));
-copyFile(path.join(__dirname, '../resources/docs.js'), path.join(outputDir, 'docs.js'));
+copyFile(path.join(__dirname, '../resources/docs.js'), path.join(outputDir, 'docs.js'), true);
 
 console.log('Docs written to ' + outputDir + '/');
