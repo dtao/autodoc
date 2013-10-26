@@ -75,3 +75,16 @@ describe 'Breakneck', ->
       parser = { parse: sinon.spy() }
       Breakneck.parseComment({ value: 'foo' }, parser)
       sinon.assert.calledWith(parser.parse, '/*foo*/', { unwrap: true })
+
+  describe 'formatNumber', ->
+    it 'adds decimals up to 3 places', ->
+      Breakneck.formatNumber(3.14).should.eql('3.140')
+
+    it 'trims decimals down to 3 places', ->
+      Breakneck.formatNumber(3.14159265359).should.eql('3.142')
+
+    it 'adds commas as a thousands separator', ->
+      Breakneck.formatNumber(1000).should.eql('1,000.000')
+
+    it 'works for very large numbers', ->
+      Breakneck.formatNumber(123456789.123456789).should.eql('123,456,789.123')
