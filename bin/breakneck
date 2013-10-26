@@ -1,5 +1,13 @@
 #!/usr/bin/env node
 
+/*
+ * I apologize in advance to anyone reading this file.
+ * It is a mess. Needs some serious refactoring.
+ * My primary goal right now is to focus on making it just work,
+ * specifically for Lazy.js (http://danieltao.com/lazy.js/).
+ * Once that's done I will do my best to circle back and clean this up!
+ */
+
 global.doctrine  = require('doctrine');
 global.esprima   = require('esprima');
 global.localLazy = require('lazy.js');
@@ -50,6 +58,7 @@ var filePath     = getLast(process.argv),
     libraryInfo  = Breakneck.parse(fs.readFileSync(filePath, 'utf-8'));
 
 function runTests() {
+  // I'm punting on this whole thing for now. Not top priority.
   console.log("\n\n----- NOTE: This doesn't really work very well just yet :( -----\n\n");
 
   // Load the file itself
@@ -66,6 +75,7 @@ function runTests() {
     eval(fs.readFileSync(helperPath, 'utf-8'));
   }
 
+  // Define this if we need it.
   if (typeof assertEquality !== 'function') {
     assertEquality = function(actual, expected) {
       (actual || '[null or undefined]').should.eql(expected);
@@ -176,6 +186,7 @@ if (!fs.existsSync(outputDir)) {
 fs.writeFileSync(path.join(outputDir, 'index.html'), docsHtml);
 copyFile(path.join(__dirname, '../resources/docs.css'), path.join(outputDir, 'docs.css'));
 copyFile(path.join(__dirname, '../resources/gears.gif'), path.join(outputDir, 'gears.gif'));
+copyFile(path.join(__dirname, '../resources/utils.js'), path.join(outputDir, 'utils.js'));
 copyFile(path.join(__dirname, '../resources/docs.js'), path.join(outputDir, 'docs.js'));
 
 console.log('Docs written to ' + outputDir + '/');
