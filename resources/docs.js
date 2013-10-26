@@ -84,7 +84,7 @@ $(document).ready(function() {
     suite.on('cycle', function(e) {
       var benchmark = e.target;
       var perfTestRow = $('#perf-test-' + benchmark.id);
-      $('td:last-child', perfTestRow).text(benchmark.hz.toFixed(3));
+      $('td:last-child', perfTestRow).text(formatNumber(benchmark.hz));
     });
 
     // Indicate that benchmarks are running.
