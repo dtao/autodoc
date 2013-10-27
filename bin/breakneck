@@ -152,7 +152,11 @@ var namespaces = localLazy(commander.namespaces || Object.keys(groupedByNamespac
     return {
       namespace: namespace,
       constructorMethod: constructorMethod,
-      members: members
+      members: members,
+
+      // This is so that in the main <article> in the docs, methods are displayed
+      // in the same order as in the navigation area.
+      allMembers: localLazy([constructorMethod]).concat(members).compact().toArray()
     };
   })
   .toArray();
