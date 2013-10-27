@@ -84,7 +84,7 @@ $(document).ready(function() {
     suite.on('cycle', function(e) {
       var benchmark = e.target;
       var perfTestRow = $('#perf-test-' + benchmark.benchmarkId);
-      $('td[data-benchmark-label="' + benchmark.label + '"]', perfTestRow)
+      $('td[data-case-id="' + benchmark.caseId + '"]', perfTestRow)
         .text(formatNumber(benchmark.hz));
     });
 

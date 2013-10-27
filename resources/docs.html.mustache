@@ -170,7 +170,7 @@
                             <tr id="perf-test-{{identifier}}-{{id}}">
                                 <td>{{{name}}}</td>
                                 {{#cases}}
-                                <td data-benchmark-label="{{{label}}}"></td>
+                                <td data-case-id="{{caseId}}"></td>
                                 {{/cases}}
                             </tr>
                             {{/benchmarks}}
@@ -221,7 +221,7 @@
                           });
 
                           benchmark.benchmarkId = '{{identifier}}-{{id}}';
-                          benchmark.label = '{{{label}}}';
+                          benchmark.caseId = {{caseId}};
 
                           benchmarks['{{identifier}}'].push(benchmark);
                         }());
