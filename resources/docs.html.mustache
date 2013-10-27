@@ -69,7 +69,8 @@
                     {{{description}}}
                 </section>
 
-                {{#docs}}
+                {{#namespaces}}
+                {{#allMembers}}
                 <section class="method" id="{{identifier}}">
                     <h1>
                         {{shortName}}
@@ -160,13 +161,17 @@
                             <!-- Gah, HighTables is stupid... doesn't account for <thead> :( -->
                             <tr>
                                 <th>Implementation</th>
-                                <th>Ops/second</th>
+                                {{#cases}}
+                                <th>{{label}}</th>
+                                {{/cases}}
                             </tr>
 
                             {{#benchmarks}}
                             <tr id="perf-test-{{identifier}}-{{id}}">
                                 <td>{{{name}}}</td>
-                                <td></td>
+                                {{#cases}}
+                                <td data-benchmark-label="{{{label}}}"></td>
+                                {{/cases}}
                             </tr>
                             {{/benchmarks}}
                         </table>
@@ -203,23 +208,32 @@
 
                         {{{setup}}}
 
-                        benchmarks['{{identifier}}'] = [
+                        benchmarks['{{identifier}}'] = [];
 
-                          {{#benchmarks}}
-                          new Benchmark('{{name}}', {
-                              id: '{{identifier}}-{{id}}',
-                              fn: function() {
-                                  {{{impl}}};
-                              }
-                          }),
+                        {{#benchmarks}}
+                        {{#cases}}
+                        (function() {
+                          var benchmark = new Benchmark('{{name}}', {
+                            id: '{{identifier}}-{{id}}-{{caseId}}',
+                            fn: function() {
+                              {{{impl}}};
+                            }
+                          });
 
-                          {{/benchmarks}}
-                          {{/benchmarks}}
-                        ];
+                          benchmark.benchmarkId = '{{identifier}}-{{id}}';
+                          benchmark.label = '{{{label}}}';
+
+                          benchmarks['{{identifier}}'].push(benchmark);
+                        }());
+
+                        {{/cases}}
+                        {{/benchmarks}}
+                        {{/benchmarks}}
                       }());
                     </script>
                 </section>
-                {{/docs}}
+                {{/allMembers}}
+                {{/namespaces}}
             </article>
         </div>
     </main>

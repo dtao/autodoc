@@ -83,8 +83,9 @@ $(document).ready(function() {
     // Populate the perf table as benchmarks are run.
     suite.on('cycle', function(e) {
       var benchmark = e.target;
-      var perfTestRow = $('#perf-test-' + benchmark.id);
-      $('td:last-child', perfTestRow).text(formatNumber(benchmark.hz));
+      var perfTestRow = $('#perf-test-' + benchmark.benchmarkId);
+      $('td[data-benchmark-label="' + benchmark.label + '"]', perfTestRow)
+        .text(formatNumber(benchmark.hz));
     });
 
     // Indicate that benchmarks are running.

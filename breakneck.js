@@ -449,10 +449,18 @@
   };
 
   /**
+   * @typedef {Object} BenchmarkCase
+   * @property {number} caseId
+   * @property {string} impl
+   * @property {string} name
+   * @property {string} label
+   */
+
+  /**
    * @typedef {Object} BenchmarkInfo
    * @property {number} id
    * @property {string} name
-   * @property {string} impl
+   * @property {Array.<BenchmarkCase>} cases
    */
 
   /**
@@ -469,18 +477,36 @@
    * @returns {BenchmarkCollection}
    */
   Breakneck.getBenchmarks = function(doc) {
-    var benchmarkIdCounter = 1;
+    var benchmarkCaseIdCounter = 1,
+        benchmarkIdCounter     = 1;
+
     return Breakneck.parseCommentLines(doc, 'benchmarks', function(data) {
+      var benchmarks = Lazy(data.pairs)
+        .map(function(pair) {
+          var parts = divide(pair.right, ' - ');
+
+          return {
+            caseId: benchmarkCaseIdCounter++,
+            impl: pair.left,
+            name: parts[0],
+            label: parts[1] || 'Ops/second'
+          };
+        })
+        .groupBy('name')
+        .map(function(group) {
+          return {
+            id: benchmarkIdCounter++,
+            name: group[0],
+            cases: group[1]
+          }
+        })
+        .toArray();
+
       return {
         code: data.content,
         setup: data.preamble,
-        benchmarks: Lazy(data.pairs).map(function(pair) {
-          return {
-            id: benchmarkIdCounter++,
-            impl: pair.left,
-            name: pair.right
-          };
-        }).toArray()
+        benchmarks: benchmarks,
+        cases: benchmarks.length > 0 ? benchmarks[0].cases : []
       };
     });
   };
@@ -548,6 +574,15 @@
 
   function trim(string) {
     return string.replace(/^\s+/, '').replace(/\s+$/, '');
+  }
+
+  function divide(string, divider) {
+    var seam = string.indexOf(divider);
+    if (seam === -1) {
+      return [string];
+    }
+
+    return [string.substring(0, seam), string.substring(seam + divider.length)];
   }
 
   if (typeof module === 'object') {
