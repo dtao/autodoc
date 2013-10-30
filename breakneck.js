@@ -80,13 +80,7 @@
     // accompanying doc comments, if any).
     var functions = Lazy(ast.body).nodes()
       .filter(function(node) {
-        if (node.type === 'FunctionDeclaration') {
-          return true;
-        }
-        if (node.type === 'AssignmentExpression' && node.right.type === 'FunctionExpression') {
-          return true;
-        }
-        return false;
+        return !!Breakneck.getIdentifierName(node);
       })
       .groupBy(function(node) {
         return node.loc.start.line;
