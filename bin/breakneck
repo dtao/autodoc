@@ -87,9 +87,21 @@ var namespaces = localLazy(commander.namespaces || Object.keys(groupedByNamespac
                                 return doc.name === namespace;
                               })
                               .sortBy(function(doc) {
-                                return doc.shortName;
+                                // Talk about hacky...
+                                // This is how I've decided to put static methods first.
+                                return (doc.isStatic ? 'a' : 'b') + doc.shortName;
                               })
                               .toArray();
+
+    var allMembers = localLazy([constructorMethod]).concat(members)
+      .compact()
+      .toArray();
+
+    // Decorate constructors w/ the correct CSS class
+    // (it's easier to do here than in the template).
+    localLazy(allMembers).each(function(member) {
+      member.sectionType = member.isConstructor ? 'constructor' : 'method';
+    });
 
     return {
       namespace: namespace,
@@ -98,7 +110,7 @@ var namespaces = localLazy(commander.namespaces || Object.keys(groupedByNamespac
 
       // This is so that in the main <article> in the docs, methods are displayed
       // in the same order as in the navigation area.
-      allMembers: localLazy([constructorMethod]).concat(members).compact().toArray()
+      allMembers: allMembers
     };
   })
   .toArray();

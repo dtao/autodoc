@@ -110,6 +110,7 @@
             params      = Breakneck.getParams(doc, markdownParser),
             returns     = Breakneck.getReturns(doc, markdownParser),
             isCtor      = Breakneck.hasTag(doc, 'constructor'),
+            isStatic    = name.name.indexOf('#') === -1, // That's right, hacky smacky
             signature   = Breakneck.getSignature(name, params),
             examples    = Breakneck.getExamples(doc),
             benchmarks  = Breakneck.getBenchmarks(doc),
@@ -124,6 +125,7 @@
           params: params,
           returns: returns,
           isConstructor: isCtor,
+          isStatic: isStatic,
           hasSignature: params.length > 0 || !!returns,
           signature: signature,
           examples: examples,
