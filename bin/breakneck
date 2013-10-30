@@ -33,12 +33,16 @@ function split(str) {
 commander
   .version(packageInfo.version)
   .usage('[options] [file]')
-  .option('-t, --test', 'run tests')
-  .option('-p, --perf', 'run performance benchmarks')
+
+  // TODO: Implement these eventually
+  // .option('-t, --test', 'run tests')
+  // .option('-p, --perf', 'run performance benchmarks')
+
   .option('-v, --variable <name>', 'provide a name for the variable traditionally used by the library (e.g., jQuery, $, _) -- used for tests and benchmarks')
   .option('-o, --output <destination>', 'specify an output directory (defaults to "docs")')
   .option('-n, --namespaces <names>', 'provide a comma-separated list of the namespaces to document (defaults to all, in alphabetical order)', split)
   .option('-j, --javascripts <sources>', 'specify additional JS dependencies (comma-separated)', split)
+  .option('--tagged <tag>', 'only use the methods tagged with the specified tag')
   .parse(process.argv);
 
 if (process.argv.length <= 2) {
@@ -57,88 +61,15 @@ var filePath     = getLast(process.argv),
     helperExists = fs.existsSync(helperPath),
     libraryInfo  = Breakneck.parse(fs.readFileSync(filePath, 'utf-8'));
 
-function runTests() {
-  // I'm punting on this whole thing for now. Not top priority.
-  console.log("\n\n----- NOTE: This doesn't really work very well just yet :( -----\n\n");
+var docsToInlude = localLazy(libraryInfo.docs);
 
-  // Load the file itself
-  if (commander.variable) {
-    eval('var ' + commander.variable + ' = require("' + filePath + '");');
-  } else {
-    require(filePath);
-  }
-
-  // Require doc_helper.js, if it exists
-  if (helperExists) {
-    // Need to eval here rather than use require, because otherwise Node will
-    // wrap it up in a closure. (Yeah, yeah, I know...)
-    eval(fs.readFileSync(helperPath, 'utf-8'));
-  }
-
-  // Define this if we need it.
-  if (typeof assertEquality !== 'function') {
-    assertEquality = function(actual, expected) {
-      (actual || '[null or undefined]').should.eql(expected);
-    };
-  }
-
-  // Run the tests
-  localLazy(libraryInfo.docs)
-    .filter(function(doc) { return doc.hasExamples; })
-    .each(function(doc) {
-
-      console.log(doc.name + '\n');
-
-      var outcomes = [];
-
-      // Run any necessary setup code
-      // TODO: Think of a way to like put this in a closure or something...
-      eval(doc.examples.setup);
-
-      // Also display it, just because why not?
-      console.log(doc.examples.setup);
-
-      localLazy(doc.examples.examples).each(function(example) {
-        var outcome = {
-          'case': example.input,
-          'expected': example.output
-        };
-
-        try {
-          var actual   = eval(example.input),
-              expected = eval(example.output);
-
-          assertEquality(actual, expected);
-
-          outcome.result = 'PASS'.green;
-
-        } catch (e) {
-          outcome.result = e.message.red;
-        }
-
-        outcomes.push(outcome);
-      });
-
-      console.log(stringTable.create(outcomes) + '\n');
-
-    });
+if (commander.tagged) {
+  docsToInlude = docsToInlude.filter(function(doc) {
+    return localLazy(doc.tags).contains(commander.tagged);
+  });
 }
 
-function runBenchmarks() {
-  console.log("\n\n----- Running benchmarks isn't implemented yet. -----\n\n");
-}
-
-if (commander.test) {
-  runTests();
-  return;
-}
-
-if (commander.perf) {
-  runBenchmarks();
-  return;
-}
-
-var groupedByNamespace = localLazy(libraryInfo.docs)
+var groupedByNamespace = docsToInlude
   .groupBy('namespace')
   .toObject();
 

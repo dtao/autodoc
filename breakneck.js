@@ -118,7 +118,8 @@
             isCtor      = Breakneck.hasTag(doc, 'constructor'),
             signature   = Breakneck.getSignature(name.shortName, params),
             examples    = Breakneck.getExamples(doc),
-            benchmarks  = Breakneck.getBenchmarks(doc);
+            benchmarks  = Breakneck.getBenchmarks(doc),
+            tags        = Lazy(doc.tags).pluck('title').toArray();
 
         return {
           name: name.name,
@@ -134,7 +135,8 @@
           examples: examples,
           hasExamples: examples.examples.length > 0,
           benchmarks: benchmarks,
-          hasBenchmarks: benchmarks.benchmarks.length > 0
+          hasBenchmarks: benchmarks.benchmarks.length > 0,
+          tags: tags
         };
       })
       .compact()
