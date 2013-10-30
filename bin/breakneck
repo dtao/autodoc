@@ -70,15 +70,26 @@ if (commander.tagged) {
 }
 
 var groupedByNamespace = docsToInlude
-  .groupBy('namespace')
+  .groupBy(function(doc) {
+    return doc.namespace || doc.shortName;
+  })
   .toObject();
 
 // Only include specified namespaces, if the option has been provided.
 var namespaces = localLazy(commander.namespaces || Object.keys(groupedByNamespace))
   .map(function(namespace) {
     // Find the corresponding constructor, if one exists.
-    var constructorMethod = localLazy(libraryInfo.docs).findWhere({ name: namespace }),
-        members           = groupedByNamespace[namespace];
+    var constructorMethod = localLazy(libraryInfo.docs)
+                              .findWhere({ name: namespace }),
+
+        members           = localLazy(groupedByNamespace[namespace])
+                              .reject(function(doc) {
+                                return doc.name === namespace;
+                              })
+                              .sortBy(function(doc) {
+                                return doc.shortName;
+                              })
+                              .toArray();
 
     return {
       namespace: namespace,
