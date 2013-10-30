@@ -114,11 +114,15 @@ $(document).ready(function() {
   runSpecs();
 });
 
-$(window).load(function() {
-  window.parent.postMessage('loaded', window.location.origin);
-});
+function displayError(message) {
+  var failureNotices = $('#spec-failures');
+  $('<p>').text(message).appendTo(failureNotices);
+}
+
+Benchmark.options.onError = function(e) {
+  displayError(e.message);
+};
 
 window.addEventListener('error', function(e) {
-  var failureNotices = $('#spec-failures');
-  $('<p>').text(e.message).appendTo(failureNotices);
+  displayError(e.message);
 });
