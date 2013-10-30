@@ -110,7 +110,7 @@
             params      = Breakneck.getParams(doc, markdownParser),
             returns     = Breakneck.getReturns(doc, markdownParser),
             isCtor      = Breakneck.hasTag(doc, 'constructor'),
-            signature   = Breakneck.getSignature(name.shortName, params),
+            signature   = Breakneck.getSignature(name, params),
             examples    = Breakneck.getExamples(doc),
             benchmarks  = Breakneck.getBenchmarks(doc),
             tags        = Lazy(doc.tags).pluck('title').toArray();
@@ -173,6 +173,8 @@
    * @typedef {Object} NameInfo
    * @property {string} name
    * @property {string} shortName
+   * @property {string} namespace
+   * @property {string} identifier
    */
 
   /**
@@ -273,12 +275,18 @@
   /**
    * Produces a string representing the signature of a function.
    *
-   * @param {string} name
+   * @param {NameInfo} name
    * @param {Array.<ParameterInfo>} params
    * @returns {string}
    */
   Breakneck.getSignature = function(name, params) {
-    return 'function ' + name + '(' + Lazy(params).pluck('name').join(', ') + ')';
+    var formattedParams = '(' + Lazy(params).pluck('name').join(', ') + ')';
+
+    if (name.name === name.shortName) {
+      return 'function ' + name.shortName + formattedParams;
+    } else {
+      return name.namespace + '.' + name.shortName + ' = function' + formattedParams;
+    }
   };
 
   /**
