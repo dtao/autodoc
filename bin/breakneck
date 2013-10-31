@@ -62,10 +62,12 @@ function runTests() {
     }));
 
     return {
+      defineTestGroup: function(description, logic) {
+        describe(description, logic);
+      },
+
       defineTest: function(description, logic) {
-        describe(description, function() {
-          it(description, logic);
-        });
+        it(description, logic);
       },
 
       assertEquality: function(expected, actual) {

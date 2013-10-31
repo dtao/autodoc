@@ -148,24 +148,32 @@
 
     eval(libraryInfo.code);
 
-    breakneck.eachExample(libraryInfo, function(example) {
-      if (example.hasCustomHandler) {
-        (function(handler) {
-          var match  = handler.pattern.match(example.customOutput),
-              actual = eval(example.input);
-
-          handler.test(match, actual);
-
-        }(exampleHandlers[example.handlerIndex]));
-
-      } else {
-        testRunner.defineTest(example.input + ' => ' + example.output, function() {
-          var expected = eval(example.output),
-              actual   = eval(example.input);
-
-          testRunner.assertEquality(expected, actual);
-        });
+    Lazy(libraryInfo.docs).each(function(doc) {
+      if (!doc.hasExamples) {
+        return;
       }
+
+      testRunner.defineTestGroup(doc.name, function() {
+        Lazy(doc.examples.list).each(function(example) {
+          if (example.hasCustomHandler) {
+            (function(handler) {
+              var match  = handler.pattern.match(example.customOutput),
+                  actual = eval(example.input);
+
+              handler.test(match, actual);
+
+            }(exampleHandlers[example.handlerIndex]));
+
+          } else {
+            testRunner.defineTest(example.input + ' => ' + example.output, function() {
+              var expected = eval(example.output),
+                  actual   = eval(example.input);
+
+              testRunner.assertEquality(expected, actual);
+            });
+          }
+        });
+      });
     });
 
     testRunner.run();
@@ -288,16 +296,18 @@
 
   /**
    * Iterates over all of the examples in the library and applies a callback to
-   * each.
+   * each, along with its associated function name.
    *
    * @param {LibraryInfo} libraryInfo
-   * @param {function(ExampleInfo):*} callback
+   * @param {function(ExampleInfo, string):*} callback
    */
   Breakneck.prototype.eachExample = function(libraryInfo, callback) {
     Lazy(libraryInfo.docs)
-      .map(function(doc) { return doc.examples.list; })
-      .flatten()
-      .each(callback);
+      .each(function(doc) {
+        Lazy(doc.examples.list).each(function(example) {
+          callback(example, doc.name);
+        });
+      });
   };
 
   /**
