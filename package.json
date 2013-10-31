@@ -23,6 +23,7 @@
     "commander": "*",
     "doctrine": "git://github.com/dtao/doctrine.git",
     "esprima": "*",
+    "jasmine-node": "*",
     "lazy.js": ">= 0.1.2",
     "marked": "*",
     "mustache": ">= 0.7.2",
