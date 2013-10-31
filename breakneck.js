@@ -92,9 +92,10 @@
     this.namespaces      = options.namespaces || [];
     this.tags            = options.tags || [];
     this.javascripts     = options.javascripts || [];
+    this.exampleHandlers = options.exampleHandlers || [];
     this.template        = options.template;
     this.templateEngine  = options.templateEngine;
-    this.exampleHandlers = options.exampleHandlers;
+    this.testRunner      = options.testRunner;
   }
 
   /**
@@ -132,6 +133,42 @@
    */
   Breakneck.generate = function(source, options) {
     return new Breakneck(options).generate(source);
+  };
+
+  /**
+   * Runs all of the examples in the library using the specified test runner.
+   */
+  Breakneck.runExamples = function(source, options) {
+    var breakneck       = new Breakneck(options),
+        libraryInfo     = breakneck.parse(source),
+        exampleHandlers = breakneck.exampleHandlers,
+        testRunner      = breakneck.testRunner;
+
+    breakneck.updateExamples(libraryInfo);
+
+    eval(libraryInfo.code);
+
+    breakneck.eachExample(libraryInfo, function(example) {
+      if (example.hasCustomHandler) {
+        (function(handler) {
+          var match  = handler.pattern.match(example.customOutput),
+              actual = eval(example.input);
+
+          handler.test(match, actual);
+
+        }(exampleHandlers[example.handlerIndex]));
+
+      } else {
+        testRunner.defineTest(example.input + ' => ' + example.output, function() {
+          var expected = eval(example.output),
+              actual   = eval(example.input);
+
+          testRunner.assertEquality(expected, actual);
+        });
+      }
+    });
+
+    testRunner.run();
   };
 
   /**
@@ -235,8 +272,42 @@
    * @returns {string} The HTML for the library's API docs.
    */
   Breakneck.prototype.generate = function(source) {
-    var templateData = this.parse(source);
+    var libraryInfo = this.parse(source);
 
+    // Decorate examples w/ custom handlers so that the template can be
+    // populated differently for them.
+    this.updateExamples(libraryInfo);
+
+    // Additional stuff we want to tack on.
+    libraryInfo.javascripts = this.javascripts;
+
+    // Finally pass our awesomely-finessed data to the template engine,
+    // e.g., Mustache.
+    return this.templateEngine.render(this.template, libraryInfo);
+  };
+
+  /**
+   * Iterates over all of the examples in the library and applies a callback to
+   * each.
+   *
+   * @param {LibraryInfo} libraryInfo
+   * @param {function(ExampleInfo):*} callback
+   */
+  Breakneck.prototype.eachExample = function(libraryInfo, callback) {
+    Lazy(libraryInfo.docs)
+      .map(function(doc) { return doc.examples.list; })
+      .flatten()
+      .each(callback);
+  };
+
+  /**
+   * Iterates over all of the examples in the library and tests whether each
+   * should be handled by a custom handler. If so, marks it as such for
+   * consumption by e.g. a template or a test runner.
+   *
+   * @param {LibraryInfo} libraryInfo
+   */
+  Breakneck.prototype.updateExamples = function(libraryInfo) {
     // Allow a library to provide a config.js file, which should define an array
     // of handlers like:
     //
@@ -247,39 +318,29 @@
     // ]
     //
     var exampleHandlers = this.exampleHandlers;
-    if (exampleHandlers.length > 0) {
+    if (exampleHandlers.length === 0) {
+      return;
+    }
+
+    this.eachExample(libraryInfo, function(example) {
       // Look at all of our examples. Those that are matched by some handler, we
       // will leave to be verified by handler.test, which will obviously need to
       // be available in the output HTML (bin/breakneck ensures this).
-      Lazy(templateData.docs)
-        .map(function(doc) {
-          return doc.examples.examples;
-        })
-        .flatten()
-        .each(function(example) {
-          Lazy(exampleHandlers).each(function(handler, i) {
-            if (handler.pattern.test(example.output)) {
-              // Mark this example as being handled
-              example.hasCustomHandler = true;
-              example.handlerIndex = i;
+      Lazy(exampleHandlers).each(function(handler, i) {
+        if (handler.pattern.test(example.output)) {
+          // Mark this example as being handled
+          example.hasCustomHandler = true;
+          example.handlerIndex = i;
 
-              // Force output to look like a string, so we can dump it in the
-              // middle of a <script> tag without a syntax error.
-              example.outputPattern = JSON.stringify(example.output);
+          // Force output to look like a string, so we can dump it in the
+          // middle of a <script> tag without a syntax error.
+          example.outputPattern = JSON.stringify(example.output);
 
-              // Exit early -- we found our handler!
-              return false;
-            }
-          });
-        });
-    }
-
-    // Additional stuff we want to tack on.
-    templateData.javascripts = this.javascripts;
-
-    // Finally pass our awesomely-finessed data to the template engine,
-    // e.g., Mustache.
-    return this.templateEngine.render(this.template, templateData);
+          // Exit early -- we found our handler!
+          return false;
+        }
+      });
+    });
   };
 
   /**

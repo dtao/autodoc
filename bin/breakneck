@@ -1,12 +1,11 @@
 #!/usr/bin/env node
 
-var fs           = require('fs'),
-    path         = require('path'),
-    Breakneck    = require(path.join(__dirname, '../breakneck-node')),
-    stringTable  = require('string-table'),
-    commander    = require('commander'),
-    Mustache     = require('mustache'),
-    Lazy         = require('lazy.js');
+var fs          = require('fs'),
+    path        = require('path'),
+    Breakneck   = require(path.join(__dirname, '../breakneck-node')),
+    stringTable = require('string-table'),
+    commander   = require('commander'),
+    Lazy        = require('lazy.js');
 
 var packagePath = path.join(__dirname, '../package.json'),
     packageInfo = JSON.parse(fs.readFileSync(packagePath));
@@ -19,10 +18,11 @@ commander
   .version(packageInfo.version)
   .usage('[options] [file]')
 
-  // TODO: Implement these eventually
-  // .option('-t, --test', 'run tests')
+  // TODO: Implement this eventually
   // .option('-p, --perf', 'run performance benchmarks')
 
+  .option('-t, --test', 'run tests')
+  .option('-d, --dump', 'dump JSON data and exit')
   .option('-v, --variable <name>', 'provide a name for the variable traditionally used by the library (e.g., jQuery, $, _) -- used for tests and benchmarks')
   .option('-o, --output <destination>', 'specify an output directory (defaults to "docs")')
   .option('--template <path>', 'use a custom Mustache template')
@@ -44,53 +44,96 @@ var filePath     = Lazy(process.argv).last(),
     helperPath   = path.join(outputDir, 'doc_helper.js'),
     helperExists = fs.existsSync(helperPath),
     configPath   = path.join(outputDir, 'handlers.js'),
-    configExists = fs.existsSync(configPath),
-    templatePath = commander.template || path.join(__dirname, '../resources/docs.html.mustache'),
-    template     = fs.readFileSync(templatePath, 'utf-8');
+    configExists = fs.existsSync(configPath);
 
-var options            = Breakneck.options;
-options.namespace      = commander.namespaces;
-options.tags           = commander.tags;
-options.javascripts    = commander.javascripts;
-options.template       = template;
-options.templateEngine = Mustache;
+var options         = Breakneck.options;
+options.namespace   = commander.namespaces;
+options.tags        = commander.tags;
+options.javascripts = commander.javascripts;
 
-if (helperExists) {
-  options.javascripts.push('doc_helper.js');
+function runTests() {
+  Breakneck.options.testRunner = function(jasmine) {
+    var env = jasmine.getEnv();
+
+    env.addReporter(new jasmine.TerminalVerboseReporter({
+      print: process.stdout.write.bind(process.stdout),
+      color: true,
+      includeStackTrace: true
+    }));
+
+    return {
+      defineTest: function(description, logic) {
+        describe(description, function() {
+          it(description, logic);
+        });
+      },
+
+      assertEquality: function(expected, actual) {
+        expect(actual).toEqual(expected);
+      },
+
+      run: function() {
+        env.execute();
+      }
+    };
+  }(require('jasmine-node'));
+
+  Breakneck.runExamples(sourceCode, options);
 }
 
-if (configExists) {
-  // First of all, include it in the actual docs HTML.
-  options.javascripts.push('handlers.js');
+function generateDocs() {
+  var templatePath = commander.template || path.join(__dirname, '../resources/docs.html.mustache');
 
-  // Also require it locally.
-  options.exampleHandlers = require(path.join(process.cwd(), configPath)).exampleHandlers;
-}
+  options.template       = fs.readFileSync(templatePath, 'utf-8');
+  options.templateEngine = require('mustache');
 
-var docsHtml = Breakneck.generate(sourceCode, options);
-
-function writeFile(destination, content) {
-  var directory = path.dirname(destination);
-  if (!fs.existsSync(directory)) {
-    fs.mkdirSync(directory);
+  if (helperExists) {
+    options.javascripts.push('doc_helper.js');
   }
 
-  fs.writeFileSync(destination, content);
-}
+  if (configExists) {
+    // First of all, include it in the actual docs HTML.
+    options.javascripts.push('handlers.js');
 
-writeFile(path.join(outputDir, 'index.html'), docsHtml);
-
-function copyFile(source, destination, force) {
-  // Don't obliterate files that are already there.
-  // TODO: Think about this a bit more.
-  if (force || !fs.existsSync(destination)) {
-    fs.createReadStream(source).pipe(fs.createWriteStream(destination));
+    // Also require it locally.
+    options.exampleHandlers = require(path.join(process.cwd(), configPath)).exampleHandlers;
   }
+
+  var docsHtml = Breakneck.generate(sourceCode, options);
+
+  function writeFile(destination, content) {
+    var directory = path.dirname(destination);
+    if (!fs.existsSync(directory)) {
+      fs.mkdirSync(directory);
+    }
+
+    fs.writeFileSync(destination, content);
+  }
+
+  writeFile(path.join(outputDir, 'index.html'), docsHtml);
+
+  function copyFile(source, destination, force) {
+    // Don't obliterate files that are already there.
+    // TODO: Think about this a bit more.
+    if (force || !fs.existsSync(destination)) {
+      fs.createReadStream(source).pipe(fs.createWriteStream(destination));
+    }
+  }
+
+  copyFile(path.join(__dirname, '../resources/docs.css'), path.join(outputDir, 'docs.css'));
+  copyFile(path.join(__dirname, '../resources/gears.gif'), path.join(outputDir, 'gears.gif'));
+  copyFile(path.join(__dirname, '../resources/utils.js'), path.join(outputDir, 'utils.js'));
+  copyFile(path.join(__dirname, '../resources/docs.js'), path.join(outputDir, 'docs.js'));
+
+  console.log('Docs written to ' + outputDir + '/');
 }
 
-copyFile(path.join(__dirname, '../resources/docs.css'), path.join(outputDir, 'docs.css'));
-copyFile(path.join(__dirname, '../resources/gears.gif'), path.join(outputDir, 'gears.gif'));
-copyFile(path.join(__dirname, '../resources/utils.js'), path.join(outputDir, 'utils.js'));
-copyFile(path.join(__dirname, '../resources/docs.js'), path.join(outputDir, 'docs.js'));
+if (commander.dump) {
+  console.log(JSON.stringify(Breakneck.parse(sourceCode, options), null, 2));
 
-console.log('Docs written to ' + outputDir + '/');
+} else if (commander.test) {
+  runTests();
+
+} else {
+  generateDocs();
+}
