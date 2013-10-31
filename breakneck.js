@@ -71,12 +71,19 @@
    * @param {BreakneckOptions=} options
    */
   function Breakneck(options) {
-    options = options || {};
+    options = Lazy(options || {})
+      .defaults(Breakneck.options)
+      .toObject();
 
     this.codeParser     = wrapParser(options.codeParser);
     this.commentParser  = wrapParser(options.commentParser);
     this.markdownParser = wrapParser(options.markdownParser, processInternalLinks);
   }
+
+  /**
+   * Default Breakneck options. (See breakneck-node.js)
+   */
+  Breakneck.options = {};
 
   /**
    * Creates a Breakneck instance with the specified options and uses it to
