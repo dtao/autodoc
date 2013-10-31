@@ -3,7 +3,7 @@ require('should')
 path      = require('path')
 sinon     = require('sinon')
 esprima   = require('esprima')
-Breakneck = require(path.join(__dirname, '../breakneck.js'))
+Breakneck = require('../')
 
 describe 'Breakneck', ->
   describe 'getIdentifierName', ->
@@ -75,3 +75,8 @@ describe 'Breakneck', ->
       parser = { parse: sinon.spy() }
       Breakneck.parseComment({ value: 'foo' }, parser)
       sinon.assert.calledWith(parser.parse, '/*foo*/', { unwrap: true })
+
+  describe 'parse', ->
+    it 'should be able to parse javascript without falling over', ->
+      test = "/*\n * @name hello world\n *\n * @fileOverview\n * This is a test comment\n */"
+      Breakneck.parse(test).name.should.eql 'hello world'
