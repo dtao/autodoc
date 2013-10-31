@@ -139,7 +139,7 @@
           return null;
         }
 
-        return breakneck.createFunctionInfo(fn, comment);
+        return breakneck.createFunctionInfo(fn, doc);
       })
       .compact()
       .toArray();
@@ -172,15 +172,15 @@
    */
 
   /**
-   * Takes a function node from the AST along with parsed comment and generates
-   * an object with boatloads of data on it, useful for passing to a templating
-   * system such as Mustache.
+   * Takes a function node from the AST along with its associated doclet (from
+   * parsing its comments) and generates an object with boatloads of data on it,
+   * useful for passing to a templating system such as Mustache.
    *
    * @param {Object} fn
-   * @param {Object} comment
+   * @param {Object} doc
    * @returns {FunctionInfo}
    */
-  Breakneck.prototype.createFunctionInfo = function(fn, comment) {
+  Breakneck.prototype.createFunctionInfo = function(fn, doc) {
     var nameInfo    = Breakneck.parseName(Breakneck.getIdentifierName(fn[0])),
         description = this.markdownParser.parse(doc.description),
         params      = this.getParams(doc),
