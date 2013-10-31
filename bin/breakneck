@@ -22,8 +22,8 @@ require('should');
 var packagePath = path.join(__dirname, '../package.json'),
     packageInfo = JSON.parse(fs.readFileSync(packagePath));
 
-function split(str) {
-  return str.split(/,\s*/);
+function argToList(arg) {
+  return arg.split(/,\s*/);
 }
 
 commander
@@ -36,8 +36,8 @@ commander
 
   .option('-v, --variable <name>', 'provide a name for the variable traditionally used by the library (e.g., jQuery, $, _) -- used for tests and benchmarks')
   .option('-o, --output <destination>', 'specify an output directory (defaults to "docs")')
-  .option('-n, --namespaces <names>', 'provide a comma-separated list of the namespaces to document (defaults to all, in alphabetical order)', split)
-  .option('-j, --javascripts <sources>', 'specify additional JS dependencies (comma-separated)', split)
+  .option('-n, --namespaces <names>', 'provide a comma-separated list of the namespaces to document (defaults to all, in alphabetical order)', argToList)
+  .option('-j, --javascripts <sources>', 'specify additional JS dependencies (comma-separated)', argToList)
   .option('--tagged <tag>', 'only use the methods tagged with the specified tag')
   .parse(process.argv);
 
