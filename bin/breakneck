@@ -8,17 +8,13 @@
  * Once that's done I will do my best to circle back and clean this up!
  */
 
-global.doctrine  = require('doctrine');
-global.esprima   = require('esprima');
-global.localLazy = require('lazy.js');
-global.marked    = require('marked');
-
 var fs           = require('fs'),
     path         = require('path'),
-    Breakneck    = require(path.join(__dirname, '../breakneck')),
+    Breakneck    = require(path.join(__dirname, '../breakneck-node')),
     stringTable  = require('string-table'),
     commander    = require('commander'),
-    Mustache     = require('mustache');
+    Mustache     = require('mustache'),
+    Lazy         = require('lazy.js');
 
 require('colors');
 require('should');
@@ -63,11 +59,11 @@ var filePath     = getLast(process.argv),
     configExists = fs.existsSync(configPath),
     libraryInfo  = Breakneck.parse(fs.readFileSync(filePath, 'utf-8'));
 
-var docsToInlude = localLazy(libraryInfo.docs);
+var docsToInlude = Lazy(libraryInfo.docs);
 
 if (commander.tagged) {
   docsToInlude = docsToInlude.filter(function(doc) {
-    return localLazy(doc.tags).contains(commander.tagged);
+    return Lazy(doc.tags).contains(commander.tagged);
   });
 }
 
@@ -78,13 +74,13 @@ var groupedByNamespace = docsToInlude
   .toObject();
 
 // Only include specified namespaces, if the option has been provided.
-var namespaces = localLazy(commander.namespaces || Object.keys(groupedByNamespace))
+var namespaces = Lazy(commander.namespaces || Object.keys(groupedByNamespace))
   .map(function(namespace) {
     // Find the corresponding constructor, if one exists.
-    var constructorMethod = localLazy(libraryInfo.docs)
+    var constructorMethod = Lazy(libraryInfo.docs)
                               .findWhere({ name: namespace }),
 
-        members           = localLazy(groupedByNamespace[namespace])
+        members           = Lazy(groupedByNamespace[namespace])
                               .reject(function(doc) {
                                 return doc.name === namespace;
                               })
@@ -95,13 +91,13 @@ var namespaces = localLazy(commander.namespaces || Object.keys(groupedByNamespac
                               })
                               .toArray();
 
-    var allMembers = localLazy([constructorMethod]).concat(members)
+    var allMembers = Lazy([constructorMethod]).concat(members)
       .compact()
       .toArray();
 
     // Decorate constructors w/ the correct CSS class
     // (it's easier to do here than in the template).
-    localLazy(allMembers).each(function(member) {
+    Lazy(allMembers).each(function(member) {
       member.sectionType = member.isConstructor ? 'constructor' : 'method';
     });
 
@@ -117,7 +113,7 @@ var namespaces = localLazy(commander.namespaces || Object.keys(groupedByNamespac
   })
   .toArray();
 
-var templateData = localLazy(libraryInfo)
+var templateData = Lazy(libraryInfo)
   .extend({
     javascripts: javascripts,
     namespaces: namespaces
@@ -149,13 +145,13 @@ if (configExists) {
   // Then, look at all of our examples...
   // those that are matched by some handler, we will leave to be handled
   // in some custom way.
-  localLazy(templateData.docs)
+  Lazy(templateData.docs)
     .map(function(doc) {
       return doc.examples.examples;
     })
     .flatten()
     .each(function(example) {
-      localLazy(config.exampleHandlers || []).each(function(handler, i) {
+      Lazy(config.exampleHandlers || []).each(function(handler, i) {
         if (handler.pattern.test(example.output)) {
           // Mark this example as being handled
           example.customHandler = true;
