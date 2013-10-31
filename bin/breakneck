@@ -36,9 +36,9 @@ commander
 
   .option('-v, --variable <name>', 'provide a name for the variable traditionally used by the library (e.g., jQuery, $, _) -- used for tests and benchmarks')
   .option('-o, --output <destination>', 'specify an output directory (defaults to "docs")')
-  .option('-n, --namespaces <names>', 'provide a comma-separated list of the namespaces to document (defaults to all, in alphabetical order)', argToList)
-  .option('-j, --javascripts <sources>', 'specify additional JS dependencies (comma-separated)', argToList)
-  .option('--tagged <tag>', 'only use the methods tagged with the specified tag')
+  .option('--namespaces <names>', 'provide a comma-separated list of the namespaces to document (defaults to all, in alphabetical order)', argToList)
+  .option('--javascripts <sources>', 'specify additional JS dependencies (comma-separated)', argToList)
+  .option('--tags <tag>', 'only use the methods tagged with the specified tag')
   .parse(process.argv);
 
 // Spit out help and exit if the user didn't supply an input file.
@@ -48,68 +48,60 @@ if (process.argv.length <= 2) {
 }
 
 var filePath     = Lazy(process.argv).last(),
+    sourceCode   = fs.readFileSync(filePath, 'utf-8'),
     outputDir    = commander.output || 'docs',
     javascripts  = commander.javascripts || [],
     helperPath   = path.join(outputDir, 'doc_helper.js'),
     helperExists = fs.existsSync(helperPath),
     configPath   = path.join(outputDir, 'handlers.js'),
-    configExists = fs.existsSync(configPath);
+    configExists = fs.existsSync(configPath),
+    templatePath = commander.template || path.join(__dirname, '../resources/docs.html.mustache'),
+    template     = fs.readFileSync(templatePath, 'utf-8');
 
-var templateData = Breakneck.process(fs.readFileSync(filePath, 'utf-8'), {
-  processOptions: commander
-});
+var processOpts = Lazy(commander)
+  .pick(['namespaces', 'tags'])
+  .defaults({
+    namespaces: [],
+    tags: []
+  })
+  .toObject();
 
-templateData.javascripts = commander.javascripts;
+var generateOpts = Lazy(commander)
+  .pick(['javascripts'])
+  .defaults({
+    javascripts: [],
+    template: template,
+    templateEngine: Mustache
+  })
+  .toObject();
 
 if (helperExists) {
-  templateData.javascripts.push('doc_helper.js');
+  generateOpts.javascripts.push('doc_helper.js');
 }
 
-var config = { handlers: [] };
-
-// Allow a library to provide a config.js file, which should define a handlers
-// array like:
-//
-// [
-//   { pattern: /regex/, matcher: function(match, actual) },
-//   { pattern: /regex/, matcher: function(match, actual) },
-//   ...
-// ]
-//
 if (configExists) {
   // First of all, include it in the actual docs HTML.
-  templateData.javascripts.push('handlers.js');
+  generateOpts.javascripts.push('handlers.js');
 
   // Also require it locally.
-  config = require(path.join(process.cwd(), configPath));
-
-  // Then, look at all of our examples...
-  // those that are matched by some handler, we will leave to be handled
-  // in some custom way.
-  Lazy(templateData.docs)
-    .map(function(doc) {
-      return doc.examples.examples;
-    })
-    .flatten()
-    .each(function(example) {
-      Lazy(config.exampleHandlers || []).each(function(handler, i) {
-        if (handler.pattern.test(example.output)) {
-          // Mark this example as being handled
-          example.customHandler = true;
-          example.handlerIndex = i;
-
-          // Force output to look like a string
-          example.outputPattern = JSON.stringify(example.output);
-
-          // Exit early
-          return false;
-        }
-      });
-    });
+  generateOpts.config = require(path.join(process.cwd(), configPath));
 }
 
-var template = fs.readFileSync(path.join(__dirname, '../resources/docs.html.mustache'), 'utf-8'),
-    docsHtml = Mustache.render(template, templateData);
+var docsHtml = Breakneck.generate(template, sourceCode, {
+  processOpts: processOpts,
+  generateOpts: generateOpts
+});
+
+function writeFile(destination, content) {
+  var directory = path.dirname(destination);
+  if (!fs.existsSync(directory)) {
+    fs.mkdirSync(directory);
+  }
+
+  fs.writeFileSync(destination, content);
+}
+
+writeFile(path.join(outputDir, 'index.html'), docsHtml);
 
 function copyFile(source, destination, force) {
   // Don't obliterate files that are already there.
@@ -119,11 +111,6 @@ function copyFile(source, destination, force) {
   }
 }
 
-if (!fs.existsSync(outputDir)) {
-  fs.mkdirSync(outputDir);
-}
-
-fs.writeFileSync(path.join(outputDir, 'index.html'), docsHtml);
 copyFile(path.join(__dirname, '../resources/docs.css'), path.join(outputDir, 'docs.css'));
 copyFile(path.join(__dirname, '../resources/gears.gif'), path.join(outputDir, 'gears.gif'));
 copyFile(path.join(__dirname, '../resources/utils.js'), path.join(outputDir, 'utils.js'));
