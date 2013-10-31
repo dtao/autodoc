@@ -30,6 +30,8 @@ API docs will be generated based on the comments above each function. This inclu
 
 Use the `@name` tag in a comment at the top of the file for Breakneck to know the name of your library. Use the `@fileOverview` tag to provide a high-level description.
 
+A default **docs.css** file is provided by default. To style the documentation yourself, write your own stylesheet with the same name.
+
 ### Specs
 
 Use the `@examples` tag to define specs in an extremely concise format:
@@ -43,6 +45,34 @@ Use the `@examples` tag to define specs in an extremely concise format:
 
 The result will be a table in the API docs displaying your spec results.
 
+You can provide custom handlers to do something a little more advanced than a straight-up equality comparison here (e.g., say your library creates some fancy object, but you just want to verify certain properties with an object literal). To do this, add a file called **handlers.js** to your output folder (**docs** by default) and in it define a global\* `exampleHandlers` array that looks like this:
+
+```javascript
+this.exampleHandlers = [
+  {
+    pattern: /pattern 1/,
+    test: function(match, actual) {
+      // some logic to run when pattern 1 is matched
+    }
+  },
+  {
+    pattern: /pattern 2/,
+    test: function(match, actual) {
+      // some logic to run when pattern 2 is matched
+    }
+  },
+  ...
+];
+```
+
+For every example in your comments, the expected output will first be checked against all of your custom handlers (in order) to see if there's a match; otherwise, Breakneck will perform a simple equality comparison using a method called `assertEquality`.
+
+By default Breakneck uses Jasmine, so under the hood `assertEquality` is implemented using `expect` and `toEqual`. You are free to implement `assertEquality` yourself in any way you choose, though, in a file called **doc_helper.js**. Breakneck won't clobber your implementation.
+
+Incidentally, doc_helper.js is also a good place to put any other specific JavaScript you want. Breakneck will include a `<script>` tag pointing to it, if it exists, in the output HTML.
+
+<sub>\*Yeah yeah, I know, *globals are bad*. I need to think about this...</sub>
+
 ### Benchmarks
 
 Use the `@benchmarks` tag to specify cases you want to profile for performance. The format is similar to `@examples`:
@@ -53,6 +83,18 @@ Use the `@benchmarks` tag to specify cases you want to profile for performance. 
  * doSomething(shortString)  // short string
  * doSomething(mediumString) // medium string
  * doSomething(longString)   // long string
+ */
+```
+
+You can also group your benchmarks, e.g., by input size, simply by adding `" - [something to group by]"`; for instance:
+
+```javascript
+/**
+ * @benchmarks
+ * doSomething('foo')  // first approach - foo
+ * doSomething2('foo') // second approach - foo
+ * doSomething('bar')  // first approach - bar
+ * doSomething2('bar') // second approach - bar
  */
 ```
 
