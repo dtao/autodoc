@@ -54,30 +54,47 @@
    */
 
   /**
-   * @callback ParseMethod
-   * @param {string} input
-   * @returns {*}
+   * @typedef {Object} ExampleHandler
+   * @property {RegExp} pattern
+   * @property {function(Array.<string>, *):*} test
    */
 
   /**
-   * @typedef {Object} ParseOptions
-   * @property {Parser|ParseMethod} codeParser
-   * @property {Parser|ParseMethod} commentParser
-   * @property {Parser|ParseMethod} markdownParser
+   * @typedef {Object} TemplateEngine
+   * @property {function(string, Object):string} render
+   */
+
+  /**
+   * @typedef {Object} BreakneckOptions
+   * @property {Parser|function(string):*} codeParser
+   * @property {Parser|function(string):*} commentParser
+   * @property {Parser|function(string):*} markdownParser
+   * @property {Array.<string>} namespaces
+   * @property {Array.<string>} tags
+   * @property {Array.<string>} javascripts
+   * @property {string} template
+   * @property {TemplateEngine} templateEngine
+   * @property {Array.<ExampleHandler>} exampleHandlers
    */
 
   /**
    * @constructor
-   * @param {ParseOptions=} options
+   * @param {BreakneckOptions=} options
    */
   function Breakneck(options) {
     options = Lazy(options || {})
       .defaults(Breakneck.options)
       .toObject();
 
-    this.codeParser     = wrapParser(options.codeParser);
-    this.commentParser  = wrapParser(options.commentParser);
-    this.markdownParser = wrapParser(options.markdownParser, processInternalLinks);
+    this.codeParser      = wrapParser(options.codeParser);
+    this.commentParser   = wrapParser(options.commentParser);
+    this.markdownParser  = wrapParser(options.markdownParser, processInternalLinks);
+    this.namespaces      = options.namespaces || [];
+    this.tags            = options.tags || [];
+    this.javascripts     = options.javascripts || [];
+    this.template        = options.template;
+    this.templateEngine  = options.templateEngine;
+    this.exampleHandlers = options.exampleHandlers;
   }
 
   /**
@@ -90,7 +107,7 @@
    * @property {string} name
    * @property {string} description
    * @property {string} code
-   * @property {Array.<FunctionInfo>} docs
+   * @property {Array.<NamespaceInfo>} namespaces
    */
 
   /**
@@ -98,7 +115,7 @@
    * parse the given code.
    *
    * @param {string} code The JavaScript code to parse.
-   * @param {ParseOptions=} options
+   * @param {BreakneckOptions=} options
    * @returns {LibraryInfo}
    */
   Breakneck.parse = function(code, options) {
@@ -106,147 +123,16 @@
   };
 
   /**
-   * @typedef {Object} ProcessOptions
-   * @property {Array.<string>} tags
-   * @property {Array.<string>} namespaces
-   */
-
-  /**
-   * Parses JavaScript code with the specified options and then processes the
-   * data 
-   *
-   * @param {string} code The JavaScript code to parse and process.
-   * @param {ProcessOptions} processOpts
-   * @param {ParseOptions} parseOpts
-   * @returns {Object}
-   */
-  Breakneck.process = function(code, processOpts, parseOpts) {
-    var libraryInfo    = Breakneck.parse(code, parseOpts),
-        processOptions = processOpts || {},
-        docsToInlude   = Lazy(libraryInfo.docs);
-
-    // Only include documentation for functions with the specified tag(s), if
-    // provided.
-    if (processOptions.tags) {
-      docsToInlude = docsToInlude.filter(function(doc) {
-        return Lazy(doc.tags).contains(processOptions.tags);
-      });
-    }
-
-    // Group by namespace so that we can keep the docs organized.
-    var groupedByNamespace = docsToInlude
-      .groupBy(function(doc) {
-        return doc.namespace || doc.shortName;
-      })
-      .toObject();
-
-    // Only include specified namespaces, if the option has been provided.
-    // Other use all namespaces.
-    // TODO: Make this code a little more agnostic about the whole namespace
-    // thing. I'm pretty sure there are plenty of libraries that don't use
-    // this pattern at all.
-    libraryInfo.namespaces = Lazy(processOptions.namespaces || Object.keys(groupedByNamespace))
-      .map(function(namespace) {
-        return Breakneck.getDocsForNamespace(groupedByNamespace, namespace);
-      })
-      .toArray();
-
-    return libraryInfo;
-  };
-
-  /**
-   * @typedef {Object} ExampleHandler
-   * @property {RegExp} pattern
-   * @property {function(Array.<string>, *):*} test
-   */
-
-  /**
-   * @typedef {Object} Configuration
-   * @property {Array.<ExampleHandler>} exampleHandlers
-   */
-
-  /**
-   * @typedef {Object} TemplateEngine
-   * @property {function(string, Object):string} render
-   */
-
-  /**
-   * @typedef {Object} GenerateOptions
-   * @property {Array.<string>} javascripts
-   * @property {Configuration} config
-   * @property {string} template
-   * @property {TemplateEngine} templateEngine
-   */
-
-  /**
-   * @typedef {Object} BenchmarkOptions
-   * @property {ParseOptions} parseOpts
-   * @property {ProcessOptions} processOpts
-   * @property {GenerateOptions} generateOpts
-   */
-
-  /**
-   * Generates HTML for the API docs for the given library (as raw source code)
-   * using the specified options, including templating library.
+   * Creates a Breakneck instance with the specified options and uses it to
+   * generate HTML documentation from the given code.
    *
    * @param {string} source The source code of the library.
    * @param {BreakneckOptions} options
    * @returns {string} The HTML for the library's API docs.
    */
   Breakneck.generate = function(source, options) {
-    var templateData   = Breakneck.process(source, options.processOpts, options.parseOpts),
-        generateOpts   = options.generateOpts || {},
-        template       = generateOpts.template,
-        templateEngine = generateOpts.templateEngine;
-
-    templateData.javascripts = generateOpts.javascripts;
-
-    // Allow a library to provide a config.js file, which should define an array
-    // of handlers like:
-    //
-    // [
-    //   { pattern: /regex/, test: function(match, actual) },
-    //   { pattern: /regex/, test: function(match, actual) },
-    //   ...
-    // ]
-    //
-    var config = generateOpts.config || { exampleHandlers: [] };
-
-    if (config.exampleHandlers && config.exampleHandlers.length > 0) {
-      // Look at all of our examples. Those that are matched by some handler, we
-      // will leave to be verified by handler.test, which will obviously need to
-      // be available in the output HTML (bin/breakneck ensures this).
-      Lazy(templateData.docs)
-        .map(function(doc) {
-          return doc.examples.examples;
-        })
-        .flatten()
-        .each(function(example) {
-          Lazy(config.exampleHandlers).each(function(handler, i) {
-            if (handler.pattern.test(example.output)) {
-              // Mark this example as being handled
-              example.customHandler = true;
-              example.handlerIndex = i;
-
-              // Force output to look like a string, so we can dump it in the
-              // middle of a <script> tag without a syntax error.
-              example.outputPattern = JSON.stringify(example.output);
-
-              // Exit early -- we found our handler!
-              return false;
-            }
-          });
-        });
-    }
-
-    return templateEngine.render(template, templateData);
+    return new Breakneck(options).generate(source);
   };
-
-  /**
-   * @typedef LibrarySummary
-   * @property {string} name
-   * @property {string} description
-   */
 
   /**
    * Parses an arbitrary blob of JavaScript code and returns an object
@@ -254,7 +140,7 @@
    * docs, specs, and performance benchmarks.
    *
    * @param {string} code The JavaScript code to parse.
-   * @returns {Object}
+   * @returns {LibraryInfo}
    */
   Breakneck.prototype.parse = function(code) {
     var breakneck = this;
@@ -264,6 +150,10 @@
       comment: true,
       loc: true
     });
+
+    // This is kind of stupid... for now, I'm just assuming the library will
+    // have a @fileOverview tag and @name tag in the header comments.
+    var librarySummary = breakneck.getLibrarySummary(ast.comments);
 
     // Extract all of the functions from the AST, and map them to their location
     // in the code (this is so that we can associate each function with its
@@ -292,19 +182,95 @@
 
         return breakneck.createFunctionInfo(fn, doc);
       })
-      .compact()
+      .compact();
+
+    // Only include documentation for functions with the specified tag(s), if
+    // provided.
+    if (this.tags.length > 0) {
+      docs = docs.filter(function(doc) {
+        return Lazy(doc.tags).contains(breakneck.tags);
+      });
+    }
+
+    // Group by namespace so that we can keep the docs organized.
+    docs = docs
+      .groupBy(function(doc) {
+        return doc.namespace || doc.shortName;
+      })
+      .toObject();
+
+    // Only include specified namespaces, if the option has been provided.
+    // Otherwise use all namespaces.
+    var namespaces = Lazy(this.namespaces || Object.keys(docs))
+      .map(function(namespace) {
+        return Breakneck.createNamespaceInfo(docs, namespace);
+      })
       .toArray();
 
-    // This is kind of stupid... for now, I'm just assuming the library will
-    // have a @fileOverview tag and @name tag in the header comments.
-    var librarySummary = breakneck.getLibrarySummary(ast.comments);
-
+    // TODO: Make this code a little more agnostic about the whole namespace
+    // thing. I'm pretty sure there are plenty of libraries that don't use
+    // this pattern at all.
     return {
       name: librarySummary.name,
       description: librarySummary.description,
       code: code,
-      docs: docs
+      namespaces: namespaces
     };
+  };
+
+  /**
+   * Generates HTML for the API docs for the given library (as raw source code)
+   * using the specified options, including templating library.
+   *
+   * @param {string} source The source code of the library.
+   * @returns {string} The HTML for the library's API docs.
+   */
+  Breakneck.prototype.generate = function(source) {
+    var templateData = this.parse(source);
+
+    // Allow a library to provide a config.js file, which should define an array
+    // of handlers like:
+    //
+    // [
+    //   { pattern: /regex/, test: function(match, actual) },
+    //   { pattern: /regex/, test: function(match, actual) },
+    //   ...
+    // ]
+    //
+    var exampleHandlers = this.exampleHandlers;
+    if (exampleHandlers.length > 0) {
+      // Look at all of our examples. Those that are matched by some handler, we
+      // will leave to be verified by handler.test, which will obviously need to
+      // be available in the output HTML (bin/breakneck ensures this).
+      Lazy(templateData.docs)
+        .map(function(doc) {
+          return doc.examples.examples;
+        })
+        .flatten()
+        .each(function(example) {
+          Lazy(exampleHandlers).each(function(handler, i) {
+            if (handler.pattern.test(example.output)) {
+              // Mark this example as being handled
+              example.customHandler = true;
+              example.handlerIndex = i;
+
+              // Force output to look like a string, so we can dump it in the
+              // middle of a <script> tag without a syntax error.
+              example.outputPattern = JSON.stringify(example.output);
+
+              // Exit early -- we found our handler!
+              return false;
+            }
+          });
+        });
+    }
+
+    // Additional stuff we want to tack on.
+    templateData.javascripts = this.javascripts;
+
+    // Finally pass our awesomely-finessed data to the template engine,
+    // e.g., Mustache.
+    return this.templateEngine.render(this.template, templateData);
   };
 
   /**
@@ -418,6 +384,12 @@
       description: this.markdownParser.parse(returnTag.description || '')
     };
   };
+
+  /**
+   * @typedef LibrarySummary
+   * @property {string} name
+   * @property {string} description
+   */
 
   /**
    * Returns a { name, description } object describing an entire library.
@@ -769,14 +741,34 @@
     }
   };
 
-  Breakneck.getDocsForNamespace = function(groups, namespace) {
+  /**
+   * @typedef {Object} NamespaceInfo
+   * @property {string} namespace
+   * @property {FunctionInfo} constructorMethod
+   * @property {Array.<FunctionInfo>} members
+   * @property {Array.<FunctionInfo>} allMembers
+   */
+
+  /**
+   * Finds all of the functions in a library belonging to a certain namespace
+   * and creates a { namespace, constructorMethod, members, allMembers } object
+   * from each, with members sorted in a UI-friendly order.
+   *
+   * @param {Object.<string, Array.<FunctionInfo>>} docs
+   * @param {string} namespace
+   * @returns {NamespaceInfo}
+   */
+  Breakneck.createNamespaceInfo = function(docs, namespace) {
     // Find the corresponding constructor, if one exists.
-    var constructorMethod = Lazy(libraryInfo.docs).findWhere({ name: namespace });
+    var constructorMethod = Lazy(docs)
+      .values()
+      .flatten()
+      .findWhere({ name: namespace });
 
     // Get all the members that are part of the specified namespace, excluding
     // the constructor (if applicable), and sort them alphabetically w/ so-called
     // "static" members coming first.
-    var members = Lazy(groupedByNamespace[namespace])
+    var members = Lazy(docs[namespace])
       .reject(function(doc) {
         return doc.name === namespace;
       })

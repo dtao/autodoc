@@ -1,13 +1,5 @@
 #!/usr/bin/env node
 
-/*
- * I apologize in advance to anyone reading this file.
- * It is a mess. Needs some serious refactoring.
- * My primary goal right now is to focus on making it just work,
- * specifically for Lazy.js (http://danieltao.com/lazy.js/).
- * Once that's done I will do my best to circle back and clean this up!
- */
-
 var fs           = require('fs'),
     path         = require('path'),
     Breakneck    = require(path.join(__dirname, '../breakneck-node')),
@@ -15,9 +7,6 @@ var fs           = require('fs'),
     commander    = require('commander'),
     Mustache     = require('mustache'),
     Lazy         = require('lazy.js');
-
-require('colors');
-require('should');
 
 var packagePath = path.join(__dirname, '../package.json'),
     packageInfo = JSON.parse(fs.readFileSync(packagePath));
@@ -36,6 +25,7 @@ commander
 
   .option('-v, --variable <name>', 'provide a name for the variable traditionally used by the library (e.g., jQuery, $, _) -- used for tests and benchmarks')
   .option('-o, --output <destination>', 'specify an output directory (defaults to "docs")')
+  .option('--template <path>', 'use a custom Mustache template')
   .option('--namespaces <names>', 'provide a comma-separated list of the namespaces to document (defaults to all, in alphabetical order)', argToList)
   .option('--javascripts <sources>', 'specify additional JS dependencies (comma-separated)', argToList)
   .option('--tags <tag>', 'only use the methods tagged with the specified tag')
@@ -58,39 +48,26 @@ var filePath     = Lazy(process.argv).last(),
     templatePath = commander.template || path.join(__dirname, '../resources/docs.html.mustache'),
     template     = fs.readFileSync(templatePath, 'utf-8');
 
-var processOpts = Lazy(commander)
-  .pick(['namespaces', 'tags'])
-  .defaults({
-    namespaces: [],
-    tags: []
-  })
-  .toObject();
-
-var generateOpts = Lazy(commander)
-  .pick(['javascripts'])
-  .defaults({
-    javascripts: [],
-    template: template,
-    templateEngine: Mustache
-  })
-  .toObject();
+var options            = Breakneck.options;
+options.namespace      = commander.namespaces;
+options.tags           = commander.tags;
+options.javascripts    = commander.javascripts;
+options.template       = template;
+options.templateEngine = Mustache;
 
 if (helperExists) {
-  generateOpts.javascripts.push('doc_helper.js');
+  options.javascripts.push('doc_helper.js');
 }
 
 if (configExists) {
   // First of all, include it in the actual docs HTML.
-  generateOpts.javascripts.push('handlers.js');
+  options.javascripts.push('handlers.js');
 
   // Also require it locally.
-  generateOpts.config = require(path.join(process.cwd(), configPath));
+  options.exampleHandlers = require(path.join(process.cwd(), configPath));
 }
 
-var docsHtml = Breakneck.generate(template, sourceCode, {
-  processOpts: processOpts,
-  generateOpts: generateOpts
-});
+var docsHtml = Breakneck.generate(sourceCode, options);
 
 function writeFile(destination, content) {
   var directory = path.dirname(destination);
