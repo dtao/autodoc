@@ -192,8 +192,12 @@
       });
     }
 
-    // Group by namespace so that we can keep the docs organized.
-    docs = docs
+    // Provide a flat list of all docs to make it easier to, e.g., apply some
+    // logic to every doclet in the library.
+    var docList = docs.toArray();
+
+    // Also group by namespace so that we can keep the docs organized.
+    var docGroups = Lazy(docList)
       .groupBy(function(doc) {
         return doc.namespace || doc.shortName;
       })
@@ -202,12 +206,12 @@
     // Only include specified namespaces, if the option has been provided.
     // Otherwise use all namespaces.
     if (this.namespaces.length === 0) {
-      this.namespaces = Object.keys(docs);
+      this.namespaces = Object.keys(docGroups);
     }
 
     var namespaces = Lazy(this.namespaces)
       .map(function(namespace) {
-        return Breakneck.createNamespaceInfo(docs, namespace);
+        return Breakneck.createNamespaceInfo(docGroups, namespace);
       })
       .toArray();
 
@@ -218,7 +222,8 @@
       name: librarySummary.name,
       description: librarySummary.description,
       code: code,
-      namespaces: namespaces
+      namespaces: namespaces,
+      docs: docList
     };
   };
 
@@ -255,7 +260,7 @@
           Lazy(exampleHandlers).each(function(handler, i) {
             if (handler.pattern.test(example.output)) {
               // Mark this example as being handled
-              example.customHandler = true;
+              example.hasCustomHandler = true;
               example.handlerIndex = i;
 
               // Force output to look like a string, so we can dump it in the
@@ -490,7 +495,7 @@
     return {
       name: name,
       shortName: shortName,
-      namespace: namespace,
+      namespace: namespace || null,
       identifier: name.replace(/[\.#]/g, '-')
     };
   };
@@ -789,7 +794,8 @@
     // 1. constructor
     // 2. static methods
     // 3. instance methods
-    var allMembers = Lazy([constructorMethod]).concat(members)
+    var allMembers = Lazy([constructorMethod])
+      .concat(members)
       .compact()
       .toArray();
 

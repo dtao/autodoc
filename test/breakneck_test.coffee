@@ -1,12 +1,11 @@
-require('should')
-
 path      = require('path')
-sinon     = require('sinon')
 esprima   = require('esprima')
 doctrine  = require('doctrine')
 marked    = require('marked')
 Breakneck = require('../')
 Lazy      = require('lazy.js')
+sinon     = require('sinon')
+should    = require('should')
 
 describe 'Breakneck', ->
   describe '#parseComment', ->
@@ -53,6 +52,9 @@ describe 'Breakneck', ->
 
     it 'for constructors/namespaces, sets the identifier to the namespace', ->
       Breakneck.parseName('Foo').identifier.should.eql('Foo')
+
+    it 'for constructors/namespaces, sets the namespace to null', ->
+      should(Breakneck.parseName('Foo').namespace).eql(null)
 
   describe 'parsePair', ->
     it 'splits a line across the string "//=>"', ->

@@ -64,7 +64,7 @@ if (configExists) {
   options.javascripts.push('handlers.js');
 
   // Also require it locally.
-  options.exampleHandlers = require(path.join(process.cwd(), configPath));
+  options.exampleHandlers = require(path.join(process.cwd(), configPath)).exampleHandlers;
 }
 
 var docsHtml = Breakneck.generate(sourceCode, options);
