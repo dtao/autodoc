@@ -3,9 +3,17 @@ require('should')
 path      = require('path')
 sinon     = require('sinon')
 esprima   = require('esprima')
+doctrine  = require('doctrine')
+marked    = require('marked')
 Breakneck = require('../')
 
 describe 'Breakneck', ->
+  describe '#parseComment', ->
+    it 'wraps some text in /* and */ to pass to doctrine', ->
+      parser = { parse: sinon.spy() }
+      new Breakneck({ commentParser: parser }).parseComment({ value: 'foo' })
+      sinon.assert.calledWith(parser.parse, '/*foo*/', { unwrap: true })
+
   describe 'getIdentifierName', ->
     parse = (code) ->
       esprima.parse(code).body[0]
@@ -70,13 +78,24 @@ describe 'Breakneck', ->
         right: 'bar'
       })
 
-  describe 'parseComment', ->
-    it 'wraps some text in /* and */ to pass to doctrine', ->
-      parser = { parse: sinon.spy() }
-      Breakneck.parseComment({ value: 'foo' }, parser)
-      sinon.assert.calledWith(parser.parse, '/*foo*/', { unwrap: true })
-
   describe 'parse', ->
-    it 'should be able to parse javascript without falling over', ->
-      test = "/*\n * @name hello world\n *\n * @fileOverview\n * This is a test comment\n */"
-      Breakneck.parse(test).name.should.eql 'hello world'
+    source =
+      """
+        /**
+         * @name hello world
+         *
+         * @fileOverview
+         * This is a description.
+         */
+      """
+
+    data = Breakneck.parse source,
+      codeParser: esprima
+      commentParser: doctrine
+      markdownParser: marked
+
+    it 'pulls the library name from the @name tag', ->
+      data.name.should.eql 'hello world'
+
+    it 'pulls the description from the @fileOverview tag', ->
+      data.description.should.match /^\s*<p>This is a description.<\/p>\s*$/

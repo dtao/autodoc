@@ -49,9 +49,46 @@
   });
 
   /**
-   * @namespace Breakneck
+   * @typedef {Object} Parser
+   * @property {function(string):*} parse
    */
-  var Breakneck = {};
+
+  /**
+   * @callback ParseMethod
+   * @param {string} input
+   * @returns {*}
+   */
+
+  /**
+   * @typedef {Object} BreakneckOptions
+   * @property {Parser|ParseMethod} codeParser
+   * @property {Parser|ParseMethod} commentParser
+   * @property {Parser|ParseMethod} markdownParser
+   */
+
+  /**
+   * @constructor
+   * @param {BreakneckOptions=} options
+   */
+  function Breakneck(options) {
+    options = options || {};
+
+    this.codeParser     = wrapParser(options.codeParser);
+    this.commentParser  = wrapParser(options.commentParser);
+    this.markdownParser = wrapParser(options.markdownParser, processInternalLinks);
+  }
+
+  /**
+   * Creates a Breakneck instance with the specified options and uses it to
+   * parse the given code.
+   *
+   * @param {string} code The JavaScript code to parse.
+   * @param {BreakneckOptions=} options
+   * @returns {Object}
+   */
+  Breakneck.parse = function(code, options) {
+    return new Breakneck(options).parse(code);
+  };
 
   /**
    * Parses an arbitrary blob of JavaScript code and returns an object
@@ -59,39 +96,29 @@
    * docs, specs, and performance benchmarks.
    *
    * @param {string} code The JavaScript code to parse.
-   * @param {Object=} options
    * @returns {Object}
    */
-  Breakneck.parse = function(code, options) {
-    options = options || {};
-
-    var codeParser     = options.codeParser     || context.esprima,
-        commentParser  = options.commentParser  || context.doctrine,
-        markdownParser = options.markdownParser || defaultMarkdownParser();
+  Breakneck.prototype.parse = function(code) {
+    var breakneck = this;
 
     // Generate the abstract syntax tree.
-    var ast = codeParser.parse(code, {
+    var ast = this.codeParser.parse(code, {
       comment: true,
       loc: true
     });
 
-    // Extract all of the function from the AST, and map them to their location
+    // Extract all of the functions from the AST, and map them to their location
     // in the code (this is so that we can associate each function with its
     // accompanying doc comments, if any).
     var functions = Lazy(ast.body).nodes()
-      .filter(function(node) {
-        return !!Breakneck.getIdentifierName(node);
-      })
-      .groupBy(function(node) {
-        return node.loc.start.line;
-      })
+      .filter(function(node) { return !!Breakneck.getIdentifierName(node); })
+      .groupBy(function(node) { return node.loc.start.line; })
       .toObject();
 
     // Go through all of of the comments in the AST, attempting to associate
     // each with a function.
     var docs = Lazy(ast.comments)
       .map(function(comment) {
-
         // Find the function right after this comment. If none exists, skip it.
         var fn = functions[comment.loc.end.line + 1];
         if (typeof fn === 'undefined') {
@@ -100,47 +127,19 @@
 
         // Attempt to parse the comment. If it can't be parsed, or it appears to
         // be basically empty, then skip it.
-        var doc = Breakneck.parseComment(comment, commentParser);
+        var doc = breakneck.parseComment(comment);
         if (typeof doc === 'undefined' || !doc.description) {
           return null;
         }
 
-        var name        = Breakneck.parseName(Breakneck.getIdentifierName(fn[0])),
-            description = markdownParser.parse(doc.description),
-            params      = Breakneck.getParams(doc, markdownParser),
-            returns     = Breakneck.getReturns(doc, markdownParser),
-            isCtor      = Breakneck.hasTag(doc, 'constructor'),
-            isStatic    = name.name.indexOf('#') === -1, // That's right, hacky smacky
-            signature   = Breakneck.getSignature(name, params),
-            examples    = Breakneck.getExamples(doc),
-            benchmarks  = Breakneck.getBenchmarks(doc),
-            tags        = Lazy(doc.tags).pluck('title').toArray();
-
-        return {
-          name: name.name,
-          shortName: name.shortName,
-          identifier: name.identifier,
-          namespace: name.namespace,
-          description: description,
-          params: params,
-          returns: returns,
-          isConstructor: isCtor,
-          isStatic: isStatic,
-          hasSignature: params.length > 0 || !!returns,
-          signature: signature,
-          examples: examples,
-          hasExamples: examples.examples.length > 0,
-          benchmarks: benchmarks,
-          hasBenchmarks: benchmarks.benchmarks.length > 0,
-          tags: tags
-        };
+        return breakneck.createFunctionInfo(fn, comment);
       })
       .compact()
       .toArray();
 
     // This is kind of stupid... for now, I'm just assuming the library will
     // have a @fileOverview tag and @name tag in the header comments.
-    var libraryInfo = Breakneck.getLibraryInfo(ast.comments, commentParser, markdownParser);
+    var libraryInfo = breakneck.getLibraryInfo(ast.comments);
 
     return {
       name: libraryInfo.name,
@@ -148,6 +147,171 @@
       code: code,
       docs: docs
     };
+  };
+
+  /**
+   * @typedef {Object} FunctionInfo
+   * @property {string} name
+   * @property {string} description
+   * @property {boolean} isConstructor
+   * @property {boolean} isStatic
+   * @property {boolean} hasExamples
+   * @property {boolean} hasBenchmarks
+   * @property {Array.<ParameterInfo>} params
+   * @property {Array.<ReturnInfo>} returns
+   * @property {ExampleCollection} examples
+   * @property {BenchmarkCollection} benchmarks
+   * @property {Array.<string>} tags
+   */
+
+  /**
+   * Takes a function node from the AST along with parsed comment and generates
+   * an object with boatloads of data on it, useful for passing to a templating
+   * system such as Mustache.
+   *
+   * @param {Object} fn
+   * @param {Object} comment
+   * @returns {FunctionInfo}
+   */
+  Breakneck.prototype.createFunctionInfo = function(fn, comment) {
+    var nameInfo    = Breakneck.parseName(Breakneck.getIdentifierName(fn[0])),
+        description = this.markdownParser.parse(doc.description),
+        params      = this.getParams(doc),
+        returns     = this.getReturns(doc),
+        isCtor      = Breakneck.hasTag(doc, 'constructor'),
+        isStatic    = nameInfo.name.indexOf('#') === -1, // That's right, hacky smacky
+        signature   = Breakneck.getSignature(nameInfo, params),
+        examples    = Breakneck.getExamples(doc),
+        benchmarks  = Breakneck.getBenchmarks(doc),
+        tags        = Lazy(doc.tags).pluck('title').toArray();
+
+    return {
+      name: nameInfo.name,
+      shortName: nameInfo.shortName,
+      identifier: nameInfo.identifier,
+      namespace: nameInfo.namespace,
+      description: description,
+      params: params,
+      returns: returns,
+      isConstructor: isCtor,
+      isStatic: isStatic,
+      hasSignature: params.length > 0 || !!returns,
+      signature: signature,
+      examples: examples,
+      hasExamples: examples.examples.length > 0,
+      benchmarks: benchmarks,
+      hasBenchmarks: benchmarks.benchmarks.length > 0,
+      tags: tags
+    };
+  };
+
+  /**
+   * @typedef {Object} ParameterInfo
+   * @property {string} name
+   * @property {string} type
+   * @property {string} description
+   */
+
+  /**
+   * Gets an array of { name, type, description } objects representing the
+   * parameters of a function definition.
+   *
+   * @param {Object} doc The doclet for the function.
+   * @returns {Array.<ParameterInfo>} An array of { name, type, description }
+   *     objects.
+   */
+  Breakneck.prototype.getParams = function(doc) {
+    var markdownParser = this.markdownParser;
+
+    return Lazy(doc.tags)
+      .where({ title: 'param' })
+      .map(function(tag) {
+        return {
+          name: tag.name,
+          type: Breakneck.formatType(tag.type),
+          description: markdownParser.parse(tag.description || '')
+        };
+      })
+      .toArray();
+  };
+
+  /**
+   * @typedef {Object} ReturnInfo
+   * @property {string} type
+   * @property {string} description
+   */
+
+  /**
+   * Get a { type, description } object representing the return value of a
+   * function definition.
+   *
+   * @param {Object} doc The doclet for the function.
+   * @returns {ReturnInfo} A { type, description } object.
+   */
+  Breakneck.prototype.getReturns = function(doc) {
+    var returnTag = Lazy(doc.tags).findWhere({ title: 'returns' });
+
+    if (typeof returnTag === 'undefined') {
+      return null;
+    }
+
+    return {
+      type: Breakneck.formatType(returnTag.type),
+      description: this.markdownParser.parse(returnTag.description || '')
+    };
+  };
+
+  /**
+   * @typedef LibraryInfo
+   * @property {string} name
+   * @property {string} description
+   */
+
+  /**
+   * Returns a { name, description } object describing an entire library.
+   *
+   * @param {Array.<string>} comments
+   * @returns {LibraryInfo}
+   */
+  Breakneck.prototype.getLibraryInfo = function(comments) {
+    var breakneck = this;
+
+    var docWithFileOverview = Lazy(comments)
+      .map(function(comment) {
+        return breakneck.parseComment(comment);
+      })
+      .compact()
+      .filter(function(doc) {
+        return Lazy(doc.tags).where({ title: 'fileOverview' }).any();
+      })
+      .first();
+
+    var libraryName = 'Untitled Library',
+        libraryDesc = '[No description]';
+
+    if (docWithFileOverview) {
+      libraryDesc = Lazy(docWithFileOverview.tags).findWhere({ title: 'fileOverview' }).description;
+
+      var libraryNameTag = Lazy(docWithFileOverview.tags).findWhere({ title: 'name' });
+      if (libraryNameTag) {
+        libraryName = libraryNameTag.description;
+      }
+    }
+
+    return {
+      name: libraryName,
+      description: this.markdownParser.parse(libraryDesc)
+    };
+  };
+
+  /**
+   * Parses a comment.
+   *
+   * @param {string} comment The comment to parse.
+   * @returns {Object}
+   */
+  Breakneck.prototype.parseComment = function(comment) {
+    return this.commentParser.parse('/*' + comment.value + '*/', { unwrap: true });
   };
 
   /**
@@ -204,66 +368,6 @@
   };
 
   /**
-   * @typedef {Object} MarkdownParser
-   * @property {function(string):string} parse
-   */
-
-  /**
-   * @typedef {Object} ParameterInfo
-   * @property {string} name
-   * @property {string} type
-   * @property {string} description
-   */
-
-  /**
-   * Gets an array of { name, type, description } objects representing the
-   * parameters of a function definition.
-   *
-   * @param {Object} doc The doclet for the function.
-   * @param {MarkdownParser} markdownParser A Markdown parser.
-   * @returns {Array.<ParameterInfo>} An array of { name, type, description } objects.
-   */
-  Breakneck.getParams = function(doc, markdownParser) {
-    return Lazy(doc.tags)
-      .where({ title: 'param' })
-      .map(function(tag) {
-        return {
-          name: tag.name,
-          type: Breakneck.formatType(tag.type),
-          description: markdownParser.parse(tag.description || '')
-        };
-      })
-      .toArray();
-  };
-
-  /**
-   * @typedef {Object} ReturnInfo
-   * @property {string} type
-   * @property {string} description
-   */
-
-  /**
-   * Get a { type, description } object representing the return value of a
-   * function definition.
-   *
-   * @param {Object} doc The doclet for the function.
-   * @param {MarkdownParser} markdownParser A Markdown parser.
-   * @returns {ReturnInfo} A { type, description } object.
-   */
-  Breakneck.getReturns = function(doc, markdownParser) {
-    var returnTag = Lazy(doc.tags).findWhere({ title: 'returns' });
-
-    if (typeof returnTag === 'undefined') {
-      return null;
-    }
-
-    return {
-      type: Breakneck.formatType(returnTag.type),
-      description: markdownParser.parse(returnTag.description || '')
-    };
-  };
-
-  /**
    * Simply determines whether a doc has a tag or doesn't.
    *
    * @param {Object} doc The doclet to check.
@@ -289,49 +393,6 @@
     } else {
       return name.namespace + '.' + name.shortName + ' = function' + formattedParams;
     }
-  };
-
-  /**
-   * @typedef LibraryInfo
-   * @property {string} name
-   * @property {string} description
-   */
-
-  /**
-   * Returns a { name, description } object describing an entire library.
-   *
-   * @param {Array.<string>} comments
-   * @param {Object} commentParser
-   * @param {Object} markdownParser
-   * @returns {LibraryInfo}
-   */
-  Breakneck.getLibraryInfo = function(comments, commentParser, markdownParser) {
-    var docWithFileOverview = Lazy(comments)
-      .map(function(comment) {
-        return Breakneck.parseComment(comment, commentParser);
-      })
-      .compact()
-      .filter(function(doc) {
-        return Lazy(doc.tags).where({ title: 'fileOverview' }).any();
-      })
-      .first();
-
-    var libraryName = 'Untitled Library',
-        libraryDesc = '[No description]';
-
-    if (docWithFileOverview) {
-      libraryDesc = Lazy(docWithFileOverview.tags).findWhere({ title: 'fileOverview' }).description;
-
-      var libraryNameTag = Lazy(docWithFileOverview.tags).findWhere({ title: 'name' });
-      if (libraryNameTag) {
-        libraryName = libraryNameTag.description;
-      }
-    }
-
-    return {
-      name: libraryName,
-      description: markdownParser.parse(libraryDesc)
-    };
   };
 
   /**
@@ -557,31 +618,46 @@
   };
 
   /**
-   * Parses a comment.
-   *
-   * @param {string} comment The comment to parse.
-   * @param {Object} commentParser The parser to use. For now this will just
-   *     use Doctrine.
-   * @returns {Object}
+   * Takes either a `{ parse }` object or an actual function and wraps it as a
+   * `{ parse }` object with an optional post-processing step.
    */
-  Breakneck.parseComment = function(comment, commentParser) {
-    return commentParser.parse('/*' + comment.value + '*/', { unwrap: true });
-  };
+  function wrapParser(parser, postprocess) {
+    if (!parser) {
+      return null;
+    }
 
-  function defaultMarkdownParser() {
+    postprocess = postprocess || Lazy.identity;
+
+    var parseMethod = typeof parser === 'function' ?
+      parser :
+      parser.parse;
+
     return {
-      parse: function(markdown) {
-        return context.marked(markdown).replace(/\{@link ([^\}]*)}/g, function(string, match) {
-          return '<a href="#' + match.replace(/[\.#]/g, '-') + '">' + match + '</a>';
-        });
+      parse: function() {
+        return postprocess(parseMethod.apply(parser, arguments));
       }
     };
   }
 
+  /**
+   * Replaces, e.g., '{@link MyClass}' with '<a href="#MyClass">MyClass</a>'.
+   */
+  function processInternalLinks(html) {
+    return html.replace(/\{@link ([^\}]*)}/g, function(string, match) {
+      return '<a href="#' + match.replace(/[\.#]/g, '-') + '">' + match + '</a>';
+    });
+  }
+
+  /**
+   * Removes leading and trailing whitespace from a string.
+   */
   function trim(string) {
     return string.replace(/^\s+/, '').replace(/\s+$/, '');
   }
 
+  /**
+   * Splits a string into two parts on either side of a specified divider.
+   */
   function divide(string, divider) {
     var seam = string.indexOf(divider);
     if (seam === -1) {
