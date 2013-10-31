@@ -46,11 +46,7 @@ if (process.argv.length <= 2) {
   process.exit();
 }
 
-function getLast(arr) {
-  return arr[arr.length - 1];
-}
-
-var filePath     = getLast(process.argv),
+var filePath     = Lazy(process.argv).last(),
     outputDir    = commander.output || 'docs',
     javascripts  = commander.javascripts || [],
     helperPath   = path.join(outputDir, 'doc_helper.js'),
