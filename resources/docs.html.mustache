@@ -191,7 +191,15 @@
                         (function() {
                           var spec = it('returns {{output}} for {{input}}', function() {
                             var result = {{{input}}};
+                            {{#customHandler}}
+                            var handler = exampleHandlers[{{handlerIndex}}],
+                                match   = {{{outputPattern}}}.match(handler.pattern);
+
+                            handler.test(match, result);
+                            {{/customHandler}}
+                            {{^customHandler}}
                             assertEquality(result, {{{output}}});
+                            {{/customHandler}}
                           });
 
                           spec.exampleId = '{{identifier}}-{{id}}';

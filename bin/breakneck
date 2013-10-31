@@ -59,6 +59,8 @@ var filePath     = getLast(process.argv),
     javascripts  = commander.javascripts || [],
     helperPath   = path.join(outputDir, 'doc_helper.js'),
     helperExists = fs.existsSync(helperPath),
+    configPath   = path.join(outputDir, 'handlers.js'),
+    configExists = fs.existsSync(configPath),
     libraryInfo  = Breakneck.parse(fs.readFileSync(filePath, 'utf-8'));
 
 var docsToInlude = localLazy(libraryInfo.docs);
@@ -124,6 +126,49 @@ var templateData = localLazy(libraryInfo)
 
 if (helperExists) {
   templateData.javascripts.push('doc_helper.js');
+}
+
+var config = { handlers: [] };
+
+// Allow a library to provide a config.js file, which should define a handlers
+// array like:
+//
+// [
+//   { pattern: /regex/, matcher: function(match, actual) },
+//   { pattern: /regex/, matcher: function(match, actual) },
+//   ...
+// ]
+//
+if (configExists) {
+  // First of all, include it in the actual docs HTML.
+  templateData.javascripts.push('handlers.js');
+
+  // Also require it locally.
+  config = require(path.join(process.cwd(), configPath));
+
+  // Then, look at all of our examples...
+  // those that are matched by some handler, we will leave to be handled
+  // in some custom way.
+  localLazy(templateData.docs)
+    .map(function(doc) {
+      return doc.examples.examples;
+    })
+    .flatten()
+    .each(function(example) {
+      localLazy(config.exampleHandlers || []).each(function(handler, i) {
+        if (handler.pattern.test(example.output)) {
+          // Mark this example as being handled
+          example.customHandler = true;
+          example.handlerIndex = i;
+
+          // Force output to look like a string
+          example.outputPattern = JSON.stringify(example.output);
+
+          // Exit early
+          return false;
+        }
+      });
+    });
 }
 
 var template = fs.readFileSync(path.join(__dirname, '../resources/docs.html.mustache'), 'utf-8'),
