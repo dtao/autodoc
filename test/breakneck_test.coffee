@@ -6,6 +6,7 @@ esprima   = require('esprima')
 doctrine  = require('doctrine')
 marked    = require('marked')
 Breakneck = require('../')
+Lazy      = require('lazy.js')
 
 describe 'Breakneck', ->
   describe '#parseComment', ->
@@ -87,6 +88,20 @@ describe 'Breakneck', ->
          * @fileOverview
          * This is a description.
          */
+
+        /**
+         * The main namespace.
+         */
+        function Foo() {};
+
+        /**
+         * Returns 'foo'
+         *
+         * @returns {string}
+         */
+        Foo.getName = function() {
+          return 'foo';
+        };
       """
 
     data = Breakneck.parse source,
@@ -94,8 +109,28 @@ describe 'Breakneck', ->
       commentParser: doctrine
       markdownParser: marked
 
+    listNamespaces = (data) ->
+      Lazy(data.namespaces)
+        .pluck('namespace')
+        .toArray()
+
+    listMembersForNamespace = (data, namespace) ->
+      members = Lazy(data.namespaces)
+        .findWhere({ namespace: namespace })
+        .members
+
+      Lazy(members)
+        .pluck('shortName')
+        .toArray()
+
     it 'pulls the library name from the @name tag', ->
       data.name.should.eql 'hello world'
 
     it 'pulls the description from the @fileOverview tag', ->
       data.description.should.match /^\s*<p>This is a description.<\/p>\s*$/
+
+    it 'gets all namespaces', ->
+      listNamespaces(data).should.eql ['Foo']
+
+    it 'groups functions by namespace', ->
+      listMembersForNamespace(data, 'Foo').should.eql ['getName']

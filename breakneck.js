@@ -201,7 +201,11 @@
 
     // Only include specified namespaces, if the option has been provided.
     // Otherwise use all namespaces.
-    var namespaces = Lazy(this.namespaces || Object.keys(docs))
+    if (this.namespaces.length === 0) {
+      this.namespaces = Object.keys(docs);
+    }
+
+    var namespaces = Lazy(this.namespaces)
       .map(function(namespace) {
         return Breakneck.createNamespaceInfo(docs, namespace);
       })
