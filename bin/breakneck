@@ -40,7 +40,6 @@ if (process.argv.length <= 2) {
 var filePath     = Lazy(process.argv).last(),
     sourceCode   = fs.readFileSync(filePath, 'utf-8'),
     outputDir    = commander.output || 'docs',
-    javascripts  = commander.javascripts || [],
     helperPath   = path.join(outputDir, 'doc_helper.js'),
     helperExists = fs.existsSync(helperPath),
     configPath   = path.join(outputDir, 'handlers.js'),
@@ -49,7 +48,19 @@ var filePath     = Lazy(process.argv).last(),
 var options         = Breakneck.options;
 options.namespace   = commander.namespaces;
 options.tags        = commander.tags;
-options.javascripts = commander.javascripts;
+options.javascripts = commander.javascripts || [];
+
+if (helperExists) {
+  options.javascripts.push('doc_helper.js');
+}
+
+if (configExists) {
+  // First of all, include it in the actual docs HTML.
+  options.javascripts.push('handlers.js');
+
+  // Also require it locally.
+  options.exampleHandlers = require(path.join(process.cwd(), configPath)).exampleHandlers;
+}
 
 function runTests() {
   Breakneck.options.testRunner = function(jasmine) {
@@ -84,22 +95,10 @@ function runTests() {
 }
 
 function generateDocs() {
-  var templatePath = commander.template || path.join(__dirname, '../resources/docs.html.mustache');
+  var templatePath = commander.template ||
+    path.join(__dirname, '../resources/docs.html.mustache');
 
-  options.template       = fs.readFileSync(templatePath, 'utf-8');
-  options.templateEngine = require('mustache');
-
-  if (helperExists) {
-    options.javascripts.push('doc_helper.js');
-  }
-
-  if (configExists) {
-    // First of all, include it in the actual docs HTML.
-    options.javascripts.push('handlers.js');
-
-    // Also require it locally.
-    options.exampleHandlers = require(path.join(process.cwd(), configPath)).exampleHandlers;
-  }
+  options.template = fs.readFileSync(templatePath, 'utf-8');
 
   var docsHtml = Breakneck.generate(sourceCode, options);
 
