@@ -331,9 +331,9 @@
       hasSignature: params.length > 0 || !!returns,
       signature: signature,
       examples: examples,
-      hasExamples: examples.examples.length > 0,
+      hasExamples: examples.list.length > 0,
       benchmarks: benchmarks,
-      hasBenchmarks: benchmarks.benchmarks.length > 0,
+      hasBenchmarks: benchmarks.list.length > 0,
       tags: tags
     };
   };
@@ -622,7 +622,7 @@
    * @typedef {Object} ExampleCollection
    * @property {string} code
    * @property {string} setup
-   * @property {Array.<ExampleInfo>} examples
+   * @property {Array.<ExampleInfo>} list
    */
 
   /**
@@ -637,7 +637,7 @@
       return {
         code: data.content,
         setup: data.preamble,
-        examples: Lazy(data.pairs).map(function(pair) {
+        list: Lazy(data.pairs).map(function(pair) {
           return {
             id: exampleIdCounter++,
             input: pair.left,
@@ -667,7 +667,7 @@
    * @typedef {Object} BenchmarkCollection
    * @property {string} code
    * @property {string} setup
-   * @property {Array.<BenchmarkInfo>} benchmarks
+   * @property {Array.<BenchmarkInfo>} list
    */
 
   /**
@@ -705,7 +705,7 @@
       return {
         code: data.content,
         setup: data.preamble,
-        benchmarks: benchmarks,
+        list: benchmarks,
         cases: benchmarks.length > 0 ? benchmarks[0].cases : []
       };
     });

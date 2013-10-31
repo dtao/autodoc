@@ -187,7 +187,7 @@
 
                         {{{setup}}}
 
-                        {{#examples}}
+                        {{#list}}
                         (function() {
                           var spec = it('returns {{output}} for {{input}}', function() {
                             var result = {{{input}}};
@@ -207,7 +207,7 @@
                           spec.output = '{{output}}';
                         }());
 
-                        {{/examples}}
+                        {{/list}}
                         {{/examples}}
                       });
 
@@ -218,7 +218,7 @@
 
                         benchmarks['{{identifier}}'] = [];
 
-                        {{#benchmarks}}
+                        {{#list}}
                         {{#cases}}
                         (function() {
                           var benchmark = new Benchmark('{{name}}', {
@@ -235,7 +235,7 @@
                         }());
 
                         {{/cases}}
-                        {{/benchmarks}}
+                        {{/list}}
                         {{/benchmarks}}
                       }());
                     </script>
