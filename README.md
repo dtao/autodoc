@@ -67,7 +67,7 @@ this.exampleHandlers = [
 
 For every example in your comments, the expected output will first be checked against all of your custom handlers (in order) to see if there's a match; otherwise, Breakneck will perform a simple equality comparison using a method called `assertEquality`.
 
-By default Breakneck uses Jasmine, so under the hood `assertEquality` is implemented using `expect` and `toEqual`. You are free to implement `assertEquality` yourself in any way you choose, though, in a file called **doc_helper.js**. Breakneck won't clobber your implementation.
+By default Breakneck uses [Jasmine](http://pivotal.github.io/jasmine/), so under the hood `assertEquality` is implemented using `expect(a).toEqual(b)`. You are free to implement `assertEquality` yourself in any way you choose, though, in a file called **doc_helper.js**. Breakneck won't clobber your implementation.
 
 Incidentally, doc_helper.js is also a good place to put any other specific JavaScript you want. Breakneck will include a `<script>` tag pointing to it, if it exists, in the output HTML.
 
@@ -86,6 +86,8 @@ Use the `@benchmarks` tag to specify cases you want to profile for performance. 
  */
 ```
 
+This will automatically add a benchmark runner in the appropriate place in the docs, along with a bar chart.
+
 You can also group your benchmarks, e.g., by input size, simply by adding `" - [something to group by]"`; for instance:
 
 ```javascript
@@ -98,4 +100,4 @@ You can also group your benchmarks, e.g., by input size, simply by adding `" - [
  */
 ```
 
-This will automatically add a benchmark runner in the appropriate place in the docs, along with a bar chart.
+This will cause the resulting bar chart to display grouped results.
