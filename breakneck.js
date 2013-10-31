@@ -60,7 +60,7 @@
    */
 
   /**
-   * @typedef {Object} BreakneckOptions
+   * @typedef {Object} ParseOptions
    * @property {Parser|ParseMethod} codeParser
    * @property {Parser|ParseMethod} commentParser
    * @property {Parser|ParseMethod} markdownParser
@@ -68,7 +68,7 @@
 
   /**
    * @constructor
-   * @param {BreakneckOptions=} options
+   * @param {ParseOptions=} options
    */
   function Breakneck(options) {
     options = Lazy(options || {})
@@ -86,16 +86,74 @@
   Breakneck.options = {};
 
   /**
+   * @typedef {Object} LibraryInfo
+   * @property {string} name
+   * @property {string} description
+   * @property {string} code
+   * @property {Array.<FunctionInfo>} docs
+   */
+
+  /**
    * Creates a Breakneck instance with the specified options and uses it to
    * parse the given code.
    *
    * @param {string} code The JavaScript code to parse.
-   * @param {BreakneckOptions=} options
-   * @returns {Object}
+   * @param {ParseOptions=} options
+   * @returns {LibraryInfo}
    */
   Breakneck.parse = function(code, options) {
     return new Breakneck(options).parse(code);
   };
+
+  /**
+   * Creates a Breakneck instance with the specified processing options and uses
+   * it to process the given code.
+   *
+   * @param {string} code The JavaScript code to parse and process.
+   * @param {{parseOpts: ParseOptions, processOpts: ProcessOptions}} options
+   * @returns {Object}
+   */
+  Breakneck.process = function(code, options) {
+    var libraryInfo = Breakneck.parse(code, options.parseOpts);
+
+    var processOptions = options.processOpts || {},
+        docsToInlude   = Lazy(libraryInfo.docs);
+
+    // Only include documentation for functions with the specified tag(s), if
+    // provided.
+    if (processOpts.tagged) {
+      docsToInlude = docsToInlude.filter(function(doc) {
+        return Lazy(doc.tags).contains(processOpts.tagged);
+      });
+    }
+
+    // Group by namespace so that we can keep the docs organized.
+    var groupedByNamespace = docsToInlude
+      .groupBy(function(doc) {
+        return doc.namespace || doc.shortName;
+      })
+      .toObject();
+
+    // Only include specified namespaces, if the option has been provided.
+    // Other use all namespaces.
+
+    // TODO: Make this code a little more agnostic about the whole namespace
+    // thing. I'm pretty sure there are plenty of libraries that don't use
+    // this pattern at all.
+    libraryInfo.namespaces = Lazy(processOpts.namespaces || Object.keys(groupedByNamespace))
+      .map(function(namespace) {
+        return Breakneck.getDocsForNamespace(groupedByNamespace, namespace);
+      })
+      .toArray();
+
+    return libraryInfo;
+  };
+
+  /**
+   * @typedef LibrarySummary
+   * @property {string} name
+   * @property {string} description
+   */
 
   /**
    * Parses an arbitrary blob of JavaScript code and returns an object
@@ -146,11 +204,11 @@
 
     // This is kind of stupid... for now, I'm just assuming the library will
     // have a @fileOverview tag and @name tag in the header comments.
-    var libraryInfo = breakneck.getLibraryInfo(ast.comments);
+    var librarySummary = breakneck.getLibrarySummary(ast.comments);
 
     return {
-      name: libraryInfo.name,
-      description: libraryInfo.description,
+      name: librarySummary.name,
+      description: librarySummary.description,
       code: code,
       docs: docs
     };
@@ -269,18 +327,12 @@
   };
 
   /**
-   * @typedef LibraryInfo
-   * @property {string} name
-   * @property {string} description
-   */
-
-  /**
    * Returns a { name, description } object describing an entire library.
    *
    * @param {Array.<string>} comments
-   * @returns {LibraryInfo}
+   * @returns {LibrarySummary}
    */
-  Breakneck.prototype.getLibraryInfo = function(comments) {
+  Breakneck.prototype.getLibrarySummary = function(comments) {
     var breakneck = this;
 
     var docWithFileOverview = Lazy(comments)
@@ -622,6 +674,48 @@
       default:
         throw 'Unable to format type ' + type.type + '!\n\n' + JSON.stringify(type, null, 2);
     }
+  };
+
+  Breakneck.getDocsForNamespace = function(groups, namespace) {
+    // Find the corresponding constructor, if one exists.
+    var constructorMethod = Lazy(libraryInfo.docs).findWhere({ name: namespace }),
+
+    // Get all the members that are part of the specified namespace, excluding
+    // the constructor (if applicable), and sort them alphabetically w/ so-called
+    // "static" members coming first.
+    var members = Lazy(groupedByNamespace[namespace])
+      .reject(function(doc) {
+        return doc.name === namespace;
+      })
+      .sortBy(function(doc) {
+        // Talk about hacky...
+        // This is how I've decided to put static methods first.
+        return (doc.isStatic ? 'a' : 'b') + doc.shortName;
+      })
+      .toArray();
+
+    // For templating purposes, it will also be useful to have a collection
+    // comprising ALL members, in this order:
+    //
+    // 1. constructor
+    // 2. static methods
+    // 3. instance methods
+    var allMembers = Lazy([constructorMethod]).concat(members)
+      .compact()
+      .toArray();
+
+    // Decorate these docs w/ a meaningful "type" (this is more useful than just
+    // a boolean flag, and it's easier to do here than in the template).
+    Lazy(allMembers).each(function(member) {
+      member.sectionType = member.isConstructor ? 'constructor' : 'method';
+    });
+
+    return {
+      namespace: namespace,
+      constructorMethod: constructorMethod,
+      members: members,
+      allMembers: allMembers
+    };
   };
 
   /**

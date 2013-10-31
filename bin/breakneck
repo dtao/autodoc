@@ -41,6 +41,7 @@ commander
   .option('--tagged <tag>', 'only use the methods tagged with the specified tag')
   .parse(process.argv);
 
+// Spit out help and exit if the user didn't supply an input file.
 if (process.argv.length <= 2) {
   commander.help();
   process.exit();
@@ -52,69 +53,13 @@ var filePath     = Lazy(process.argv).last(),
     helperPath   = path.join(outputDir, 'doc_helper.js'),
     helperExists = fs.existsSync(helperPath),
     configPath   = path.join(outputDir, 'handlers.js'),
-    configExists = fs.existsSync(configPath),
-    libraryInfo  = Breakneck.parse(fs.readFileSync(filePath, 'utf-8'));
+    configExists = fs.existsSync(configPath);
 
-var docsToInlude = Lazy(libraryInfo.docs);
+var templateData = Breakneck.process(fs.readFileSync(filePath, 'utf-8'), {
+  processOptions: commander
+});
 
-if (commander.tagged) {
-  docsToInlude = docsToInlude.filter(function(doc) {
-    return Lazy(doc.tags).contains(commander.tagged);
-  });
-}
-
-var groupedByNamespace = docsToInlude
-  .groupBy(function(doc) {
-    return doc.namespace || doc.shortName;
-  })
-  .toObject();
-
-// Only include specified namespaces, if the option has been provided.
-var namespaces = Lazy(commander.namespaces || Object.keys(groupedByNamespace))
-  .map(function(namespace) {
-    // Find the corresponding constructor, if one exists.
-    var constructorMethod = Lazy(libraryInfo.docs)
-                              .findWhere({ name: namespace }),
-
-        members           = Lazy(groupedByNamespace[namespace])
-                              .reject(function(doc) {
-                                return doc.name === namespace;
-                              })
-                              .sortBy(function(doc) {
-                                // Talk about hacky...
-                                // This is how I've decided to put static methods first.
-                                return (doc.isStatic ? 'a' : 'b') + doc.shortName;
-                              })
-                              .toArray();
-
-    var allMembers = Lazy([constructorMethod]).concat(members)
-      .compact()
-      .toArray();
-
-    // Decorate constructors w/ the correct CSS class
-    // (it's easier to do here than in the template).
-    Lazy(allMembers).each(function(member) {
-      member.sectionType = member.isConstructor ? 'constructor' : 'method';
-    });
-
-    return {
-      namespace: namespace,
-      constructorMethod: constructorMethod,
-      members: members,
-
-      // This is so that in the main <article> in the docs, methods are displayed
-      // in the same order as in the navigation area.
-      allMembers: allMembers
-    };
-  })
-  .toArray();
-
-var templateData = Lazy(libraryInfo)
-  .extend({
-    javascripts: javascripts,
-    namespaces: namespaces
-  })
-  .toObject();
+templateData.javascripts = commander.javascripts;
 
 if (helperExists) {
   templateData.javascripts.push('doc_helper.js');
