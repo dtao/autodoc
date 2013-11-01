@@ -190,11 +190,22 @@
       })
       .compact();
 
+    // If no tags have been explicitly provided, but we find any occurrences of
+    // the @public tag, we'll use that as a hint that only those methods tagged
+    // @public should be included. Otherwise include everything.
+    if (this.tags.length === 0) {
+      if (docs.any(function(doc) { return doc.isPublic; })) {
+        this.tags.push('public');
+      }
+    }
+
     // Only include documentation for functions with the specified tag(s), if
     // provided.
     if (this.tags.length > 0) {
       docs = docs.filter(function(doc) {
-        return Lazy(doc.tags).contains(breakneck.tags);
+        return Lazy(breakneck.tags).any(function(tag) {
+          return Lazy(doc.tags).contains(tag);
+        });
       });
     }
 
@@ -343,6 +354,7 @@
    * @property {string} description
    * @property {boolean} isConstructor
    * @property {boolean} isStatic
+   * @property {boolean} isPublic
    * @property {boolean} hasExamples
    * @property {boolean} hasBenchmarks
    * @property {Array.<ParameterInfo>} params
@@ -368,6 +380,7 @@
         returns     = this.getReturns(doc),
         isCtor      = Breakneck.hasTag(doc, 'constructor'),
         isStatic    = nameInfo.name.indexOf('#') === -1, // That's right, hacky smacky
+        isPublic    = Breakneck.hasTag(doc, 'public'),
         signature   = Breakneck.getSignature(nameInfo, params),
         examples    = Breakneck.getExamples(doc),
         benchmarks  = Breakneck.getBenchmarks(doc),
@@ -383,6 +396,7 @@
       returns: returns,
       isConstructor: isCtor,
       isStatic: isStatic,
+      isPublic: isPublic,
       hasSignature: params.length > 0 || !!returns,
       signature: signature,
       examples: examples,
@@ -558,6 +572,7 @@
   /**
    * Simply determines whether a doc has a tag or doesn't.
    *
+   * @public
    * @param {Object} doc The doclet to check.
    * @param {string} tagName The tag name to look for.
    * @returns {boolean} Whether or not the doclet has the tag.
@@ -883,6 +898,7 @@
    * Provides an escaped form of a string to facilitate dropping it "unescaped"
    * (aside from this, of course) directly into a JS template.
    *
+   * @public
    * @param {string} string
    * @returns {string}
    *
@@ -897,6 +913,7 @@
   /**
    * Replaces JsDoc references like '{@link MyClass}' with actual HTML links.
    *
+   * @public
    * @param {string} html
    * @returns {string} The HTML with JsDoc `@link` references replaced by links.
    *
@@ -912,6 +929,7 @@
   /**
    * Removes leading and trailing whitespace from a string.
    *
+   * @public
    * @param {string} string The string to trim.
    * @returns {string} The trimmed result.
    *
@@ -928,6 +946,7 @@
   /**
    * Splits a string into two parts on either side of a specified divider.
    *
+   * @public
    * @param {string} string The string to divide into two parts.
    * @param {string} divider The string used as the pivot point.
    * @returns {Array.<string>} The parts of the string before and after the
