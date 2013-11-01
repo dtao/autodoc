@@ -238,7 +238,7 @@
     // thing. I'm pretty sure there are plenty of libraries that don't use
     // this pattern at all.
     return {
-      name: librarySummary.name,
+      name: librarySummary.name || referenceName,
       referenceName: referenceName,
       description: librarySummary.description,
       code: code,
@@ -474,8 +474,8 @@
       })
       .first();
 
-    var libraryName = 'Untitled Library',
-        libraryDesc = '[No description]';
+    var libraryName = '',
+        libraryDesc = '';
 
     if (docWithFileOverview) {
       libraryDesc = Lazy(docWithFileOverview.tags).findWhere({ title: 'fileOverview' }).description;
