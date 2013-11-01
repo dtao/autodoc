@@ -36,15 +36,19 @@ if (process.argv.length <= 2) {
   process.exit();
 }
 
+function fileExists(path) {
+  return (fs.existsSync || path.existsSync)(path);
+}
+
 var filePath        = process.argv.pop(),
     sourceCode      = fs.readFileSync(filePath, 'utf-8'),
     outputDir       = commander.output || 'docs',
     handlersPath    = path.join(outputDir, 'handlers.js'),
-    handlersExists  = fs.existsSync(handlersPath),
+    handlersExists  = fileExists(handlersPath),
     equalityPath    = path.join(outputDir, 'assertEquality.js'),
-    equalityExists  = fs.existsSync(equalityPath),
+    equalityExists  = fileExists(equalityPath),
     docHelperPath   = path.join(outputDir, 'doc_helper.js'),
-    docHelperExists = fs.existsSync(docHelperPath);
+    docHelperExists = fileExists(docHelperPath);
 
 var options         = Breakneck.options;
 options.namespace   = commander.namespaces;
@@ -117,7 +121,7 @@ function generateDocs() {
 
   function writeFile(destination, content) {
     var directory = path.dirname(destination);
-    if (!fs.existsSync(directory)) {
+    if (!fileExists(directory)) {
       fs.mkdirSync(directory);
     }
 
@@ -129,7 +133,7 @@ function generateDocs() {
   function copyFile(source, destination, force) {
     // Don't obliterate files that are already there.
     // TODO: Think about this a bit more.
-    if (force || !fs.existsSync(destination)) {
+    if (force || !fileExists(destination)) {
       fs.createReadStream(source).pipe(fs.createWriteStream(destination));
     }
   }
