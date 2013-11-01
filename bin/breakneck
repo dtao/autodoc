@@ -27,6 +27,7 @@ commander
   .option('--javascripts <sources>', 'specify additional JS dependencies (comma-separated)', argToList)
   .option('--tags <tag>', 'only use the methods tagged with the specified tag')
   .option('--variable <name>', 'provide a name for the variable traditionally used by the library (e.g., jQuery, $, _) -- used for tests and benchmarks')
+  .option('--verbose', 'produce verbose output when running tests (has no effect otherwise)')
   .parse(process.argv);
 
 // Spit out help and exit if the user didn't supply an input file.
@@ -73,7 +74,11 @@ function runTests() {
   var jasmine = require('jasmine-node'),
       env     = jasmine.getEnv();
 
-  env.addReporter(new jasmine.TerminalVerboseReporter({
+  var reporterType = commander.verbose ?
+    jasmine.TerminalVerboseReporter :
+    jasmine.TerminalReporter;
+
+  env.addReporter(new reporterType({
     print: process.stdout.write.bind(process.stdout),
     color: true,
     includeStackTrace: true
