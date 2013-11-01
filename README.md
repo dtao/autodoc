@@ -24,10 +24,10 @@ Conventions
 
 By default, the `breakneck` command will put the following files in the **docs** folder:
 
-docs/
-    index.html
-    docs.js
-    docs.css
+    docs/
+        index.html
+        docs.js
+        docs.css
 
 You can change which folder you want this stuff dumped to w/ the `-o` or `--output` option.
 
