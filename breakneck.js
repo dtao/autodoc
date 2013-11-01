@@ -75,6 +75,7 @@
    * @property {string} template
    * @property {TemplateEngine} templateEngine
    * @property {Array.<ExampleHandler>} exampleHandlers
+   * @property {Object} extraOptions
    */
 
   /**
@@ -96,6 +97,7 @@
     this.template        = options.template;
     this.templateEngine  = options.templateEngine;
     this.testRunner      = options.testRunner;
+    this.extraOptions    = options.extraOptions || {};
   }
 
   /**
@@ -289,9 +291,14 @@
     // Additional stuff we want to tack on.
     libraryInfo.javascripts = this.javascripts;
 
+    // Allow for arbitrary additional options, e.g. if the user wants to use
+    // a custom template.
+    var templateData = Lazy(libraryInfo)
+      .extend(this.extraOptions)
+      .toObject();
     // Finally pass our awesomely-finessed data to the template engine,
     // e.g., Mustache.
-    return this.templateEngine.render(this.template, libraryInfo);
+    return this.templateEngine.render(this.template, templateData);
   };
 
   /**

@@ -1,11 +1,9 @@
 #!/usr/bin/env node
 
-var fs          = require('fs'),
-    path        = require('path'),
-    Breakneck   = require(path.join(__dirname, '../breakneck-node')),
-    stringTable = require('string-table'),
-    commander   = require('commander'),
-    Lazy        = require('lazy.js');
+var fs        = require('fs'),
+    path      = require('path'),
+    Breakneck = require(path.join(__dirname, '../breakneck-node')),
+    commander = require('commander');
 
 var packagePath = path.join(__dirname, '../package.json'),
     packageInfo = JSON.parse(fs.readFileSync(packagePath));
@@ -23,12 +21,12 @@ commander
 
   .option('-t, --test', 'run tests')
   .option('-d, --dump', 'dump JSON data and exit')
-  .option('-v, --variable <name>', 'provide a name for the variable traditionally used by the library (e.g., jQuery, $, _) -- used for tests and benchmarks')
   .option('-o, --output <destination>', 'specify an output directory (defaults to "docs")')
   .option('--template <path>', 'use a custom Mustache template')
   .option('--namespaces <names>', 'provide a comma-separated list of the namespaces to document (defaults to all, in alphabetical order)', argToList)
   .option('--javascripts <sources>', 'specify additional JS dependencies (comma-separated)', argToList)
   .option('--tags <tag>', 'only use the methods tagged with the specified tag')
+  .option('--variable <name>', 'provide a name for the variable traditionally used by the library (e.g., jQuery, $, _) -- used for tests and benchmarks')
   .parse(process.argv);
 
 // Spit out help and exit if the user didn't supply an input file.
@@ -37,61 +35,69 @@ if (process.argv.length <= 2) {
   process.exit();
 }
 
-var filePath     = Lazy(process.argv).last(),
-    sourceCode   = fs.readFileSync(filePath, 'utf-8'),
-    outputDir    = commander.output || 'docs',
-    helperPath   = path.join(outputDir, 'doc_helper.js'),
-    helperExists = fs.existsSync(helperPath),
-    configPath   = path.join(outputDir, 'handlers.js'),
-    configExists = fs.existsSync(configPath);
+var filePath        = process.argv.pop(),
+    sourceCode      = fs.readFileSync(filePath, 'utf-8'),
+    outputDir       = commander.output || 'docs',
+    handlersPath    = path.join(outputDir, 'handlers.js'),
+    handlersExists  = fs.existsSync(handlersPath),
+    equalityPath    = path.join(outputDir, 'assertEquality.js'),
+    equalityExists  = fs.existsSync(equalityPath),
+    docHelperPath   = path.join(outputDir, 'doc_helper.js'),
+    docHelperExists = fs.existsSync(docHelperPath);
 
 var options         = Breakneck.options;
 options.namespace   = commander.namespaces;
 options.tags        = commander.tags;
 options.javascripts = commander.javascripts || [];
 
-if (helperExists) {
-  options.javascripts.push('doc_helper.js');
-}
-
-if (configExists) {
+if (handlersExists) {
   // First of all, include it in the actual docs HTML.
   options.javascripts.push('handlers.js');
 
   // Also require it locally.
-  options.exampleHandlers = require(path.join(process.cwd(), configPath)).exampleHandlers;
+  options.exampleHandlers = require(path.join(process.cwd(), handlersPath)).exampleHandlers;
+}
+
+if (equalityExists) {
+  // Same as w/ helpers
+  options.javascripts.push('assertEquality.js');
+
+  // (We'll use it locally in runTests)
+}
+
+if (docHelperExists) {
+  options.javascripts.push('doc_helper.js');
 }
 
 function runTests() {
-  Breakneck.options.testRunner = function(jasmine) {
-    var env = jasmine.getEnv();
+  var jasmine = require('jasmine-node'),
+      env     = jasmine.getEnv();
 
-    env.addReporter(new jasmine.TerminalVerboseReporter({
-      print: process.stdout.write.bind(process.stdout),
-      color: true,
-      includeStackTrace: true
-    }));
+  env.addReporter(new jasmine.TerminalVerboseReporter({
+    print: process.stdout.write.bind(process.stdout),
+    color: true,
+    includeStackTrace: true
+  }));
 
-    return {
-      defineTestGroup: function(description, logic) {
-        describe(description, logic);
-      },
-
-      defineTest: function(description, logic) {
-        it(description, logic);
-      },
-
-      assertEquality: function(expected, actual) {
-        expect(actual).toEqual(expected);
-      },
-
-      run: function() {
-        env.execute();
-      }
+  global.assertEquality = equalityExists ?
+    require(path.join(process.cwd(), equalityPath)).assertEquality :
+    function(expected, actual) {
+      expect(actual).toEqual(expected);
     };
-  }(require('jasmine-node'));
 
-  Breakneck.runExamples(sourceCode, options);
+  var templatePath = path.join(__dirname, '../resources/examples.js.mustache');
+
+  options.template = fs.readFileSync(templatePath, 'utf-8');
+  options.extraOptions = {
+    variable: commander.variable,
+    filePath: path.join(process.cwd(), filePath)
+  };
+
+  var examplesJs = Breakneck.generate(sourceCode, options);
+
+  eval(examplesJs);
+
+  env.execute();
 }
 
 function generateDocs() {
