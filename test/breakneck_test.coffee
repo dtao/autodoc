@@ -140,3 +140,6 @@ describe 'Breakneck', ->
 
     it 'groups functions by namespace', ->
       listMembersForNamespace(data, 'Foo').should.eql ['getName']
+
+    it 'infers a "reference name" based on the first namespace w/ members', ->
+      data.referenceName.should.eql 'Foo'

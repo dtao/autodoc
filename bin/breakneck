@@ -78,6 +78,8 @@ function runTests() {
   var jasmine = require('jasmine-node'),
       env     = jasmine.getEnv();
 
+  var libraryInfo = Breakneck.parse(sourceCode, options);
+
   var reporterType = commander.verbose ?
     jasmine.TerminalVerboseReporter :
     jasmine.TerminalReporter;
@@ -100,7 +102,7 @@ function runTests() {
 
   options.template = fs.readFileSync(templatePath, 'utf-8');
   options.extraOptions = {
-    variable: commander.variable,
+    variable: commander.variable || libraryInfo.referenceName || '__lib__',
     filePath: path.join(process.cwd(), filePath)
   };
 

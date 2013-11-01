@@ -109,6 +109,7 @@
   /**
    * @typedef {Object} LibraryInfo
    * @property {string} name
+   * @property {string} referenceName
    * @property {string} description
    * @property {string} code
    * @property {Array.<NamespaceInfo>} namespaces
@@ -130,7 +131,8 @@
    * Creates a Breakneck instance with the specified options and uses it to
    * generate HTML documentation from the given code.
    *
-   * @param {string} source The source code of the library.
+   * @param {LibraryInfo|string} source Either the already-parsed library data
+   *     (from calling {@link #parse}), or the raw source code.
    * @param {BreakneckOptions} options
    * @returns {string} The HTML for the library's API docs.
    */
@@ -219,11 +221,25 @@
       })
       .toArray();
 
+    // We'll guess that the first "namespace" that actually has members is
+    // probably the conventional "name" of the library (i.e., the variable one
+    // would typically use to hold a reference to it -- like _ for Underscore,
+    // $ for jQuery, and so on).
+    var firstNonEmptyNamespace = Lazy(namespaces)
+      .find(function(namespace) {
+        return namespace.members.length > 0;
+      });
+
+    var referenceName = firstNonEmptyNamespace ?
+      firstNonEmptyNamespace.namespace :
+      null;
+
     // TODO: Make this code a little more agnostic about the whole namespace
     // thing. I'm pretty sure there are plenty of libraries that don't use
     // this pattern at all.
     return {
       name: librarySummary.name,
+      referenceName: referenceName,
       description: librarySummary.description,
       code: code,
       namespaces: namespaces,
@@ -235,11 +251,14 @@
    * Generates HTML for the API docs for the given library (as raw source code)
    * using the specified options, including templating library.
    *
-   * @param {string} source The source code of the library.
+   * @param {LibraryInfo|string} source Either the already-parsed library data
+   *     (from calling {@link #parse}), or the raw source code.
    * @returns {string} The HTML for the library's API docs.
    */
   Breakneck.prototype.generate = function(source) {
-    var libraryInfo = this.parse(source);
+    var libraryInfo = typeof source === 'string' ?
+      this.parse(source) :
+      source;
 
     // Decorate examples w/ custom handlers so that the template can be
     // populated differently for them.
@@ -253,6 +272,7 @@
     var templateData = Lazy(libraryInfo)
       .extend(this.extraOptions)
       .toObject();
+
     // Finally pass our awesomely-finessed data to the template engine,
     // e.g., Mustache.
     return this.templateEngine.render(this.template, templateData);
