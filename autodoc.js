@@ -827,7 +827,7 @@
     return Autodoc.parseCommentLines(doc, 'benchmarks', function(data) {
       var benchmarks = Lazy(data.pairs)
         .map(function(pair) {
-          var parts = divide(pair.right, ' - ');
+          var parts = Autodoc.divide(pair.right, ' - ');
 
           return {
             caseId: benchmarkCaseIdCounter++,
