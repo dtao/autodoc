@@ -231,7 +231,7 @@
       });
 
     var referenceName = firstNonEmptyNamespace ?
-      firstNonEmptyNamespace.namespace :
+      firstNonEmptyNamespace.namespace.split('.').shift() :
       null;
 
     // TODO: Make this code a little more agnostic about the whole namespace

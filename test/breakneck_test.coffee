@@ -143,3 +143,28 @@ describe 'Breakneck', ->
 
     it 'infers a "reference name" based on the first namespace w/ members', ->
       data.referenceName.should.eql 'Foo'
+
+    it 'takes the leftmost part of the root namespace', ->
+      source =
+        """
+          var Root = {
+            submodule1: {},
+            submodule2: {}
+          };
+
+          /**
+           * Hey I have comments.
+           */
+          Root.submodule1.foo = function() {
+            return 'foo';
+          };
+
+          /**
+           * Me too me too!
+           */
+          Root.submodule2.bar = function() {
+            return 'bar';
+          };
+        """
+
+      Breakneck.parse(source).referenceName.should.eql 'Root'
