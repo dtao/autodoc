@@ -793,6 +793,8 @@
    * @property {FunctionInfo} constructorMethod
    * @property {Array.<FunctionInfo>} members
    * @property {Array.<FunctionInfo>} allMembers
+   * @property {boolean} hasExamples
+   * @property {boolean} hasBenchmarks
    */
 
   /**
@@ -846,7 +848,9 @@
       namespace: namespace,
       constructorMethod: constructorMethod,
       members: members,
-      allMembers: allMembers
+      allMembers: allMembers,
+      hasExamples: Lazy(allMembers).any(function(m) { return m.hasExamples; }),
+      hasBenchmarks: Lazy(allMembers).any(function(m) { return m.hasBenchmarks; }),
     };
   };
 

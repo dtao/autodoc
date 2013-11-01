@@ -2,6 +2,7 @@ global.{{variable}} = require('{{{filePath}}}');
 
 describe('{{variable}}', function() {
   {{#namespaces}}
+  {{#hasExamples}}
   describe('{{namespace}}', function() {
     {{#allMembers}}
     {{#hasExamples}}
@@ -22,5 +23,6 @@ describe('{{variable}}', function() {
     {{/hasExamples}}
     {{/allMembers}}
   });
+  {{/hasExamples}}
   {{/namespaces}}
 });
