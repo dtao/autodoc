@@ -27,7 +27,7 @@
       // in doc_helper.js; so we'll only use this default implementation if
       // necessary.
       if (typeof window.assertEquality === 'undefined') {
-        window.assertEquality = function(actual, expected) {
+        window.assertEquality = function(expected, actual) {
           expect(expected).toEqual(actual);
         };
       }
@@ -199,7 +199,7 @@
                             handler.test(match, result);
                             {{/hasCustomHandler}}
                             {{^hasCustomHandler}}
-                            assertEquality(result, {{{output}}});
+                            assertEquality({{{output}}}, result);
                             {{/hasCustomHandler}}
                           });
 
