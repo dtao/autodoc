@@ -137,13 +137,13 @@
                             </thead>
 
                             <tbody>
-                                {{#examples}}
+                                {{#list}}
                                 <tr id="example-{{identifier}}-{{id}}">
                                     <td>{{{input}}}</td>
                                     <td>{{{output}}}</td>
                                     <td></td>
                                 </tr>
-                                {{/examples}}
+                                {{/list}}
                             </tbody>
                         </table>
                         {{/examples}}
@@ -166,14 +166,14 @@
                                 {{/cases}}
                             </tr>
 
-                            {{#benchmarks}}
+                            {{#list}}
                             <tr id="perf-test-{{identifier}}-{{id}}">
                                 <td>{{{name}}}</td>
                                 {{#cases}}
                                 <td data-case-id="{{caseId}}"></td>
                                 {{/cases}}
                             </tr>
-                            {{/benchmarks}}
+                            {{/list}}
                         </table>
 
                         <button>Run performance benchmarks</button>
@@ -182,6 +182,7 @@
                     {{/hasBenchmarks}}
 
                     <script type="text/javascript">
+                      {{#hasExamples}}
                       describe('{{{name}}}', function() {
                         {{#examples}}
 
@@ -210,7 +211,9 @@
                         {{/list}}
                         {{/examples}}
                       });
+                      {{/hasExamples}}
 
+                      {{#hasBenchmarks}}
                       (function() {
                         {{#benchmarks}}
 
@@ -238,6 +241,7 @@
                         {{/list}}
                         {{/benchmarks}}
                       }());
+                      {{/hasBenchmarks}}
                     </script>
                 </section>
                 {{/allMembers}}
