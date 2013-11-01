@@ -32,7 +32,7 @@ We can use Autodoc to **translate those comments into runnable tests**:
 
     $ autodoc -t maths.js
 
-![Specs screenshot](http://autodoc.danieltao.com/images/specs_screenshot.png)
+![Specs screenshot](http://breakneck.danieltao.com/images/specs_screenshot.png)
 
 And what do we get without the `-t` option?
 
@@ -40,7 +40,7 @@ And what do we get without the `-t` option?
 
 Auto-generated documentation... *with* the specs right in the docs.
 
-![Docs screenshot](http://autodoc.danieltao.com/images/docs_screenshot.png)
+![Docs screenshot](http://breakneck.danieltao.com/images/docs_screenshot.png)
 
 Get the idea?
 
