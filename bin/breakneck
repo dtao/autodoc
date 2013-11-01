@@ -20,7 +20,7 @@ commander
   // .option('-p, --perf', 'run performance benchmarks')
 
   .option('-t, --test', 'run tests')
-  .option('-d, --dump', 'dump JSON data and exit')
+  .option('-d, --dump', 'dump data to console and exit')
   .option('-o, --output <destination>', 'specify an output directory (defaults to "docs")')
   .option('--template <path>', 'use a custom Mustache template')
   .option('--namespaces <names>', 'provide a comma-separated list of the namespaces to document (defaults to all, in alphabetical order)', argToList)
@@ -109,6 +109,8 @@ function runTests() {
   eval(examplesJs);
 
   env.execute();
+
+  return examplesJs;
 }
 
 function generateDocs() {
@@ -144,13 +146,19 @@ function generateDocs() {
   copyFile(path.join(__dirname, '../resources/docs.js'), path.join(outputDir, 'docs.js'));
 
   console.log('Docs written to ' + outputDir + '/');
+
+  return docsHtml;
 }
 
-if (commander.dump) {
-  console.log(JSON.stringify(Breakneck.parse(sourceCode, options), null, 2));
+if (commander.test) {
+  var examplesJs = runTests();
 
-} else if (commander.test) {
-  runTests();
+  if (commander.dump) {
+    console.log(examplesJs);
+  }
+
+} else if (commander.dump) {
+  console.log(JSON.stringify(Breakneck.parse(sourceCode, options), null, 2));
 
 } else {
   generateDocs();
