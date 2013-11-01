@@ -10,6 +10,14 @@ describe('{{variable}}', function() {
         {{#examples}}
         {{{setup}}}
         {{#list}}
+        {{#hasCustomHandler}}
+        it('{{{inputForJs}}} => {{{outputForJs}}}', function() {
+            var handler = exampleHandlers[{{handlerIndex}}];
+            var result  = {{{input}}};
+            var match   = {{{outputPattern}}}.match(handler.pattern);
+            handler.test(match, result);
+        });
+        {{/hasCustomHandler}}
         {{^hasCustomHandler}}
         it('{{{inputForJs}}} => {{{outputForJs}}}', function() {
             var result   = {{{input}}};
