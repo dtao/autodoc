@@ -1,23 +1,48 @@
 Project "Breakneck"
 ===================
 
-This is just a little something I'm working on to help eliminate a lot of the gruntwork involved in setting up a new JavaScript project. Here is where I'm coming from:
+This is just a little something I'm working on to help eliminate a lot of the gruntwork involved in creating a JavaScript project. In particular it simplifies **writing and running tests**, and **generating API documentation**.
 
-1. What we *really* want to be doing as JavaScript devs is **write code**, and not fiddle around with a project website.
-2. **BUT** it's important for your project to have a nice website (with a landing page, API docs, etc.) if it's going to have the kind of impact you want.
+Here, let's play Show Don't Tell. Assume we have a file named **maths.js** with the following content:
 
-How do we solve this problem? We make step 2 happen automatically as a result of step 1!
+```javascript
+var Maths = {};
 
-How?
-----
+/**
+ * Checks if a number is an integer.
+ *
+ * @param {number} x The number to check.
+ * @returns {boolean} Whether or not `x` is an integer.
+ *
+ * @examples
+ * Maths.isInteger(5)        // => true
+ * Maths.isInteger(5.0)      // => true
+ * Maths.isInteger(3.14)     // => false
+ * Maths.isInteger('foo')    // => false
+ * Maths.isInteger(NaN)      // => false
+ */
+Maths.isInteger = function(x) {
+  return x === Math.floor(x);
+};
 
-So, first off, this is very much an active work in progress.
+module.exports = Maths;
+```
 
-That said, here's how you use it:
+We can use Breakneck to **translate those comments into runnable tests**:
 
-1. Install breakneck: `npm install breakneck`
-2. Comment your code according to the conventions described below (mostly JsDoc, with a few additions).
-3. Run `breakneck [your JS file]`
+    $ breakneck -t maths.js
+
+![Specs screenshot](http://breakneck.danieltao.com/images/specs_screenshot.png)
+
+And what do we get without the `-t` option?
+
+    $ breakneck maths.js
+
+Auto-generated documentation... *with* the specs right in the docs.
+
+![Docs screenshot](http://breakneck.danieltao.com/images/docs_screenshot.png)
+
+Get the idea?
 
 Conventions
 -----------
