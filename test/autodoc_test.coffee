@@ -2,16 +2,16 @@ path      = require('path')
 esprima   = require('esprima')
 doctrine  = require('doctrine')
 marked    = require('marked')
-Breakneck = require('../')
+Autodoc = require('../')
 Lazy      = require('lazy.js')
 sinon     = require('sinon')
 should    = require('should')
 
-describe 'Breakneck', ->
+describe 'Autodoc', ->
   describe '#parseComment', ->
     it 'wraps some text in /* and */ to pass to doctrine', ->
       parser = { parse: sinon.spy() }
-      new Breakneck({ commentParser: parser }).parseComment({ value: 'foo' })
+      new Autodoc({ commentParser: parser }).parseComment({ value: 'foo' })
       sinon.assert.calledWith(parser.parse, '/*foo*/', { unwrap: true })
 
   describe 'getIdentifierName', ->
@@ -20,19 +20,19 @@ describe 'Breakneck', ->
 
     it 'gets the name of a function declaration', ->
       node = parse('function foo() {}')
-      Breakneck.getIdentifierName(node).should.eql('foo')
+      Autodoc.getIdentifierName(node).should.eql('foo')
 
     it 'gets the name of a variable assigned a function expression', ->
       node = parse('var bar = function() {}')
-      Breakneck.getIdentifierName(node).should.eql('bar')
+      Autodoc.getIdentifierName(node).should.eql('bar')
 
     it 'gets the name of an object member assigned a function expression', ->
       node = parse('foo.bar = function() {}')
-      Breakneck.getIdentifierName(node).should.eql('foo.bar')
+      Autodoc.getIdentifierName(node).should.eql('foo.bar')
 
     it 'replaces ".prototype." with "#"', ->
       node = parse('Foo.prototype.bar = function() {}')
-      Breakneck.getIdentifierName(node).should.eql('Foo#bar')
+      Autodoc.getIdentifierName(node).should.eql('Foo#bar')
 
   describe 'parse', ->
     source =
@@ -59,7 +59,7 @@ describe 'Breakneck', ->
         };
       """
 
-    data = Breakneck.parse source,
+    data = Autodoc.parse source,
       codeParser: esprima
       commentParser: doctrine
       markdownParser: marked
@@ -116,4 +116,4 @@ describe 'Breakneck', ->
           };
         """
 
-      Breakneck.parse(source).referenceName.should.eql 'Root'
+      Autodoc.parse(source).referenceName.should.eql 'Root'

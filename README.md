@@ -1,4 +1,4 @@
-Project "Breakneck"
+Project "Autodoc"
 ===================
 
 This is just a little something I'm working on to help eliminate a lot of the gruntwork involved in creating a JavaScript project. In particular it simplifies **writing and running tests**, and **generating API documentation**.
@@ -28,26 +28,26 @@ Maths.isInteger = function(x) {
 module.exports = Maths;
 ```
 
-We can use Breakneck to **translate those comments into runnable tests**:
+We can use Autodoc to **translate those comments into runnable tests**:
 
-    $ breakneck -t maths.js
+    $ autodoc -t maths.js
 
-![Specs screenshot](http://breakneck.danieltao.com/images/specs_screenshot.png)
+![Specs screenshot](http://autodoc.danieltao.com/images/specs_screenshot.png)
 
 And what do we get without the `-t` option?
 
-    $ breakneck maths.js
+    $ autodoc maths.js
 
 Auto-generated documentation... *with* the specs right in the docs.
 
-![Docs screenshot](http://breakneck.danieltao.com/images/docs_screenshot.png)
+![Docs screenshot](http://autodoc.danieltao.com/images/docs_screenshot.png)
 
 Get the idea?
 
 Conventions
 -----------
 
-By default, the `breakneck` command will put the following files in the **docs** folder:
+By default, the `autodoc` command will put the following files in the **docs** folder:
 
     docs/
         index.html
@@ -58,17 +58,17 @@ You can change which folder you want this stuff dumped to w/ the `-o` or `--outp
 
 You can also just run specs from the command line by passing the `-t` or `--test` option.
 
-Alternately, you can simply dump a JSON representation of everything Breakneck reads from your library using the `-d` or `--dump` option.
+Alternately, you can simply dump a JSON representation of everything Autodoc reads from your library using the `-d` or `--dump` option.
 
-To spice up your API docs with some custom JavaScript, add a file called **doc_helper.js** to the output folder. Breakneck will automatically detect it there and add a `<script>` tag referencing it to the resulting HTML. You can add other arbitrary JavaScript files by providing a comma-delimited list via the `--javascripts` option.
+To spice up your API docs with some custom JavaScript, add a file called **doc_helper.js** to the output folder. Autodoc will automatically detect it there and add a `<script>` tag referencing it to the resulting HTML. You can add other arbitrary JavaScript files by providing a comma-delimited list via the `--javascripts` option.
 
-You can create your own **docs.css** file, or modify the one Breakneck puts there, and Breakneck will not overwrite it. You can also specify your own template (currently only Mustche templates are supported, though that will change) using the `--template` option. Note that in this case, some other features are not guaranteed to work; e.g., Breakneck would not magically know where to add `<script>` tags linking to **doc_helper.js** or other custom JavaScript files. You'd need to put those in the template yourself.
+You can create your own **docs.css** file, or modify the one Autodoc puts there, and Autodoc will not overwrite it. You can also specify your own template (currently only Mustche templates are supported, though that will change) using the `--template` option. Note that in this case, some other features are not guaranteed to work; e.g., Autodoc would not magically know where to add `<script>` tags linking to **doc_helper.js** or other custom JavaScript files. You'd need to put those in the template yourself.
 
 ### Documentation
 
 API docs will be generated based on the comments above each function. This includes information from `@param` and `@returns` tags. See [JsDoc](http://usejsdoc.org/) for details. You can also use [Markdown](http://daringfireball.net/projects/markdown/) to format your comments.
 
-Use the `@name` tag in a comment at the top of the file for Breakneck to know the name of your library. Use the `@fileOverview` tag to provide a high-level description.
+Use the `@name` tag in a comment at the top of the file for Autodoc to know the name of your library. Use the `@fileOverview` tag to provide a high-level description.
 
 ### Specs
 
@@ -103,9 +103,9 @@ this.exampleHandlers = [
 ];
 ```
 
-For every example in your comments, the expected output will first be checked against all of your custom handlers (in order) to see if there's a match; otherwise, Breakneck will perform a simple equality comparison using a method called `assertEquality`.
+For every example in your comments, the expected output will first be checked against all of your custom handlers (in order) to see if there's a match; otherwise, Autodoc will perform a simple equality comparison using a method called `assertEquality`.
 
-By default Breakneck uses [Jasmine](http://pivotal.github.io/jasmine/)\*\*, so under the hood `assertEquality` is implemented using `expect(a).toEqual(b)`. If you want to implement your own `assertEquality` method, add a file called **assertEquality.js** to your output folder with something like this:
+By default Autodoc uses [Jasmine](http://pivotal.github.io/jasmine/)\*\*, so under the hood `assertEquality` is implemented using `expect(a).toEqual(b)`. If you want to implement your own `assertEquality` method, add a file called **assertEquality.js** to your output folder with something like this:
 
 ```javascript
 this.assertEquality = function(expected, actual) {
@@ -123,7 +123,7 @@ this.assertEquality = function(expected, actual) {
 
 <sub>\*Yeah yeah, I know, *globals are bad*. I need to think about this...</sub>
 
-<sub>\*\*I am aware that not everybody loves Jasmine. I plan to add support for other test runners at some point... although, it doesn't *really* matter that much since you're not using the interface anyway. (The only thing that should matter to Breakneck users is how results are reported by the test framework. And what functionality is available within **handlers.js**, I suppose.)</sub>
+<sub>\*\*I am aware that not everybody loves Jasmine. I plan to add support for other test runners at some point... although, it doesn't *really* matter that much since you're not using the interface anyway. (The only thing that should matter to Autodoc users is how results are reported by the test framework. And what functionality is available within **handlers.js**, I suppose.)</sub>
 
 ### Benchmarks
 
@@ -156,4 +156,4 @@ This will cause the resulting bar chart to display grouped results.
 
 ### Other options
 
-You can restrict Breakneck's output to only certain namespaces within your library via the `--namespaces` option. You can also only generate documentation for methods with certain arbitrary tags (e.g., `@public`) using the `--tags` option, which takes a comma-separated list.
+You can restrict Autodoc's output to only certain namespaces within your library via the `--namespaces` option. You can also only generate documentation for methods with certain arbitrary tags (e.g., `@public`) using the `--tags` option, which takes a comma-separated list.

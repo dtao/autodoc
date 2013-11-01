@@ -5,8 +5,8 @@ var fs   = require('fs'),
 
 // External dependencies -- adding weird prefixes here to prevent name
 // collisions when actually testing any of these libraries (by which I really
-// just mean Breakneck, clearly).
-var _Breakneck = require(path.join(__dirname, '../breakneck-node')),
+// just mean Autodoc, clearly).
+var _Autodoc = require(path.join(__dirname, '../autodoc-node')),
     _commander = require('commander');
 
 // Read package info from package.json -- just one less thing to keep track of.
@@ -55,7 +55,7 @@ var filePath        = process.argv.pop(),
     docHelperPath   = path.join(outputDir, 'doc_helper.js'),
     docHelperExists = fileExists(docHelperPath);
 
-var options         = _Breakneck.options;
+var options         = _Autodoc.options;
 options.namespace   = _commander.namespaces;
 options.tags        = _commander.tags;
 options.javascripts = _commander.javascripts || ['../' + path.basename(filePath)];
@@ -83,7 +83,7 @@ function runTests() {
   var jasmine = require('jasmine-node'),
       env     = jasmine.getEnv();
 
-  var libraryInfo = _Breakneck.parse(sourceCode, options);
+  var libraryInfo = _Autodoc.parse(sourceCode, options);
 
   var reporterType = _commander.verbose ?
     jasmine.TerminalVerboseReporter :
@@ -111,7 +111,7 @@ function runTests() {
     filePath: path.join(process.cwd(), filePath)
   };
 
-  var examplesJs = _Breakneck.generate(sourceCode, options);
+  var examplesJs = _Autodoc.generate(sourceCode, options);
 
   eval(examplesJs);
 
@@ -126,7 +126,7 @@ function generateDocs() {
 
   options.template = fs.readFileSync(templatePath, 'utf-8');
 
-  var docsHtml = _Breakneck.generate(sourceCode, options);
+  var docsHtml = _Autodoc.generate(sourceCode, options);
 
   function writeFile(destination, content) {
     var directory = path.dirname(destination);
@@ -165,7 +165,7 @@ if (_commander.test) {
   }
 
 } else if (_commander.dump) {
-  console.log(JSON.stringify(_Breakneck.parse(sourceCode, options), null, 2));
+  console.log(JSON.stringify(_Autodoc.parse(sourceCode, options), null, 2));
 
 } else {
   generateDocs();

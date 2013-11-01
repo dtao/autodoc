@@ -4,7 +4,7 @@
  * @fileOverview
  * This library re-implements the functionality of some of JavaScript's core objects (e.g., `Array`,
  * `String`). It is intended only as a convenient way to illustrate what you can do with
- * [Breakneck](https://github.com/dtao/breakneck).
+ * [Autodoc](https://github.com/dtao/autodoc).
  */
 
 /**

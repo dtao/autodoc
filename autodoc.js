@@ -65,7 +65,7 @@
    */
 
   /**
-   * @typedef {Object} BreakneckOptions
+   * @typedef {Object} AutodocOptions
    * @property {Parser|function(string):*} codeParser
    * @property {Parser|function(string):*} commentParser
    * @property {Parser|function(string):*} markdownParser
@@ -80,16 +80,16 @@
 
   /**
    * @constructor
-   * @param {BreakneckOptions=} options
+   * @param {AutodocOptions=} options
    */
-  function Breakneck(options) {
+  function Autodoc(options) {
     options = Lazy(options || {})
-      .defaults(Breakneck.options)
+      .defaults(Autodoc.options)
       .toObject();
 
     this.codeParser      = wrapParser(options.codeParser);
     this.commentParser   = wrapParser(options.commentParser);
-    this.markdownParser  = wrapParser(options.markdownParser, Breakneck.processInternalLinks);
+    this.markdownParser  = wrapParser(options.markdownParser, Autodoc.processInternalLinks);
     this.namespaces      = options.namespaces || [];
     this.tags            = options.tags || [];
     this.javascripts     = options.javascripts || [];
@@ -99,12 +99,12 @@
     this.extraOptions    = options.extraOptions || {};
   }
 
-  Breakneck.VERSION = '0.2.1';
+  Autodoc.VERSION = '0.2.1';
 
   /**
-   * Default Breakneck options. (See breakneck-node.js)
+   * Default Autodoc options. (See autodoc-node.js)
    */
-  Breakneck.options = {};
+  Autodoc.options = {};
 
   /**
    * @typedef {Object} LibraryInfo
@@ -116,28 +116,28 @@
    */
 
   /**
-   * Creates a Breakneck instance with the specified options and uses it to
+   * Creates a Autodoc instance with the specified options and uses it to
    * parse the given code.
    *
    * @param {string} code The JavaScript code to parse.
-   * @param {BreakneckOptions=} options
+   * @param {AutodocOptions=} options
    * @returns {LibraryInfo}
    */
-  Breakneck.parse = function(code, options) {
-    return new Breakneck(options).parse(code);
+  Autodoc.parse = function(code, options) {
+    return new Autodoc(options).parse(code);
   };
 
   /**
-   * Creates a Breakneck instance with the specified options and uses it to
+   * Creates a Autodoc instance with the specified options and uses it to
    * generate HTML documentation from the given code.
    *
    * @param {LibraryInfo|string} source Either the already-parsed library data
    *     (from calling {@link #parse}), or the raw source code.
-   * @param {BreakneckOptions} options
+   * @param {AutodocOptions} options
    * @returns {string} The HTML for the library's API docs.
    */
-  Breakneck.generate = function(source, options) {
-    return new Breakneck(options).generate(source);
+  Autodoc.generate = function(source, options) {
+    return new Autodoc(options).generate(source);
   };
 
   /**
@@ -148,8 +148,8 @@
    * @param {string} code The JavaScript code to parse.
    * @returns {LibraryInfo}
    */
-  Breakneck.prototype.parse = function(code) {
-    var breakneck = this;
+  Autodoc.prototype.parse = function(code) {
+    var autodoc = this;
 
     // Generate the abstract syntax tree.
     var ast = this.codeParser.parse(code, {
@@ -159,13 +159,13 @@
 
     // This is kind of stupid... for now, I'm just assuming the library will
     // have a @fileOverview tag and @name tag in the header comments.
-    var librarySummary = breakneck.getLibrarySummary(ast.comments);
+    var librarySummary = autodoc.getLibrarySummary(ast.comments);
 
     // Extract all of the functions from the AST, and map them to their location
     // in the code (this is so that we can associate each function with its
     // accompanying doc comments, if any).
     var functions = Lazy(ast.body).nodes()
-      .filter(function(node) { return !!Breakneck.getIdentifierName(node); })
+      .filter(function(node) { return !!Autodoc.getIdentifierName(node); })
       .groupBy(function(node) { return node.loc.start.line; })
       .toObject();
 
@@ -181,12 +181,12 @@
 
         // Attempt to parse the comment. If it can't be parsed, or it appears to
         // be basically empty, then skip it.
-        var doc = breakneck.parseComment(comment);
+        var doc = autodoc.parseComment(comment);
         if (typeof doc === 'undefined' || !doc.description) {
           return null;
         }
 
-        return breakneck.createFunctionInfo(fn, doc);
+        return autodoc.createFunctionInfo(fn, doc);
       })
       .compact();
 
@@ -203,7 +203,7 @@
     // provided.
     if (this.tags.length > 0) {
       docs = docs.filter(function(doc) {
-        return Lazy(breakneck.tags).any(function(tag) {
+        return Lazy(autodoc.tags).any(function(tag) {
           return Lazy(doc.tags).contains(tag);
         });
       });
@@ -228,7 +228,7 @@
 
     var namespaces = Lazy(this.namespaces)
       .map(function(namespace) {
-        return Breakneck.createNamespaceInfo(docGroups, namespace);
+        return Autodoc.createNamespaceInfo(docGroups, namespace);
       })
       .toArray();
 
@@ -266,7 +266,7 @@
    *     (from calling {@link #parse}), or the raw source code.
    * @returns {string} The HTML for the library's API docs.
    */
-  Breakneck.prototype.generate = function(source) {
+  Autodoc.prototype.generate = function(source) {
     var libraryInfo = typeof source === 'string' ?
       this.parse(source) :
       source;
@@ -296,7 +296,7 @@
    * @param {LibraryInfo} libraryInfo
    * @param {function(ExampleInfo, string):*} callback
    */
-  Breakneck.prototype.eachExample = function(libraryInfo, callback) {
+  Autodoc.prototype.eachExample = function(libraryInfo, callback) {
     Lazy(libraryInfo.docs)
       .each(function(doc) {
         Lazy(doc.examples.list).each(function(example) {
@@ -312,7 +312,7 @@
    *
    * @param {LibraryInfo} libraryInfo
    */
-  Breakneck.prototype.updateExamples = function(libraryInfo) {
+  Autodoc.prototype.updateExamples = function(libraryInfo) {
     // Allow a library to provide a config.js file, which should define an array
     // of handlers like:
     //
@@ -330,7 +330,7 @@
     this.eachExample(libraryInfo, function(example) {
       // Look at all of our examples. Those that are matched by some handler, we
       // will leave to be verified by handler.test, which will obviously need to
-      // be available in the output HTML (bin/breakneck ensures this).
+      // be available in the output HTML (bin/autodoc ensures this).
       Lazy(exampleHandlers).each(function(handler, i) {
         if (handler.pattern.test(example.output)) {
           // Mark this example as being handled
@@ -373,17 +373,17 @@
    * @param {Object} doc
    * @returns {FunctionInfo}
    */
-  Breakneck.prototype.createFunctionInfo = function(fn, doc) {
-    var nameInfo    = Breakneck.parseName(Breakneck.getIdentifierName(fn[0])),
+  Autodoc.prototype.createFunctionInfo = function(fn, doc) {
+    var nameInfo    = Autodoc.parseName(Autodoc.getIdentifierName(fn[0])),
         description = this.markdownParser.parse(doc.description),
         params      = this.getParams(doc),
         returns     = this.getReturns(doc),
-        isCtor      = Breakneck.hasTag(doc, 'constructor'),
+        isCtor      = Autodoc.hasTag(doc, 'constructor'),
         isStatic    = nameInfo.name.indexOf('#') === -1, // That's right, hacky smacky
-        isPublic    = Breakneck.hasTag(doc, 'public'),
-        signature   = Breakneck.getSignature(nameInfo, params),
-        examples    = Breakneck.getExamples(doc),
-        benchmarks  = Breakneck.getBenchmarks(doc),
+        isPublic    = Autodoc.hasTag(doc, 'public'),
+        signature   = Autodoc.getSignature(nameInfo, params),
+        examples    = Autodoc.getExamples(doc),
+        benchmarks  = Autodoc.getBenchmarks(doc),
         tags        = Lazy(doc.tags).pluck('title').toArray();
 
     return {
@@ -422,7 +422,7 @@
    * @returns {Array.<ParameterInfo>} An array of { name, type, description }
    *     objects.
    */
-  Breakneck.prototype.getParams = function(doc) {
+  Autodoc.prototype.getParams = function(doc) {
     var markdownParser = this.markdownParser;
 
     return Lazy(doc.tags)
@@ -430,7 +430,7 @@
       .map(function(tag) {
         return {
           name: tag.name,
-          type: Breakneck.formatType(tag.type),
+          type: Autodoc.formatType(tag.type),
           description: markdownParser.parse(tag.description || '')
         };
       })
@@ -450,7 +450,7 @@
    * @param {Object} doc The doclet for the function.
    * @returns {ReturnInfo} A { type, description } object.
    */
-  Breakneck.prototype.getReturns = function(doc) {
+  Autodoc.prototype.getReturns = function(doc) {
     var returnTag = Lazy(doc.tags).findWhere({ title: 'returns' });
 
     if (typeof returnTag === 'undefined') {
@@ -458,7 +458,7 @@
     }
 
     return {
-      type: Breakneck.formatType(returnTag.type),
+      type: Autodoc.formatType(returnTag.type),
       description: this.markdownParser.parse(returnTag.description || '')
     };
   };
@@ -475,12 +475,12 @@
    * @param {Array.<string>} comments
    * @returns {LibrarySummary}
    */
-  Breakneck.prototype.getLibrarySummary = function(comments) {
-    var breakneck = this;
+  Autodoc.prototype.getLibrarySummary = function(comments) {
+    var autodoc = this;
 
     var docWithFileOverview = Lazy(comments)
       .map(function(comment) {
-        return breakneck.parseComment(comment);
+        return autodoc.parseComment(comment);
       })
       .compact()
       .filter(function(doc) {
@@ -512,7 +512,7 @@
    * @param {string} comment The comment to parse.
    * @returns {Object}
    */
-  Breakneck.prototype.parseComment = function(comment) {
+  Autodoc.prototype.parseComment = function(comment) {
     return this.commentParser.parse('/*' + comment.value + '*/', { unwrap: true });
   };
 
@@ -522,16 +522,16 @@
    * @param {Object} object
    * @return {Object}
    */
-  Breakneck.getIdentifierName = function(node) {
+  Autodoc.getIdentifierName = function(node) {
     switch (node.type) {
       case 'Identifier': return node.name;
-      case 'AssignmentExpression': return Breakneck.getIdentifierName(node.left);
-      case 'MemberExpression': return (Breakneck.getIdentifierName(node.object) + '.' + Breakneck.getIdentifierName(node.property)).replace(/\.prototype\./, '#');
+      case 'AssignmentExpression': return Autodoc.getIdentifierName(node.left);
+      case 'MemberExpression': return (Autodoc.getIdentifierName(node.object) + '.' + Autodoc.getIdentifierName(node.property)).replace(/\.prototype\./, '#');
       case 'FunctionDeclaration': return node.id.name;
       case 'VariableDeclaration': return node.declarations[0].id.name;
       case 'VariableDeclarator': return node.id.name;
 
-      case 'ExpressionStatement': return Breakneck.getIdentifierName(node.expression);
+      case 'ExpressionStatement': return Autodoc.getIdentifierName(node.expression);
 
       default: return null;
     }
@@ -553,16 +553,16 @@
    * @returns {NameInfo}
    *
    * @examples
-   * Breakneck.parseName('Foo#bar').name           // => 'Foo#bar'
-   * Breakneck.parseName('Foo#bar').shortName      // => 'bar'
-   * Breakneck.parseName('Foo.Bar#baz').namespace  // => 'Foo.Bar'
-   * Breakneck.parseName('Foo#bar').identifier     // => 'Foo-bar'
-   * Breakneck.parseName('Foo.Bar#baz').identifier // => 'Foo-Bar-baz'
-   * Breakneck.parseName('Foo').name               // => 'Foo'
-   * Breakneck.parseName('Foo').identifier         // => 'Foo'
-   * Breakneck.parseName('Foo').namespace          // => null
+   * Autodoc.parseName('Foo#bar').name           // => 'Foo#bar'
+   * Autodoc.parseName('Foo#bar').shortName      // => 'bar'
+   * Autodoc.parseName('Foo.Bar#baz').namespace  // => 'Foo.Bar'
+   * Autodoc.parseName('Foo#bar').identifier     // => 'Foo-bar'
+   * Autodoc.parseName('Foo.Bar#baz').identifier // => 'Foo-Bar-baz'
+   * Autodoc.parseName('Foo').name               // => 'Foo'
+   * Autodoc.parseName('Foo').identifier         // => 'Foo'
+   * Autodoc.parseName('Foo').namespace          // => null
    */
-  Breakneck.parseName = function(name) {
+  Autodoc.parseName = function(name) {
     var parts = name.split(/[\.#]/),
 
         // e.g., the short name for 'Lib.utils.func' should be 'func'
@@ -588,7 +588,7 @@
    * @param {string} tagName The tag name to look for.
    * @returns {boolean} Whether or not the doclet has the tag.
    */
-  Breakneck.hasTag = function(doc, tagName) {
+  Autodoc.hasTag = function(doc, tagName) {
     return !!Lazy(doc.tags).findWhere({ title: tagName });
   };
 
@@ -599,7 +599,7 @@
    * @param {Array.<ParameterInfo>} params
    * @returns {string}
    */
-  Breakneck.getSignature = function(name, params) {
+  Autodoc.getSignature = function(name, params) {
     var formattedParams = '(' + Lazy(params).pluck('name').join(', ') + ')';
 
     if (name.name === name.shortName) {
@@ -631,15 +631,15 @@
    * @param {DataCallback} callback
    * @returns {Array.<*>} An array of whatever the callback returns.
    */
-  Breakneck.parseCommentLines = function(doc, tagName, callback) {
-    var comment      = Breakneck.getTagDescription(doc, tagName),
+  Autodoc.parseCommentLines = function(doc, tagName, callback) {
+    var comment      = Autodoc.getTagDescription(doc, tagName),
         commentLines = comment.split('\n'),
         initialLines = [],
         pairs        = [];
 
     Lazy(commentLines)
       .each(function(line) {
-        var pair = Breakneck.parsePair(line);
+        var pair = Autodoc.parsePair(line);
 
         if (!pair && pairs.length === 0) {
           initialLines.push(line);
@@ -663,7 +663,7 @@
    * @param {string} tagName
    * @returns {string}
    */
-  Breakneck.getTagDescription = function(doc, tagName) {
+  Autodoc.getTagDescription = function(doc, tagName) {
     var tag = Lazy(doc.tags).findWhere({ title: tagName });
 
     if (typeof tag === 'undefined') {
@@ -683,12 +683,12 @@
    * @returns {PairInfo|null}
    *
    * @examples
-   * Breakneck.parsePair('foo(bar)//=>5')      // => { left: 'foo(bar)', right: '5' }
-   * Breakneck.parsePair(' bar(baz) //=> 10 ') // => { left: 'bar(baz)', right: '10' }
-   * Breakneck.parsePair('foo // => bar')      // => { left: 'foo', right: 'bar' }
-   * Breakneck.parsePair('foo // bar')         // => { left: 'foo', right: 'bar' }
+   * Autodoc.parsePair('foo(bar)//=>5')      // => { left: 'foo(bar)', right: '5' }
+   * Autodoc.parsePair(' bar(baz) //=> 10 ') // => { left: 'bar(baz)', right: '10' }
+   * Autodoc.parsePair('foo // => bar')      // => { left: 'foo', right: 'bar' }
+   * Autodoc.parsePair('foo // bar')         // => { left: 'foo', right: 'bar' }
    */
-  Breakneck.parsePair = function(line) {
+  Autodoc.parsePair = function(line) {
     var parts = line.match(/^(.*)\s*\/\/[ ]*(?:=>)?\s*(.*)$/);
 
     if (!parts) {
@@ -696,8 +696,8 @@
     }
 
     return {
-      left: Breakneck.trim(parts[1]),
-      right: Breakneck.trim(parts[2])
+      left: Autodoc.trim(parts[1]),
+      right: Autodoc.trim(parts[2])
     };
   };
 
@@ -723,9 +723,9 @@
    * @param {Object} doc
    * @returns {ExampleCollection}
    */
-  Breakneck.getExamples = function(doc) {
+  Autodoc.getExamples = function(doc) {
     var exampleIdCounter = 1;
-    return Breakneck.parseCommentLines(doc, 'examples', function(data) {
+    return Autodoc.parseCommentLines(doc, 'examples', function(data) {
       return {
         code: data.content,
         setup: data.preamble,
@@ -733,9 +733,9 @@
           return {
             id: exampleIdCounter++,
             input: pair.left,
-            inputForJs: Breakneck.escapeForJs(pair.left),
+            inputForJs: Autodoc.escapeForJs(pair.left),
             output: pair.right,
-            outputForJs: Breakneck.escapeForJs(pair.right)
+            outputForJs: Autodoc.escapeForJs(pair.right)
           };
         }).toArray()
       };
@@ -770,11 +770,11 @@
    * @param {Object} doc
    * @returns {BenchmarkCollection}
    */
-  Breakneck.getBenchmarks = function(doc) {
+  Autodoc.getBenchmarks = function(doc) {
     var benchmarkCaseIdCounter = 1,
         benchmarkIdCounter     = 1;
 
-    return Breakneck.parseCommentLines(doc, 'benchmarks', function(data) {
+    return Autodoc.parseCommentLines(doc, 'benchmarks', function(data) {
       var benchmarks = Lazy(data.pairs)
         .map(function(pair) {
           var parts = divide(pair.right, ' - ');
@@ -811,7 +811,7 @@
    * @param {Object} type
    * @returns {string}
    */
-  Breakneck.formatType = function(type) {
+  Autodoc.formatType = function(type) {
     switch (type.type) {
       case 'NameExpression':
         return type.name;
@@ -823,24 +823,24 @@
         return 'null';
 
       case 'TypeApplication':
-        return Breakneck.formatType(type.expression) + '.<' + Lazy(type.applications).map(Breakneck.formatType).join('|') + '>';
+        return Autodoc.formatType(type.expression) + '.<' + Lazy(type.applications).map(Autodoc.formatType).join('|') + '>';
 
       case 'RecordType':
         return '{' + Lazy(type.fields).map(function(field) {
-          return field.key + ':' + Breakneck.formatType(field.value);
+          return field.key + ':' + Autodoc.formatType(field.value);
         }).join(', ');
 
       case 'OptionalType':
-        return Breakneck.formatType(type.expression) + '?';
+        return Autodoc.formatType(type.expression) + '?';
 
       case 'UnionType':
-        return Lazy(type.elements).map(Breakneck.formatType).join('|');
+        return Lazy(type.elements).map(Autodoc.formatType).join('|');
 
       case 'RestType':
-        return '...' + Breakneck.formatType(type.expression);
+        return '...' + Autodoc.formatType(type.expression);
 
       case 'FunctionType':
-        return 'function(' + Lazy(type.params).map(Breakneck.formatType).join(', ') + '):' + Breakneck.formatType(type.result);
+        return 'function(' + Lazy(type.params).map(Autodoc.formatType).join(', ') + '):' + Autodoc.formatType(type.result);
 
       default:
         throw 'Unable to format type ' + type.type + '!\n\n' + JSON.stringify(type, null, 2);
@@ -866,7 +866,7 @@
    * @param {string} namespace
    * @returns {NamespaceInfo}
    */
-  Breakneck.createNamespaceInfo = function(docs, namespace) {
+  Autodoc.createNamespaceInfo = function(docs, namespace) {
     // Find the corresponding constructor, if one exists.
     var constructorMethod = Lazy(docs)
       .values()
@@ -923,10 +923,10 @@
    * @returns {string}
    *
    * @examples
-   * Breakneck.escapeForJs('foo')            // => 'foo'
-   * Breakneck.escapeForJs("Hell's Kitchen") // => "Hell\\'s Kitchen"
+   * Autodoc.escapeForJs('foo')            // => 'foo'
+   * Autodoc.escapeForJs("Hell's Kitchen") // => "Hell\\'s Kitchen"
    */
-  Breakneck.escapeForJs = function(string) {
+  Autodoc.escapeForJs = function(string) {
     return string.replace(/'/g, "\\'");
   };
 
@@ -938,9 +938,9 @@
    * @returns {string} The HTML with JsDoc `@link` references replaced by links.
    *
    * @examples
-   * Breakneck.processInternalLinks('{@link MyClass}') // => '<a href="#MyClass">MyClass</a>'
+   * Autodoc.processInternalLinks('{@link MyClass}') // => '<a href="#MyClass">MyClass</a>'
    */
-  Breakneck.processInternalLinks = function(html) {
+  Autodoc.processInternalLinks = function(html) {
     return html.replace(/\{@link ([^\}]*)}/g, function(string, match) {
       return '<a href="#' + match.replace(/[\.#]/g, '-') + '">' + match + '</a>';
     });
@@ -954,12 +954,12 @@
    * @returns {string} The trimmed result.
    *
    * @examples
-   * Breakneck.trim('foo')     // => 'foo'
-   * Breakneck.trim('  foo')   // => 'foo'
-   * Breakneck.trim('foo  ')   // => 'foo'
-   * Breakneck.trim('  foo  ') // => 'foo'
+   * Autodoc.trim('foo')     // => 'foo'
+   * Autodoc.trim('  foo')   // => 'foo'
+   * Autodoc.trim('foo  ')   // => 'foo'
+   * Autodoc.trim('  foo  ') // => 'foo'
    */
-  Breakneck.trim = function(string) {
+  Autodoc.trim = function(string) {
     return string.replace(/^\s+/, '').replace(/\s+$/, '');
   };
 
@@ -974,13 +974,13 @@
    *     if `divider` wasn't found.
    *
    * @examples
-   * Breakneck.divide('hello', 'll')   // => ['he', 'o']
-   * Breakneck.divide('banana', 'n')   // => ['ba', 'ana']
-   * Breakneck.divide('a->b->c', '->') // => ['a', 'b->c']
-   * Breakneck.divide('foo', 'xyz')    // => ['foo']
-   * Breakneck.divide('abc', 'abc')    // => ['', '']
+   * Autodoc.divide('hello', 'll')   // => ['he', 'o']
+   * Autodoc.divide('banana', 'n')   // => ['ba', 'ana']
+   * Autodoc.divide('a->b->c', '->') // => ['a', 'b->c']
+   * Autodoc.divide('foo', 'xyz')    // => ['foo']
+   * Autodoc.divide('abc', 'abc')    // => ['', '']
    */
-  Breakneck.divide = function(string, divider) {
+  Autodoc.divide = function(string, divider) {
     var seam = string.indexOf(divider);
     if (seam === -1) {
       return [string];
@@ -1012,10 +1012,10 @@
   }
 
   if (typeof module !== 'undefined' && module.exports) {
-    module.exports = Breakneck;
+    module.exports = Autodoc;
 
   } else {
-    context.Breakneck = Breakneck;
+    context.Autodoc = Autodoc;
   }
 
 }(typeof global !== 'undefined' ? global : this));

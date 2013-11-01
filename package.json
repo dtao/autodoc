@@ -1,22 +1,22 @@
 {
-  "name": "breakneck.js",
+  "name": "autodoc.js",
   "version": "0.2.1",
   "description": "Auto-generate docs, specs, and benchmarks from JSDoc-style comments",
-  "main": "breakneck-node.js",
+  "main": "autodoc-node.js",
   "bin": {
-    "breakneck": "bin/breakneck"
+    "autodoc": "bin/autodoc"
   },
   "scripts": {
-    "test": "breakneck -t breakneck.js && mocha --compilers coffee:coffee-script"
+    "test": "autodoc -t autodoc.js && mocha --compilers coffee:coffee-script"
   },
   "repository": {
     "type": "git",
-    "url": "git://github.com/dtao/breakneck.git"
+    "url": "git://github.com/dtao/autodoc.git"
   },
   "author": "Dan Tao",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/dtao/breakneck/issues"
+    "url": "https://github.com/dtao/autodoc/issues"
   },
   "dependencies": {
     "commander": "*",
