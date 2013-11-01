@@ -1,10 +1,15 @@
 #!/usr/bin/env node
 
-var fs        = require('fs'),
-    path      = require('path'),
-    Breakneck = require(path.join(__dirname, '../breakneck-node')),
-    commander = require('commander');
+var fs   = require('fs'),
+    path = require('path');
 
+// External dependencies -- adding weird prefixes here to prevent name
+// collisions when actually testing any of these libraries (by which I really
+// just mean Breakneck, clearly).
+var _Breakneck = require(path.join(__dirname, '../breakneck-node')),
+    _commander = require('commander');
+
+// Read package info from package.json -- just one less thing to keep track of.
 var packagePath = path.join(__dirname, '../package.json'),
     packageInfo = JSON.parse(fs.readFileSync(packagePath));
 
@@ -12,7 +17,7 @@ function argToList(arg) {
   return arg.split(/,\s*/);
 }
 
-commander
+_commander
   .version(packageInfo.version)
   .usage('[options] [file]')
 
@@ -32,7 +37,7 @@ commander
 
 // Spit out help and exit if the user didn't supply an input file.
 if (process.argv.length <= 2) {
-  commander.help();
+  _commander.help();
   process.exit();
 }
 
@@ -42,7 +47,7 @@ function fileExists(filePath) {
 
 var filePath        = process.argv.pop(),
     sourceCode      = fs.readFileSync(filePath, 'utf-8'),
-    outputDir       = commander.output || 'docs',
+    outputDir       = _commander.output || 'docs',
     handlersPath    = path.join(outputDir, 'handlers.js'),
     handlersExists  = fileExists(handlersPath),
     equalityPath    = path.join(outputDir, 'assertEquality.js'),
@@ -50,10 +55,10 @@ var filePath        = process.argv.pop(),
     docHelperPath   = path.join(outputDir, 'doc_helper.js'),
     docHelperExists = fileExists(docHelperPath);
 
-var options         = Breakneck.options;
-options.namespace   = commander.namespaces;
-options.tags        = commander.tags;
-options.javascripts = commander.javascripts || ['../' + path.basename(filePath)];
+var options         = _Breakneck.options;
+options.namespace   = _commander.namespaces;
+options.tags        = _commander.tags;
+options.javascripts = _commander.javascripts || ['../' + path.basename(filePath)];
 
 if (handlersExists) {
   // First of all, include it in the actual docs HTML.
@@ -78,9 +83,9 @@ function runTests() {
   var jasmine = require('jasmine-node'),
       env     = jasmine.getEnv();
 
-  var libraryInfo = Breakneck.parse(sourceCode, options);
+  var libraryInfo = _Breakneck.parse(sourceCode, options);
 
-  var reporterType = commander.verbose ?
+  var reporterType = _commander.verbose ?
     jasmine.TerminalVerboseReporter :
     jasmine.TerminalReporter;
 
@@ -102,11 +107,11 @@ function runTests() {
 
   options.template = fs.readFileSync(templatePath, 'utf-8');
   options.extraOptions = {
-    variable: commander.variable || libraryInfo.referenceName || '__lib__',
+    variable: _commander.variable || libraryInfo.referenceName || '__lib__',
     filePath: path.join(process.cwd(), filePath)
   };
 
-  var examplesJs = Breakneck.generate(sourceCode, options);
+  var examplesJs = _Breakneck.generate(sourceCode, options);
 
   eval(examplesJs);
 
@@ -116,12 +121,12 @@ function runTests() {
 }
 
 function generateDocs() {
-  var templatePath = commander.template ||
+  var templatePath = _commander.template ||
     path.join(__dirname, '../resources/docs.html.mustache');
 
   options.template = fs.readFileSync(templatePath, 'utf-8');
 
-  var docsHtml = Breakneck.generate(sourceCode, options);
+  var docsHtml = _Breakneck.generate(sourceCode, options);
 
   function writeFile(destination, content) {
     var directory = path.dirname(destination);
@@ -152,15 +157,15 @@ function generateDocs() {
   return docsHtml;
 }
 
-if (commander.test) {
+if (_commander.test) {
   var examplesJs = runTests();
 
-  if (commander.dump) {
+  if (_commander.dump) {
     console.log(examplesJs);
   }
 
-} else if (commander.dump) {
-  console.log(JSON.stringify(Breakneck.parse(sourceCode, options), null, 2));
+} else if (_commander.dump) {
+  console.log(JSON.stringify(_Breakneck.parse(sourceCode, options), null, 2));
 
 } else {
   generateDocs();

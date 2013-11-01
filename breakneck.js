@@ -89,7 +89,7 @@
 
     this.codeParser      = wrapParser(options.codeParser);
     this.commentParser   = wrapParser(options.commentParser);
-    this.markdownParser  = wrapParser(options.markdownParser, processInternalLinks);
+    this.markdownParser  = wrapParser(options.markdownParser, Breakneck.processInternalLinks);
     this.namespaces      = options.namespaces || [];
     this.tags            = options.tags || [];
     this.javascripts     = options.javascripts || [];
@@ -661,8 +661,8 @@
     }
 
     return {
-      left: trim(parts[1]),
-      right: trim(parts[2])
+      left: Breakneck.trim(parts[1]),
+      right: Breakneck.trim(parts[2])
     };
   };
 
@@ -784,6 +784,9 @@
       case 'AllLiteral':
         return '*';
 
+      case 'NullLiteral':
+        return 'null';
+
       case 'TypeApplication':
         return Breakneck.formatType(type.expression) + '.<' + Lazy(type.applications).map(Breakneck.formatType).join('|') + '>';
 
@@ -882,9 +885,69 @@
    *
    * @param {string} string
    * @returns {string}
+   *
+   * @examples
+   * Breakneck.escapeForJs('foo')            // => 'foo'
+   * Breakneck.escapeForJs("Hell's Kitchen") // => "Hell\\'s Kitchen"
    */
   Breakneck.escapeForJs = function(string) {
     return string.replace(/'/g, "\\'");
+  };
+
+  /**
+   * Replaces JsDoc references like '{@link MyClass}' with actual HTML links.
+   *
+   * @param {string} html
+   * @returns {string} The HTML with JsDoc `@link` references replaced by links.
+   *
+   * @examples
+   * Breakneck.processInternalLinks('{@link MyClass}') // => '<a href="#MyClass">MyClass</a>'
+   */
+  Breakneck.processInternalLinks = function(html) {
+    return html.replace(/\{@link ([^\}]*)}/g, function(string, match) {
+      return '<a href="#' + match.replace(/[\.#]/g, '-') + '">' + match + '</a>';
+    });
+  };
+
+  /**
+   * Removes leading and trailing whitespace from a string.
+   *
+   * @param {string} string The string to trim.
+   * @returns {string} The trimmed result.
+   *
+   * @examples
+   * Breakneck.trim('foo')     // => 'foo'
+   * Breakneck.trim('  foo')   // => 'foo'
+   * Breakneck.trim('foo  ')   // => 'foo'
+   * Breakneck.trim('  foo  ') // => 'foo'
+   */
+  Breakneck.trim = function(string) {
+    return string.replace(/^\s+/, '').replace(/\s+$/, '');
+  };
+
+  /**
+   * Splits a string into two parts on either side of a specified divider.
+   *
+   * @param {string} string The string to divide into two parts.
+   * @param {string} divider The string used as the pivot point.
+   * @returns {Array.<string>} The parts of the string before and after the
+   *     first occurrence of `divider`, or a 1-element array containing `string`
+   *     if `divider` wasn't found.
+   *
+   * @examples
+   * Breakneck.divide('hello', 'll')   // => ['he', 'o']
+   * Breakneck.divide('banana', 'n')   // => ['ba', 'ana']
+   * Breakneck.divide('a->b->c', '->') // => ['a', 'b->c']
+   * Breakneck.divide('foo', 'xyz')    // => ['foo']
+   * Breakneck.divide('abc', 'abc')    // => ['', '']
+   */
+  Breakneck.divide = function(string, divider) {
+    var seam = string.indexOf(divider);
+    if (seam === -1) {
+      return [string];
+    }
+
+    return [string.substring(0, seam), string.substring(seam + divider.length)];
   };
 
   /**
@@ -909,36 +972,9 @@
     };
   }
 
-  /**
-   * Replaces, e.g., '{@link MyClass}' with '<a href="#MyClass">MyClass</a>'.
-   */
-  function processInternalLinks(html) {
-    return html.replace(/\{@link ([^\}]*)}/g, function(string, match) {
-      return '<a href="#' + match.replace(/[\.#]/g, '-') + '">' + match + '</a>';
-    });
-  }
-
-  /**
-   * Removes leading and trailing whitespace from a string.
-   */
-  function trim(string) {
-    return string.replace(/^\s+/, '').replace(/\s+$/, '');
-  }
-
-  /**
-   * Splits a string into two parts on either side of a specified divider.
-   */
-  function divide(string, divider) {
-    var seam = string.indexOf(divider);
-    if (seam === -1) {
-      return [string];
-    }
-
-    return [string.substring(0, seam), string.substring(seam + divider.length)];
-  }
-
-  if (typeof module === 'object') {
+  if (typeof module !== 'undefined' && module.exports) {
     module.exports = Breakneck;
+
   } else {
     context.Breakneck = Breakneck;
   }
