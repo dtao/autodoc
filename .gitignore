@@ -8,4 +8,4 @@ node_modules/
 .DS_Store
 
 # Ignore any files generated for the example
-example/docs/
+docs/
