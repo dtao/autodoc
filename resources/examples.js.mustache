@@ -10,7 +10,7 @@ describe('{{variable}}', function() {
         {{{setup}}}
         {{#list}}
         {{^hasCustomHandler}}
-        it('{{input}} => {{output}}', function() {
+        it('{{{inputForJs}}} => {{{outputForJs}}}', function() {
             var result   = {{{input}}};
             var expected = {{{output}}};
             assertEquality(expected, result);

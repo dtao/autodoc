@@ -81,6 +81,10 @@ describe 'Breakneck', ->
         right: 'bar'
       })
 
+  describe 'formatForJs', ->
+    it 'escapes single quotes', ->
+      Breakneck.escapeForJs("'foo'").should.eql("\\'foo\\'")
+
   describe 'parse', ->
     source =
       """

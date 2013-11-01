@@ -648,7 +648,9 @@
    * @typedef {Object} ExampleInfo
    * @property {number} id
    * @property {string} input
+   * @property {string} inputForJs
    * @property {string} output
+   * @property {string} outputForJs
    */
 
   /**
@@ -674,7 +676,9 @@
           return {
             id: exampleIdCounter++,
             input: pair.left,
-            output: pair.right
+            inputForJs: Breakneck.escapeForJs(pair.left),
+            output: pair.right,
+            outputForJs: Breakneck.escapeForJs(pair.right)
           };
         }).toArray()
       };
@@ -844,6 +848,17 @@
       members: members,
       allMembers: allMembers
     };
+  };
+
+  /**
+   * Provides an escaped form of a string to facilitate dropping it "unescaped"
+   * (aside from this, of course) directly into a JS template.
+   *
+   * @param {string} string
+   * @returns {string}
+   */
+  Breakneck.escapeForJs = function(string) {
+    return string.replace(/'/g, "\\'");
   };
 
   /**

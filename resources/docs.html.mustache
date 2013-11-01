@@ -190,7 +190,7 @@
 
                         {{#list}}
                         (function() {
-                          var spec = it('returns {{output}} for {{input}}', function() {
+                          var spec = it('{{{inputForJs}}} => {{{outputForJs}}}', function() {
                             var result = {{{input}}};
                             {{#hasCustomHandler}}
                             var handler = exampleHandlers[{{handlerIndex}}],
