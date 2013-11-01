@@ -22,15 +22,28 @@ That said, here's how you use it:
 Conventions
 -----------
 
-I want this library to be pretty non-intrusive. What I mean is, I don't want libraries to have to add all of these Breakneck-specific tags and annotations everywhere. So I'm just piggybacking off of JsDoc for the most part.
+By default, the `breakneck` command will put the following files in the **docs** folder:
+
+docs/
+    index.html
+    docs.js
+    docs.css
+
+You can change which folder you want this stuff dumped to w/ the `-o` or `--output` option.
+
+You can also just run specs from the command line by passing the `-t` or `--test` option.
+
+Alternately, you can simply dump a JSON representation of everything Breakneck reads from your library using the `-d` or `--dump` option.
+
+To spice up your API docs with some custom JavaScript, add a file called **doc_helper.js** to the output folder. Breakneck will automatically detect it there and add a `<script>` tag referencing it to the resulting HTML. You can add other arbitrary JavaScript files by providing a comma-delimited list via the `--javascripts` option.
+
+You can create your own **docs.css** file, or modify the one Breakneck puts there, and Breakneck will not overwrite it. You can also specify your own template (currently only Mustche templates are supported, though that will change) using the `--template` option. Note that in this case, some other features are not guaranteed to work; e.g., Breakneck would not magically know where to add `<script>` tags linking to **doc_helper.js** or other custom JavaScript files. You'd need to put those in the template yourself.
 
 ### Documentation
 
 API docs will be generated based on the comments above each function. This includes information from `@param` and `@returns` tags. See [JsDoc](http://usejsdoc.org/) for details. You can also use [Markdown](http://daringfireball.net/projects/markdown/) to format your comments.
 
 Use the `@name` tag in a comment at the top of the file for Breakneck to know the name of your library. Use the `@fileOverview` tag to provide a high-level description.
-
-A default **docs.css** file is provided by default. To style the documentation yourself, write your own stylesheet with the same name.
 
 ### Specs
 
@@ -45,7 +58,7 @@ Use the `@examples` tag to define specs in an extremely concise format:
 
 The result will be a table in the API docs displaying your spec results.
 
-You can provide custom handlers to do something a little more advanced than a straight-up equality comparison here (e.g., say your library creates some fancy object, but you just want to verify certain properties with an object literal). To do this, add a file called **handlers.js** to your output folder (**docs** by default) and in it define a global\* `exampleHandlers` array that looks like this:
+You can provide custom handlers to do something a little more advanced than a straight-up equality comparison here (e.g., say your library creates some fancy object, but you just want to verify certain properties with an object literal). To do this, add a file called **handlers.js** to your output folder (whatever you specified with `-o`, or **docs** by default) and in it define a global\* `exampleHandlers` array that looks like this:
 
 ```javascript
 this.exampleHandlers = [
@@ -67,11 +80,25 @@ this.exampleHandlers = [
 
 For every example in your comments, the expected output will first be checked against all of your custom handlers (in order) to see if there's a match; otherwise, Breakneck will perform a simple equality comparison using a method called `assertEquality`.
 
-By default Breakneck uses [Jasmine](http://pivotal.github.io/jasmine/), so under the hood `assertEquality` is implemented using `expect(a).toEqual(b)`. You are free to implement `assertEquality` yourself in any way you choose, though, in a file called **doc_helper.js**. Breakneck won't clobber your implementation.
+By default Breakneck uses [Jasmine](http://pivotal.github.io/jasmine/)\*\*, so under the hood `assertEquality` is implemented using `expect(a).toEqual(b)`. If you want to implement your own `assertEquality` method, add a file called **assertEquality.js** to your output folder with something like this:
 
-Incidentally, doc_helper.js is also a good place to put any other specific JavaScript you want. Breakneck will include a `<script>` tag pointing to it, if it exists, in the output HTML.
+```javascript
+this.assertEquality = function(expected, actual) {
+  // Maybe for this hypothetical library we don't care about capitalization.
+  if (typeof expected === 'string') {
+    expected = expected.toLowerCase();
+  }
+  if (typeof actual === 'string') {
+    actual = actual.toLowerCase();
+  }
+
+  expect(actual).toEqual(expected);
+};
+```
 
 <sub>\*Yeah yeah, I know, *globals are bad*. I need to think about this...</sub>
+
+<sub>\*\*I am aware that not everybody loves Jasmine. I plan to add support for other test runners at some point... although, it doesn't *really* matter that much since you're not using the interface anyway. (The only thing that should matter to Breakneck users is how results are reported by the test framework. And what functionality is available within **handlers.js**, I suppose.)</sub>
 
 ### Benchmarks
 
@@ -101,3 +128,7 @@ You can also group your benchmarks, e.g., by input size, simply by adding `" - [
 ```
 
 This will cause the resulting bar chart to display grouped results.
+
+### Other options
+
+You can restrict Breakneck's output to only certain namespaces within your library via the `--namespaces` option. You can also only generate documentation for methods with certain arbitrary tags (e.g., `@public`) using the `--tags` option, which takes a comma-separated list.
