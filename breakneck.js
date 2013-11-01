@@ -579,7 +579,7 @@
    */
   Breakneck.hasTag = function(doc, tagName) {
     return !!Lazy(doc.tags).findWhere({ title: tagName });
-  },
+  };
 
   /**
    * Produces a string representing the signature of a function.
