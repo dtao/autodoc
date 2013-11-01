@@ -36,8 +36,8 @@ if (process.argv.length <= 2) {
   process.exit();
 }
 
-function fileExists(path) {
-  return (fs.existsSync || path.existsSync)(path);
+function fileExists(filePath) {
+  return (fs.existsSync || path.existsSync)(filePath);
 }
 
 var filePath        = process.argv.pop(),
