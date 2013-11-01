@@ -1,0 +1,130 @@
+@import "bootstrap";
+
+body {
+  padding-bottom: 100px;
+}
+
+main {
+  @extend .container;
+}
+
+header {
+  @extend .page-header;
+
+  .description {
+    @extend .lead;
+  }
+}
+
+#spec-failures {
+  @extend .alert, .alert-danger;
+
+  &:empty {
+    display: none;
+  }
+
+  a {
+    float: right;
+    color: #ffb;
+
+    &:hover {
+      color: darken(#ffb, 10%);
+    }
+  }
+}
+
+.layout {
+  @extend .row;
+
+  .index {
+    @extend .col-md-2;
+  }
+
+  article {
+    @extend .col-md-10;
+  }
+}
+
+nav {
+  border-right: 1px solid black;
+
+  ul {
+    @extend .nav;
+  }
+}
+
+table {
+  @extend .table, .table-striped, .table-hover;
+}
+
+.signature {
+  table {
+    tfoot {
+      tr {
+        @extend .warning;
+      }
+    }
+  }
+}
+
+.examples {
+  table {
+    th, td {
+      width: 40%;
+
+      &:last-child {
+        width: 20%;
+      }
+    }
+
+    tr {
+      td {
+        transition: color 0.5s;
+        transition: background-color 0.5s;
+      }
+
+      &.highlight td {
+        color: #000;
+        background-color: #ff8 !important;
+      }
+    }
+  }
+}
+
+.perf {
+  position: relative;
+
+  button {
+    @extend .btn, .btn-primary;
+  }
+
+  table {
+    display: none;
+
+    th, td {
+      &:last-child {
+        text-align: right;
+      }
+    }
+  }
+
+  &.loading {
+    &:after {
+      display: block;
+      content: "";
+      position: absolute;
+      top: 0;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      background: #fff url("gears.gif") no-repeat center;
+      opacity: 0.5;
+    }
+  }
+
+  &.loading, &.loaded {
+    table {
+      display: table;
+    }
+  }
+}

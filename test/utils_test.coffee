@@ -1,5 +1,5 @@
 path  = require('path')
-utils = require(path.join(__dirname, '../resources/utils.js'))
+utils = require(path.join(__dirname, '../resources/javascripts/utils.js'))
 
 describe 'formatNumber', ->
   it 'adds decimals up to 3 places', ->

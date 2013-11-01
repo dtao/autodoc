@@ -142,10 +142,10 @@ function generateDocs() {
     }
   }
 
-  copyFile(path.join(__dirname, '../resources/docs.css'), path.join(outputDir, 'docs.css'));
-  copyFile(path.join(__dirname, '../resources/gears.gif'), path.join(outputDir, 'gears.gif'));
-  copyFile(path.join(__dirname, '../resources/utils.js'), path.join(outputDir, 'utils.js'));
-  copyFile(path.join(__dirname, '../resources/docs.js'), path.join(outputDir, 'docs.js'));
+  copyFile(path.join(__dirname, '../resources/stylesheets/docs.css'), path.join(outputDir, 'docs.css'));
+  copyFile(path.join(__dirname, '../resources/images/gears.gif'), path.join(outputDir, 'gears.gif'));
+  copyFile(path.join(__dirname, '../resources/javascripts/utils.js'), path.join(outputDir, 'utils.js'));
+  copyFile(path.join(__dirname, '../resources/javascripts/docs.js'), path.join(outputDir, 'docs.js'));
 
   console.log('Docs written to ' + outputDir + '/');
 
