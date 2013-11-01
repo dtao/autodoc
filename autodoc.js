@@ -19,7 +19,13 @@
         }
 
         var children = self.getNodeChildren(node);
+
         if (children.length > 0) {
+          // Give each child a reference to its parent.
+          Lazy(children).each(function(child) {
+            child.parent = node;
+          });
+
           return Lazy(children).nodes().each(fn);
         }
       });
@@ -38,12 +44,32 @@
           return [node.expression];
 
         case 'AssignmentExpression':
-          return node.right.type === 'FunctionExpression' ? [node.right] : [];
+          return [node.right];
 
         case 'CallExpression':
           return node.callee.type === 'FunctionExpression' ? [node.callee] : [];
 
-        default: return [];
+        case 'ObjectExpression':
+          return node.properties;
+
+        case 'Property':
+          return [node.key, node.value];
+
+        case 'VariableDeclaration':
+          return node.declarations;
+
+        case 'VariableDeclarator':
+          return [node.init];
+
+        // Throw these away:
+        case 'Identifier':
+        case 'EmptyStatement':
+        case 'ReturnStatement':
+          return [];
+
+        default:
+          throw 'Unknown node type "' + node.type + '" - ' +
+            'Report this to https://github.com/dtao/autodoc/issues';
       }
     }
   });
@@ -165,7 +191,9 @@
     // in the code (this is so that we can associate each function with its
     // accompanying doc comments, if any).
     var functions = Lazy(ast.body).nodes()
-      .filter(function(node) { return !!Autodoc.getIdentifierName(node); })
+      .filter(function(node) {
+        return node.type === 'FunctionDeclaration' || node.type === 'FunctionExpression';
+      })
       .groupBy(function(node) { return node.loc.start.line; })
       .toObject();
 
@@ -523,17 +551,39 @@
    * @return {Object}
    */
   Autodoc.getIdentifierName = function(node) {
+    if (!node) {
+      return null;
+    }
+
     switch (node.type) {
-      case 'Identifier': return node.name;
-      case 'AssignmentExpression': return Autodoc.getIdentifierName(node.left);
-      case 'MemberExpression': return (Autodoc.getIdentifierName(node.object) + '.' + Autodoc.getIdentifierName(node.property)).replace(/\.prototype\./, '#');
-      case 'FunctionDeclaration': return node.id.name;
-      case 'VariableDeclaration': return node.declarations[0].id.name;
-      case 'VariableDeclarator': return node.id.name;
+      case 'Identifier':
+        return node.name;
 
-      case 'ExpressionStatement': return Autodoc.getIdentifierName(node.expression);
+      case 'FunctionDeclaration':
+        return Autodoc.getIdentifierName(node.id);
 
-      default: return null;
+      case 'AssignmentExpression':
+        return Autodoc.getIdentifierName(node.left);
+
+      case 'MemberExpression':
+        return (Autodoc.getIdentifierName(node.object) + '.' +
+          Autodoc.getIdentifierName(node.property)).replace(/\.prototype\./, '#');
+
+      case 'Property':
+        return Autodoc.getIdentifierName(node.parent) + '.' +
+          Autodoc.getIdentifierName(node.key);
+
+      case 'FunctionExpression':
+        return Autodoc.getIdentifierName(node.parent);
+
+      case 'VariableDeclarator':
+        return Autodoc.getIdentifierName(node.id);
+
+      case 'ExpressionStatement':
+        return Autodoc.getIdentifierName(node.expression);
+
+      default:
+        return Autodoc.getIdentifierName(node.parent);
     }
   };
 

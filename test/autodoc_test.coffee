@@ -2,7 +2,7 @@ path      = require('path')
 esprima   = require('esprima')
 doctrine  = require('doctrine')
 marked    = require('marked')
-Autodoc = require('../')
+Autodoc   = require('../')
 Lazy      = require('lazy.js')
 sinon     = require('sinon')
 should    = require('should')
@@ -24,7 +24,7 @@ describe 'Autodoc', ->
 
     it 'gets the name of a variable assigned a function expression', ->
       node = parse('var bar = function() {}')
-      Autodoc.getIdentifierName(node).should.eql('bar')
+      Autodoc.getIdentifierName(node.declarations[0]).should.eql('bar')
 
     it 'gets the name of an object member assigned a function expression', ->
       node = parse('foo.bar = function() {}')
@@ -57,6 +57,26 @@ describe 'Autodoc', ->
         Foo.getName = function() {
           return 'foo';
         };
+
+        Foo.Bar = {
+          /**
+           * Returns 'bar'
+           *
+           * @returns {string}
+           */
+          getName: function() {
+            return 'bar';
+          },
+
+          /**
+           * Returns 'baz'
+           *
+           * @returns {string}
+           */
+          getBaz: function() {
+            return 'baz';
+          }
+        };
       """
 
     data = Autodoc.parse source,
@@ -85,10 +105,11 @@ describe 'Autodoc', ->
       data.description.should.match /^\s*<p>This is a description.<\/p>\s*$/
 
     it 'gets all namespaces', ->
-      listNamespaces(data).should.eql ['Foo']
+      listNamespaces(data).should.eql ['Foo', 'Foo.Bar']
 
     it 'groups functions by namespace', ->
       listMembersForNamespace(data, 'Foo').should.eql ['getName']
+      listMembersForNamespace(data, 'Foo.Bar').sort().should.eql ['getBaz', 'getName']
 
     it 'infers a "reference name" based on the first namespace w/ members', ->
       data.referenceName.should.eql 'Foo'
