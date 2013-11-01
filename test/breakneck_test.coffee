@@ -34,57 +34,6 @@ describe 'Breakneck', ->
       node = parse('Foo.prototype.bar = function() {}')
       Breakneck.getIdentifierName(node).should.eql('Foo#bar')
 
-  describe 'parseName', ->
-    it 'includes the original name in the returned data', ->
-      Breakneck.parseName('Foo#bar').name.should.eql('Foo#bar')
-
-    it 'takes a long name and also provides a short name', ->
-      Breakneck.parseName('Foo#bar').shortName.should.eql('bar')
-
-    it 'includes the namespace', ->
-      Breakneck.parseName('Foo.Bar#baz').namespace.should.eql('Foo.Bar')
-
-    it 'also provides a convenient dash-separated identifier', ->
-      Breakneck.parseName('Foo#bar').identifier.should.eql('Foo-bar')
-
-    it 'for constructors/namespaces, sets the name to the namespace', ->
-      Breakneck.parseName('Foo').name.should.eql('Foo')
-
-    it 'for constructors/namespaces, sets the identifier to the namespace', ->
-      Breakneck.parseName('Foo').identifier.should.eql('Foo')
-
-    it 'for constructors/namespaces, sets the namespace to null', ->
-      should(Breakneck.parseName('Foo').namespace).eql(null)
-
-  describe 'parsePair', ->
-    it 'splits a line across the string "//=>"', ->
-      Breakneck.parsePair('foo(bar)//=>5').should.eql({
-        left: 'foo(bar)'
-        right: '5'
-      })
-
-    it 'trims leading and trailing whitespace from each side', ->
-      Breakneck.parsePair(' bar(baz) //=> 10 ').should.eql({
-        left: 'bar(baz)'
-        right: '10'
-      })
-
-    it 'allows whitespace between the // and =>', ->
-      Breakneck.parsePair('foo // => bar').should.eql({
-        left: 'foo'
-        right: 'bar'
-      })
-
-    it "doesn't actually require a '=>' at all", ->
-      Breakneck.parsePair('foo // bar').should.eql({
-        left: 'foo'
-        right: 'bar'
-      })
-
-  describe 'formatForJs', ->
-    it 'escapes single quotes', ->
-      Breakneck.escapeForJs("'foo'").should.eql("\\'foo\\'")
-
   describe 'parse', ->
     source =
       """

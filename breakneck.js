@@ -548,8 +548,19 @@
   /**
    * Takes, e.g., 'Foo#bar' and returns { name: 'Foo#bar', shortName: 'bar' }
    *
+   * @public
    * @param {string} name
    * @returns {NameInfo}
+   *
+   * @examples
+   * Breakneck.parseName('Foo#bar').name           // => 'Foo#bar'
+   * Breakneck.parseName('Foo#bar').shortName      // => 'bar'
+   * Breakneck.parseName('Foo.Bar#baz').namespace  // => 'Foo.Bar'
+   * Breakneck.parseName('Foo#bar').identifier     // => 'Foo-bar'
+   * Breakneck.parseName('Foo.Bar#baz').identifier // => 'Foo-Bar-baz'
+   * Breakneck.parseName('Foo').name               // => 'Foo'
+   * Breakneck.parseName('Foo').identifier         // => 'Foo'
+   * Breakneck.parseName('Foo').namespace          // => null
    */
   Breakneck.parseName = function(name) {
     var parts = name.split(/[\.#]/),
@@ -663,10 +674,19 @@
   };
 
   /**
-   * Given a line like 'input // => output', parses this into a { left, right } pair.
+   * Given a line like 'input // => output', parses this into a { left, right }
+   * pair. Trims leading and trailing whitespace around both parts. The '=>'
+   * part is optional.
    *
+   * @public
    * @param {string} line
    * @returns {PairInfo|null}
+   *
+   * @examples
+   * Breakneck.parsePair('foo(bar)//=>5')      // => { left: 'foo(bar)', right: '5' }
+   * Breakneck.parsePair(' bar(baz) //=> 10 ') // => { left: 'bar(baz)', right: '10' }
+   * Breakneck.parsePair('foo // => bar')      // => { left: 'foo', right: 'bar' }
+   * Breakneck.parsePair('foo // bar')         // => { left: 'foo', right: 'bar' }
    */
   Breakneck.parsePair = function(line) {
     var parts = line.match(/^(.*)\s*\/\/[ ]*(?:=>)?\s*(.*)$/);
