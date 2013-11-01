@@ -50,18 +50,33 @@ nav {
 
   ul {
     @extend .nav;
+
+    li.nav-header {
+      font-weight: bold;
+      padding-left: 15px;
+    }
   }
 }
 
 table {
   @extend .table, .table-striped, .table-hover;
+
+  tr.failed {
+    @extend tr.danger;
+  }
+
+  th, td {
+    p {
+      margin: 0;
+    }
+  }
 }
 
 .signature {
   table {
     tfoot {
       tr {
-        @extend .warning;
+        background-color: darken(#ecf0f1, 20%);
       }
     }
   }
