@@ -53,7 +53,7 @@ var filePath        = process.argv.pop(),
 var options         = Breakneck.options;
 options.namespace   = commander.namespaces;
 options.tags        = commander.tags;
-options.javascripts = commander.javascripts || [];
+options.javascripts = commander.javascripts || ['../' + path.basename(filePath)];
 
 if (handlersExists) {
   // First of all, include it in the actual docs HTML.
