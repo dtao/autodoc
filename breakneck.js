@@ -99,6 +99,8 @@
     this.extraOptions    = options.extraOptions || {};
   }
 
+  Breakneck.VERSION = '0.2.0';
+
   /**
    * Default Breakneck options. (See breakneck-node.js)
    */
