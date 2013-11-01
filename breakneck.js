@@ -96,7 +96,6 @@
     this.exampleHandlers = options.exampleHandlers || [];
     this.template        = options.template;
     this.templateEngine  = options.templateEngine;
-    this.testRunner      = options.testRunner;
     this.extraOptions    = options.extraOptions || {};
   }
 
@@ -135,50 +134,6 @@
    */
   Breakneck.generate = function(source, options) {
     return new Breakneck(options).generate(source);
-  };
-
-  /**
-   * Runs all of the examples in the library using the specified test runner.
-   */
-  Breakneck.runExamples = function(source, options) {
-    var breakneck       = new Breakneck(options),
-        libraryInfo     = breakneck.parse(source),
-        exampleHandlers = breakneck.exampleHandlers,
-        testRunner      = breakneck.testRunner;
-
-    breakneck.updateExamples(libraryInfo);
-
-    eval(libraryInfo.code);
-
-    Lazy(libraryInfo.docs).each(function(doc) {
-      if (!doc.hasExamples) {
-        return;
-      }
-
-      testRunner.defineTestGroup(doc.name, function() {
-        Lazy(doc.examples.list).each(function(example) {
-          if (example.hasCustomHandler) {
-            (function(handler) {
-              var match  = handler.pattern.match(example.customOutput),
-                  actual = eval(example.input);
-
-              handler.test(match, actual);
-
-            }(exampleHandlers[example.handlerIndex]));
-
-          } else {
-            testRunner.defineTest(example.input + ' => ' + example.output, function() {
-              var expected = eval(example.output),
-                  actual   = eval(example.input);
-
-              testRunner.assertEquality(expected, actual);
-            });
-          }
-        });
-      });
-    });
-
-    testRunner.run();
   };
 
   /**
