@@ -262,13 +262,14 @@
 
         return autodoc.createFunctionInfo(fn, doc);
       })
-      .compact();
+      .compact()
+      .toArray();
 
     // If no tags have been explicitly provided, but we find any occurrences of
     // the @public tag, we'll use that as a hint that only those methods tagged
     // @public should be included. Otherwise include everything.
     if (this.tags.length === 0) {
-      if (docs.any(function(doc) { return doc.isPublic; })) {
+      if (Lazy(docs).any(function(doc) { return doc.isPublic; })) {
         this.tags.push('public');
       }
     }
@@ -276,19 +277,19 @@
     // Only include documentation for functions with the specified tag(s), if
     // provided.
     if (this.tags.length > 0) {
-      docs = docs.filter(function(doc) {
-        return Lazy(autodoc.tags).any(function(tag) {
+      Lazy(docs).each(function(doc) {
+        var hasTag = Lazy(autodoc.tags).any(function(tag) {
           return Lazy(doc.tags).contains(tag);
         });
+
+        if (!hasTag) {
+          doc.excludeFromDocs = true;
+        }
       });
     }
 
-    // Provide a flat list of all docs to make it easier to, e.g., apply some
-    // logic to every doclet in the library.
-    var docList = docs.toArray();
-
-    // Also group by namespace so that we can keep the docs organized.
-    var docGroups = Lazy(docList)
+    // Group by namespace so that we can keep the docs organized.
+    var docGroups = Lazy(docs)
       .groupBy(function(doc) {
         return doc.namespace || doc.shortName;
       })
@@ -328,7 +329,7 @@
       description: librarySummary.description,
       code: code,
       namespaces: namespaces,
-      docs: docList
+      docs: docs
     };
   };
 
@@ -1011,25 +1012,8 @@
   };
 
   /**
-   * Provides an escaped form of a string to facilitate dropping it "unescaped"
-   * (aside from this, of course) directly into a JS template.
-   *
-   * @public
-   * @param {string} string
-   * @returns {string}
-   *
-   * @examples
-   * Autodoc.escapeForJs('foo')            // => 'foo'
-   * Autodoc.escapeForJs("Hell's Kitchen") // => "Hell\\'s Kitchen"
-   */
-  Autodoc.escapeForJs = function(string) {
-    return string.replace(/'/g, "\\'");
-  };
-
-  /**
    * Replaces JsDoc references like '{@link MyClass}' with actual HTML links.
    *
-   * @public
    * @param {string} html
    * @returns {string} The HTML with JsDoc `@link` references replaced by links.
    *
@@ -1043,9 +1027,23 @@
   };
 
   /**
+   * Provides an escaped form of a string to facilitate dropping it "unescaped"
+   * (aside from this, of course) directly into a JS template.
+   *
+   * @param {string} string
+   * @returns {string}
+   *
+   * @examples
+   * Autodoc.escapeForJs('foo')            // => 'foo'
+   * Autodoc.escapeForJs("Hell's Kitchen") // => "Hell\\'s Kitchen"
+   */
+  Autodoc.escapeForJs = function(string) {
+    return string.replace(/'/g, "\\'");
+  };
+
+  /**
    * Removes leading and trailing whitespace from a string.
    *
-   * @public
    * @param {string} string The string to trim.
    * @returns {string} The trimmed result.
    *
@@ -1062,7 +1060,6 @@
   /**
    * Splits a string into two parts on either side of a specified divider.
    *
-   * @public
    * @param {string} string The string to divide into two parts.
    * @param {string} divider The string used as the pivot point.
    * @returns {Array.<string>} The parts of the string before and after the
