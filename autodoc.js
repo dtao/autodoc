@@ -306,18 +306,32 @@
       })
       .toArray();
 
-    // We'll guess that the first "namespace" that actually has members is
-    // probably the conventional "name" of the library (i.e., the variable one
-    // would typically use to hold a reference to it -- like _ for Underscore,
-    // $ for jQuery, and so on).
-    var firstNonEmptyNamespace = Lazy(namespaces)
-      .find(function(namespace) {
-        return namespace.members.length > 0;
-      });
+    // If there's a line that looks like:
+    //
+    //     module.exports = Foo;
+    //
+    // ...then we'll assume 'Foo' is the "reference name" of the library; i.e.,
+    // the name conventionally used to refer to it within other libraries or
+    // applications (like _ for Underscore, $ for jQuery, and so on).
+    var nameFromModuleExports = Lazy(ast.body).nodes()
+      .map(Autodoc.getModuleExportsIdentifier)
+      .compact()
+      .first();
 
-    var referenceName = firstNonEmptyNamespace ?
-      firstNonEmptyNamespace.namespace.split('.').shift() :
-      null;
+    var referenceName = nameFromModuleExports;
+
+    // If not, we'll guess that the first "namespace" that actually has members
+    // is probably the conventional name.
+    if (!referenceName) {
+      var firstNonEmptyNamespace = Lazy(namespaces)
+        .find(function(namespace) {
+          return namespace.members.length > 0;
+        });
+
+      referenceName = firstNonEmptyNamespace ?
+        firstNonEmptyNamespace.namespace.split('.').shift() :
+        null;
+    }
 
     // TODO: Make this code a little more agnostic about the whole namespace
     // thing. I'm pretty sure there are plenty of libraries that don't use
@@ -1040,6 +1054,41 @@
     return html.replace(/\{@link ([^\}]*)}/g, function(string, match) {
       return '<a href="#' + match.replace(/[\.#]/g, '-') + '">' + match + '</a>';
     });
+  };
+
+  /**
+   * Checks whether an AST node is a line like:
+   *
+   *     module.exports = Foo;
+   *
+   * @param {Object} node The AST node to check.
+   * @returns {string=} If `node` assigns some identifier to `module.exports`,
+   *     then the name of that identifier. Otherwise `null`.
+   */
+  Autodoc.getModuleExportsIdentifier = function(node) {
+    if (node.type !== 'AssignmentExpression') {
+      return null;
+    }
+
+    if (node.left.type !== 'MemberExpression') {
+      return null;
+    }
+
+    var object     = node.left.object,
+        property   = node.left.property,
+        identifier = node.right;
+
+    if (!Lazy([object, property, identifier]).all(function(node) {
+      return node.type === 'Identifier';
+    })) {
+      return null;
+    }
+
+    if (object.name !== 'module' || property.name !== 'exports') {
+      return null;
+    }
+
+    return identifier.name;
   };
 
   /**

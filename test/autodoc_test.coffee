@@ -87,3 +87,9 @@ describe 'Autodoc', ->
 
       it 'also respects the @memberOf tag for explicitly defining namespaces', ->
         listMembersForNamespace(data, 'R.strings').should.eql ['split']
+
+    describe '"module.js example', ->
+      data = parseExampleFile('module.js')
+
+      it 'takes reference name from the module.exports line, if there is one', ->
+        data.referenceName.should.eql 'Module'
