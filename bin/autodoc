@@ -6,7 +6,8 @@ var fs   = require('fs'),
 // External dependencies -- adding weird prefixes here to prevent name
 // collisions when actually testing any of these libraries (by which I really
 // just mean Autodoc, clearly).
-var _Autodoc = require(path.join(__dirname, '../autodoc-node')),
+var _Autodoc   = require(path.join(__dirname, '../autodoc-node')),
+    _Lazy      = require('lazy.js'),
     _commander = require('commander');
 
 // Read package info from package.json -- just one less thing to keep track of.
@@ -59,6 +60,20 @@ var options         = _Autodoc.options;
 options.namespace   = _commander.namespaces;
 options.tags        = _commander.tags;
 options.javascripts = _commander.javascripts || ['../' + path.basename(filePath)];
+
+var resourcesDir = path.join(__dirname, '../resources');
+options.templatePartials = _Lazy(fs.readdirSync(resourcesDir))
+  .map(function(fileName) {
+    return fileName.match(/^_(.*\.js\.mustache)/);
+  })
+  .compact()
+  .map(function(match) {
+    return [
+      path.basename(match[1], '.js.mustache'),
+      fs.readFileSync(path.join(resourcesDir, match[0]), 'utf-8')
+    ];
+  })
+  .toObject();
 
 if (handlersExists) {
   // First of all, include it in the actual docs HTML.

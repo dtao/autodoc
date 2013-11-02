@@ -144,6 +144,7 @@
    * @property {Array.<string>} javascripts
    * @property {string} template
    * @property {TemplateEngine} templateEngine
+   * @property {Object.<string, string>} templatePartials
    * @property {Array.<ExampleHandler>} exampleHandlers
    * @property {Object} extraOptions
    */
@@ -157,16 +158,17 @@
       .defaults(Autodoc.options)
       .toObject();
 
-    this.codeParser      = wrapParser(options.codeParser);
-    this.commentParser   = wrapParser(options.commentParser);
-    this.markdownParser  = wrapParser(options.markdownParser, Autodoc.processInternalLinks);
-    this.namespaces      = options.namespaces || [];
-    this.tags            = options.tags || [];
-    this.javascripts     = options.javascripts || [];
-    this.exampleHandlers = options.exampleHandlers || [];
-    this.template        = options.template;
-    this.templateEngine  = options.templateEngine;
-    this.extraOptions    = options.extraOptions || {};
+    this.codeParser       = wrapParser(options.codeParser);
+    this.commentParser    = wrapParser(options.commentParser);
+    this.markdownParser   = wrapParser(options.markdownParser, Autodoc.processInternalLinks);
+    this.namespaces       = options.namespaces || [];
+    this.tags             = options.tags || [];
+    this.javascripts      = options.javascripts || [];
+    this.exampleHandlers  = options.exampleHandlers || [];
+    this.template         = options.template;
+    this.templateEngine   = options.templateEngine;
+    this.templatePartials = options.templatePartials;
+    this.extraOptions     = options.extraOptions || {};
   }
 
   Autodoc.VERSION = '0.2.3';
@@ -358,7 +360,7 @@
 
     // Finally pass our awesomely-finessed data to the template engine,
     // e.g., Mustache.
-    return this.templateEngine.render(this.template, templateData);
+    return this.templateEngine.render(this.template, templateData, this.templatePartials);
   };
 
   /**
