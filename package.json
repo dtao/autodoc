@@ -19,6 +19,7 @@
     "url": "https://github.com/dtao/autodoc/issues"
   },
   "dependencies": {
+    "benchmark": ">= 1.0.0",
     "commander": "*",
     "doctrine": "git://github.com/dtao/doctrine.git",
     "esprima": "*",

@@ -21,11 +21,8 @@ function argToList(arg) {
 _commander
   .version(packageInfo.version)
   .usage('[options] [file]')
-
-  // TODO: Implement this eventually
-  // .option('-p, --perf', 'run performance benchmarks')
-
   .option('-t, --test', 'run tests')
+  .option('-p, --perf', 'run performance benchmarks')
   .option('-d, --dump', 'dump data to console and exit')
   .option('-o, --output <destination>', 'specify an output directory (defaults to "docs")')
   .option('--template <path>', 'use a custom Mustache template')
@@ -94,11 +91,11 @@ if (docHelperExists) {
   options.javascripts.push('doc_helper.js');
 }
 
+var libraryInfo = _Autodoc.parse(sourceCode, options);
+
 function runTests() {
   var jasmine = require('jasmine-node'),
       env     = jasmine.getEnv();
-
-  var libraryInfo = _Autodoc.parse(sourceCode, options);
 
   var reporterType = _commander.verbose ?
     jasmine.TerminalVerboseReporter :
@@ -126,13 +123,29 @@ function runTests() {
     filePath: path.join(process.cwd(), filePath)
   };
 
-  var examplesJs = _Autodoc.generate(sourceCode, options);
+  var examplesJs = _Autodoc.generate(libraryInfo, options);
 
   eval(examplesJs);
 
   env.execute();
 
   return examplesJs;
+}
+
+function runBenchmarks() {
+  var templatePath = path.join(__dirname, '../resources/benchmarks.js.mustache');
+
+  options.template = fs.readFileSync(templatePath, 'utf-8');
+  options.extraOptions = {
+    variable: _commander.variable || libraryInfo.referenceName || '__lib__',
+    filePath: path.join(process.cwd(), filePath)
+  };
+
+  var benchmarksJs = _Autodoc.generate(libraryInfo, options);
+
+  eval(benchmarksJs);
+
+  return benchmarksJs;
 }
 
 function generateDocs() {
@@ -178,10 +191,20 @@ if (_commander.test) {
   if (_commander.dump) {
     console.log(examplesJs);
   }
+}
 
-} else if (_commander.dump) {
-  console.log(JSON.stringify(_Autodoc.parse(sourceCode, options), null, 2));
+if (_commander.perf) {
+  var perfJs = runBenchmarks();
 
-} else {
+  if (_commander.dump) {
+    console.log(perfJs);
+  }
+}
+
+if (!(_commander.test || _commander.perf)) {
   generateDocs();
+
+  if (_commander.dump) {
+    console.log(JSON.stringify(libraryInfo, null, 2));
+  }
 }

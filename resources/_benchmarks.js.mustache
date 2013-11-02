@@ -1,0 +1,29 @@
+{{#hasBenchmarks}}
+(function() {
+  {{#benchmarks}}
+
+  {{{setup}}}
+
+  benchmarks['{{identifier}}'] = [];
+
+  {{#list}}
+  {{#cases}}
+  (function() {
+    var benchmark = new Benchmark('{{name}}', {
+      id: '{{identifier}}-{{id}}-{{caseId}}',
+      fn: function() {
+        {{{impl}}};
+      }
+    });
+
+    benchmark.benchmarkId = '{{identifier}}-{{id}}';
+    benchmark.caseId = {{caseId}};
+
+    benchmarks['{{identifier}}'].push(benchmark);
+  }());
+
+  {{/cases}}
+  {{/list}}
+  {{/benchmarks}}
+}());
+{{/hasBenchmarks}}

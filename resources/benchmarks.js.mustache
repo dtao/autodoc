@@ -1,0 +1,39 @@
+global.{{variable}} = require('{{{filePath}}}');
+
+var Benchmark = require('benchmark');
+
+var suite      = new Benchmark.Suite(),
+    benchmarks = {};
+
+{{#docs}}
+{{> benchmarks }}
+{{/docs}}
+
+(function() {
+  for (var b in benchmarks) {
+    (function(benchmarkList) {
+      for (var i = 0; i < benchmarkList.length; ++i) {
+        suite.add(benchmarkList[i]);
+      }
+    }(benchmarks[b]));
+  }
+}());
+
+var benchmarkCycles = 0;
+Benchmark.options.onCycle = function(e) {
+  var benchmark = e.target;
+
+  process.stdout.clearLine();
+  process.stdout.cursorTo(0);
+  process.stdout.write(benchmark.name + '\tx ' + benchmarkCycles++);
+};
+
+suite.on('cycle', function(e) {
+  var benchmark = e.target;
+
+  process.stdout.write(' - ' + benchmark.hz + ' ops/second\n');
+
+  benchmarkCycles = 0;
+});
+
+suite.run({ async: true });

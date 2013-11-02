@@ -5,7 +5,7 @@ describe('{{variable}}', function() {
   {{#hasExamples}}
   describe('{{namespace}}', function() {
     {{#allMembers}}
-      {{> memberSpec}}
+      {{> examples}}
     {{/allMembers}}
   });
   {{/hasExamples}}
