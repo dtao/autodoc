@@ -226,7 +226,8 @@
     // Generate the abstract syntax tree.
     var ast = this.codeParser.parse(code, {
       comment: true,
-      loc: true
+      loc: true,
+      range: true
     });
 
     // This is kind of stupid... for now, I'm just assuming the library will
@@ -260,7 +261,7 @@
           return null;
         }
 
-        return autodoc.createFunctionInfo(fn, doc);
+        return autodoc.createFunctionInfo(fn, doc, Autodoc.getFunctionSource(doc, code));
       })
       .compact();
 
@@ -450,6 +451,7 @@
    * @property {ExampleCollection} examples
    * @property {BenchmarkCollection} benchmarks
    * @property {Array.<string>} tags
+   * @property {string} source
    */
 
   /**
@@ -459,9 +461,10 @@
    *
    * @param {Object} fn
    * @param {Object} doc
+   * @param {string} source
    * @returns {FunctionInfo}
    */
-  Autodoc.prototype.createFunctionInfo = function(fn, doc) {
+  Autodoc.prototype.createFunctionInfo = function(fn, doc, source) {
     var nameInfo    = Autodoc.parseName(Autodoc.getIdentifierName(fn[0])),
         description = this.markdownParser.parse(doc.description),
         params      = this.getParams(doc),
@@ -491,7 +494,8 @@
       hasExamples: examples.list.length > 0,
       benchmarks: benchmarks,
       hasBenchmarks: benchmarks.list.length > 0,
-      tags: tags
+      tags: tags,
+      source: source
     };
   };
 
@@ -1089,6 +1093,18 @@
     }
 
     return identifier.name;
+  };
+
+  /**
+   * Given an AST node representing some function and the associated library
+   * code, returns just the code for the function.
+   *
+   * @param {Object} node The AST node.
+   * @param {string} code The source code for the associated library.
+   * @return {string} Just the source code for the function itself.
+   */
+  Autodoc.getFunctionSource = function(node, code) {
+    return String.prototype.substring.apply(code, node.range);
   };
 
   /**

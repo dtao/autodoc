@@ -12,6 +12,14 @@ parseExampleFile = (fileName) ->
   js = fs.readFileSync(path.join(__dirname, '..', 'example', fileName), 'utf-8')
   Autodoc.parse(js)
 
+getASTFromFile = (fileName) ->
+  js = fs.readFileSync(path.join(__dirname, '..', fileName), 'utf-8')
+  ast = esprima.parse js,
+    comment: true
+    loc: true
+    range: true
+  [ast, js]
+
 describe 'Autodoc', ->
   describe '#parseComment', ->
     it 'wraps some text in /* and */ to pass to doctrine', ->
@@ -38,6 +46,27 @@ describe 'Autodoc', ->
     it 'replaces ".prototype." with "#"', ->
       node = parse('Foo.prototype.bar = function() {}')
       Autodoc.getIdentifierName(node).should.eql('Foo#bar')
+
+  describe 'getFunctionSource', ->
+    it 'provides the raw source code for a function', ->
+      [ast, source] = getASTFromFile('example/redundant.js')
+
+      # Yes, I am being lazy/hacky right now.
+      clone = ast.body[1] # ExpressionStatement
+        .expression       # AssignmentExpression
+        .right            # FunctionExpression
+
+      Autodoc.getFunctionSource(clone, source).should.eql(
+        """
+        function(array) {
+          var clone = [];
+          for (var i = 0; i < array.length; ++i) {
+            clone.push(array[i]);
+          }
+          return clone;
+        }
+        """
+      )
 
   describe 'parse', ->
     listNamespaces = (data) ->
