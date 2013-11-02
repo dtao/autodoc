@@ -50,6 +50,12 @@
         case 'ForInStatement':
           return [node.body];
 
+        case 'SwitchStatement':
+          return node.cases;
+
+        case 'SwitchCase':
+          return node.consequent;
+
         case 'ExpressionStatement':
           return [node.expression];
 
@@ -65,11 +71,20 @@
         case 'ObjectExpression':
           return node.properties;
 
+        case 'ArrayExpression':
+          return node.elements;
+
         case 'NewExpression':
           return [node.callee];
 
         case 'UnaryExpression':
           return [node.argument];
+
+        case 'BinaryExpression':
+          return [node.left, node.right];
+
+        case 'LogicalExpression':
+          return [node.left, node.right];
 
         case 'Property':
           return [node.key, node.value];
@@ -83,8 +98,10 @@
         // The basic idea here is that unless a node could POSSIBLY include
         // (potentially deep down somewhere) a function declaration/expression,
         // we'll treat it as having no children.
+        case 'Literal':
         case 'Identifier':
         case 'MemberExpression':
+        case 'ThisExpression':
         case 'EmptyStatement':
         case 'ReturnStatement':
         case 'ThrowStatement':
