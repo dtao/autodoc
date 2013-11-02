@@ -9,3 +9,6 @@ node_modules/
 
 # Ignore any files generated for the example
 docs/
+
+# Ignore debug log
+npm-debug.log
