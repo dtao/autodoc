@@ -65,59 +65,66 @@ R.arrays.insert = function(array, index, element) {
   return array;
 };
 
-/**
- * Gets the keys of an object. This duplicates the native `Object.keys` method.
- *
- * @param {Object} object The object whose keys you want to get.
- * @returns {Array.<string>} The keys of the object.
- *
- * @examples
- * R.objects.keys({ foo: 1, bar: 2 }) // => ['foo', 'bar']
- *
- * @benchmarks
- * R.objects.keys({ foo: 1, bar: 2, baz: 3 }) // redundant.js
- * Object.keys({ foo: 1, bar: 2, baz: 3 })    // native
- */
-R.objects.keys = function(object) {
-  var keys = [];
-  for (var key in object) {
-    keys.push(key);
+R.objects = {
+  /**
+   * Gets the keys of an object. This duplicates the native `Object.keys` method.
+   *
+   * @param {Object} object The object whose keys you want to get.
+   * @returns {Array.<string>} The keys of the object.
+   *
+   * @examples
+   * R.objects.keys({ foo: 1, bar: 2 }) // => ['foo', 'bar']
+   *
+   * @benchmarks
+   * R.objects.keys({ foo: 1, bar: 2, baz: 3 }) // redundant.js
+   * Object.keys({ foo: 1, bar: 2, baz: 3 })    // native
+   */
+  keys: function(object) {
+    var keys = [];
+    for (var key in object) {
+      keys.push(key);
+    }
+    return keys;
   }
-  return keys;
 };
 
-/**
- * Splits a string by a given delimiter. This duplicates `String.prototype.split`.
- *
- * @param {string} string The string to split.
- * @param {string} delimiter The delimiter used to split the string.
- * @returns {Array.<string>} An array of the parts separated by the given delimiter.
- *
- * @examples
- * R.strings.split('1,2,3', ',')   // => ['1', '2', '3']
- * R.strings.split('hello', 'ell') // => ['h', 'o']
- *
- * @benchmarks
- * R.strings.split('foo bar baz', ' ') // redundant.js
- * 'foo bar baz'.split(' ')            // native
- */
-R.strings.split = function(string, delimiter) {
-  var start = 0,
-      parts = [],
-      index = string.indexOf(delimiter);
+var strings = {
+  /**
+   * Splits a string by a given delimiter. This duplicates `String.prototype.split`.
+   *
+   * @memberOf R.strings
+   * @param {string} string The string to split.
+   * @param {string} delimiter The delimiter used to split the string.
+   * @returns {Array.<string>} An array of the parts separated by the given delimiter.
+   *
+   * @examples
+   * R.strings.split('1,2,3', ',')   // => ['1', '2', '3']
+   * R.strings.split('hello', 'ell') // => ['h', 'o']
+   *
+   * @benchmarks
+   * R.strings.split('foo bar baz', ' ') // redundant.js
+   * 'foo bar baz'.split(' ')            // native
+   */
+  split: function(string, delimiter) {
+    var start = 0,
+        parts = [],
+        index = string.indexOf(delimiter);
 
-  while (index !== -1) {
-    parts.push(string.substring(start, index));
-    start = index + delimiter.length;
-    index = string.indexOf(delimiter, start);
+    while (index !== -1) {
+      parts.push(string.substring(start, index));
+      start = index + delimiter.length;
+      index = string.indexOf(delimiter, start);
+    }
+
+    if (start < string.length) {
+      parts.push(string.substring(start));
+    }
+
+    return parts;
   }
-
-  if (start < string.length) {
-    parts.push(string.substring(start));
-  }
-
-  return parts;
 };
+
+R.strings = strings;
 
 if (typeof module === 'object' && module && module.exports) {
   module.exports = R;

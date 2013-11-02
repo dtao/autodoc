@@ -1,11 +1,16 @@
-path      = require('path')
-esprima   = require('esprima')
-doctrine  = require('doctrine')
-marked    = require('marked')
-Autodoc   = require('../')
-Lazy      = require('lazy.js')
-sinon     = require('sinon')
-should    = require('should')
+fs       = require('fs')
+path     = require('path')
+esprima  = require('esprima')
+doctrine = require('doctrine')
+marked   = require('marked')
+Autodoc  = require('../autodoc-node')
+Lazy     = require('lazy.js')
+sinon    = require('sinon')
+should   = require('should')
+
+parseExampleFile = (fileName) ->
+  js = fs.readFileSync(path.join(__dirname, '..', 'example', fileName), 'utf-8')
+  Autodoc.parse(js)
 
 describe 'Autodoc', ->
   describe '#parseComment', ->
@@ -35,55 +40,6 @@ describe 'Autodoc', ->
       Autodoc.getIdentifierName(node).should.eql('Foo#bar')
 
   describe 'parse', ->
-    source =
-      """
-        /**
-         * @name hello world
-         *
-         * @fileOverview
-         * This is a description.
-         */
-
-        /**
-         * The main namespace.
-         */
-        function Foo() {};
-
-        /**
-         * Returns 'foo'
-         *
-         * @returns {string}
-         */
-        Foo.getName = function() {
-          return 'foo';
-        };
-
-        Foo.Bar = {
-          /**
-           * Returns 'bar'
-           *
-           * @returns {string}
-           */
-          getName: function() {
-            return 'bar';
-          },
-
-          /**
-           * Returns 'baz'
-           *
-           * @returns {string}
-           */
-          getBaz: function() {
-            return 'baz';
-          }
-        };
-      """
-
-    data = Autodoc.parse source,
-      codeParser: esprima
-      commentParser: doctrine
-      markdownParser: marked
-
     listNamespaces = (data) ->
       Lazy(data.namespaces)
         .pluck('namespace')
@@ -98,43 +54,36 @@ describe 'Autodoc', ->
         .pluck('shortName')
         .toArray()
 
-    it 'pulls the library name from the @name tag', ->
-      data.name.should.eql 'hello world'
+    describe '"helloWorld.js" example', ->
+      data = parseExampleFile('helloWorld.js')
 
-    it 'pulls the description from the @fileOverview tag', ->
-      data.description.should.match /^\s*<p>This is a description.<\/p>\s*$/
+      it 'pulls the library name from the @name tag', ->
+        data.name.should.eql 'hello world'
 
-    it 'gets all namespaces', ->
-      listNamespaces(data).should.eql ['Foo', 'Foo.Bar']
+      it 'pulls the description from the @fileOverview tag', ->
+        data.description.should.match /^\s*<p>This is a description.<\/p>\s*$/
 
-    it 'groups functions by namespace', ->
-      listMembersForNamespace(data, 'Foo').should.eql ['getName']
-      listMembersForNamespace(data, 'Foo.Bar').sort().should.eql ['getBaz', 'getName']
+      it 'gets all namespaces', ->
+        listNamespaces(data).should.eql ['Foo', 'Foo.Bar']
 
-    it 'infers a "reference name" based on the first namespace w/ members', ->
-      data.referenceName.should.eql 'Foo'
+      it 'groups functions by namespace', ->
+        listMembersForNamespace(data, 'Foo').should.eql ['getName']
+        listMembersForNamespace(data, 'Foo.Bar').sort().should.eql ['getBaz', 'getName']
 
-    it 'takes the leftmost part of the root namespace', ->
-      source =
-        """
-          var Root = {
-            submodule1: {},
-            submodule2: {}
-          };
+      it 'infers a "reference name" based on the first namespace w/ members', ->
+        data.referenceName.should.eql 'Foo'
 
-          /**
-           * Hey I have comments.
-           */
-          Root.submodule1.foo = function() {
-            return 'foo';
-          };
+    describe '"root.js" example', ->
+      data = parseExampleFile('root.js')
 
-          /**
-           * Me too me too!
-           */
-          Root.submodule2.bar = function() {
-            return 'bar';
-          };
-        """
+      it 'takes the leftmost part of the root namespace', ->
+        data.referenceName.should.eql 'Root'
 
-      Autodoc.parse(source).referenceName.should.eql 'Root'
+    describe '"redundant.js" example', ->
+      data = parseExampleFile('redundant.js')
+
+      it 'can infer namespaces from object expressions', ->
+        listNamespaces(data).should.include 'R.objects'
+
+      it 'also respects the @memberOf tag for explicitly defining namespaces', ->
+        listMembersForNamespace(data, 'R.strings').should.eql ['split']

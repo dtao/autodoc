@@ -460,7 +460,7 @@
       name: nameInfo.name,
       shortName: nameInfo.shortName,
       identifier: nameInfo.identifier,
-      namespace: nameInfo.namespace,
+      namespace: Autodoc.getTagDescription(doc, 'memberOf') || nameInfo.namespace,
       description: description,
       params: params,
       returns: returns,
