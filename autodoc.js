@@ -1083,6 +1083,27 @@
   };
 
   /**
+   * Appends a bunch of whitespace to the end of a string to get it to a desired
+   * length. Has no effect if the string exceeds the specified length to begin
+   * with.
+   *
+   * @param {string} str The string to pad.
+   * @param {number} length The desired length of the string.
+   * @returns {string} The string with its fresh new white padding.
+   *
+   * @examples
+   * Autodoc.padRight('foo', 5) // => 'foo  '
+   * Autodoc.padRight('', 5)    // => '     '
+   * Autodoc.padRight('foo', 2) // => 'foo'
+   */
+  Autodoc.padRight = function(str, length) {
+    while (str.length < length) {
+      str += ' ';
+    }
+    return str;
+  };
+
+  /**
    * Takes either a `{ parse }` object or an actual function and wraps it as a
    * `{ parse }` object with an optional post-processing step.
    */

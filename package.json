@@ -26,7 +26,8 @@
     "jasmine-node": "*",
     "lazy.js": ">= 0.1.2",
     "marked": "*",
-    "mustache": ">= 0.7.2"
+    "mustache": ">= 0.7.2",
+    "string-table": ">= 0.1.5"
   },
   "devDependencies": {
     "coffee-script": ">= 1.6.1",

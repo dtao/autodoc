@@ -1,5 +1,7 @@
 {{#hasBenchmarks}}
 (function() {
+  var functionName = '{{name}}';
+
   {{#benchmarks}}
 
   {{{setup}}}
@@ -16,6 +18,7 @@
       }
     });
 
+    benchmark.functionName = functionName;
     benchmark.benchmarkId = '{{identifier}}-{{id}}';
     benchmark.caseId = {{caseId}};
 

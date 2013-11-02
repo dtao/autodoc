@@ -1,9 +1,12 @@
 global.{{variable}} = require('{{{filePath}}}');
 
-var Benchmark = require('benchmark');
+var Autodoc   = require('autodoc'),
+    Benchmark = require('benchmark'),
+    ST        = require('string-table');
 
 var suite      = new Benchmark.Suite(),
-    benchmarks = {};
+    benchmarks = {},
+    results    = [];
 
 {{#docs}}
 {{> benchmarks }}
@@ -25,7 +28,10 @@ Benchmark.options.onCycle = function(e) {
 
   process.stdout.clearLine();
   process.stdout.cursorTo(0);
-  process.stdout.write(benchmark.name + '\tx ' + benchmarkCycles++);
+  process.stdout.write(
+    Autodoc.padRight(benchmark.functionName, 30) + ' - ' +
+    Autodoc.padRight(benchmark.name, 30) + ' x ' + benchmarkCycles++
+  );
 };
 
 suite.on('cycle', function(e) {
@@ -33,7 +39,30 @@ suite.on('cycle', function(e) {
 
   process.stdout.write(' - ' + benchmark.hz + ' ops/second\n');
 
+  results.push({
+    'function': benchmark.functionName,
+    'benchmark': benchmark.name,
+    'ops/second': benchmark.hz
+  });
+
   benchmarkCycles = 0;
+});
+
+suite.on('complete', function() {
+  var table = ST.create(results, {
+    capitalizeHeaders: true,
+    formatters: {
+      'ops/second': function(value) {
+        return {
+          value: value.toFixed(2),
+          format: { alignment: 'right' }
+        }
+      }
+    }
+  });
+
+  console.log('\nResults:\n');
+  console.log('\n' + table + '\n');
 });
 
 suite.run({ async: true });
