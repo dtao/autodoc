@@ -182,36 +182,7 @@
                     {{/hasBenchmarks}}
 
                     <script type="text/javascript">
-                      {{#hasExamples}}
-                      describe('{{{name}}}', function() {
-                        {{#examples}}
-
-                        {{{setup}}}
-
-                        {{#list}}
-                        (function() {
-                          var spec = it('{{{inputForJs}}} => {{{outputForJs}}}', function() {
-                            var result = {{{input}}};
-                            {{#hasCustomHandler}}
-                            var handler = exampleHandlers[{{handlerIndex}}],
-                                match   = {{{outputPattern}}}.match(handler.pattern);
-
-                            handler.test(match, result);
-                            {{/hasCustomHandler}}
-                            {{^hasCustomHandler}}
-                            assertEquality({{{output}}}, result);
-                            {{/hasCustomHandler}}
-                          });
-
-                          spec.exampleId = '{{identifier}}-{{id}}';
-                          spec.input = '{{input}}';
-                          spec.output = '{{output}}';
-                        }());
-
-                        {{/list}}
-                        {{/examples}}
-                      });
-                      {{/hasExamples}}
+                      {{> memberSpec}}
 
                       {{#hasBenchmarks}}
                       (function() {

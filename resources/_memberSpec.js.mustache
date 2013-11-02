@@ -1,24 +1,28 @@
 {{#hasExamples}}
 describe('{{shortName}}', function() {
-    {{#examples}}
-    {{{setup}}}
-    {{#list}}
-    {{#hasCustomHandler}}
-    it('{{{inputForJs}}} => {{{outputForJs}}}', function() {
-        var handler = exampleHandlers[{{handlerIndex}}];
-        var result  = {{{input}}};
-        var match   = {{{outputPattern}}}.match(handler.pattern);
-        handler.test(match, result);
+  {{#examples}}
+  {{{setup}}}
+  {{#list}}
+  (function() {
+    var spec = it('{{{inputForJs}}} => {{{outputForJs}}}', function() {
+      {{#hasCustomHandler}}
+      var handler = exampleHandlers[{{handlerIndex}}];
+      var result  = {{{input}}};
+      var match   = {{{outputPattern}}}.match(handler.pattern);
+      handler.test(match, result);
+      {{/hasCustomHandler}}
+      {{^hasCustomHandler}}
+      var result   = {{{input}}};
+      var expected = {{{output}}};
+      assertEquality(expected, result);
+      {{/hasCustomHandler}}
     });
-    {{/hasCustomHandler}}
-    {{^hasCustomHandler}}
-    it('{{{inputForJs}}} => {{{outputForJs}}}', function() {
-        var result   = {{{input}}};
-        var expected = {{{output}}};
-        assertEquality(expected, result);
-    });
-    {{/hasCustomHandler}}
-    {{/list}}
-    {{/examples}}
+
+    spec.exampleId = '{{identifier}}-{{id}}';
+    spec.input = '{{{inputForJs}}}';
+    spec.output = '{{{outputForJs}}}';
+  }());
+  {{/list}}
+  {{/examples}}
 });
 {{/hasExamples}}
