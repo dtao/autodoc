@@ -47,7 +47,9 @@
         case 'IfStatement':
           return [node.consequent, node.alternate];
 
+        case 'ForStatement':
         case 'ForInStatement':
+        case 'WhileStatement':
           return [node.body];
 
         case 'SwitchStatement':
