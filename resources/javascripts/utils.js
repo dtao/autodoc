@@ -4,6 +4,7 @@
    * Formats a number by adding commas as the thousands separator and truncating
    * decimal part to 3 places (arbitrary decision on my part).
    *
+   * @global
    * @param {number} number
    * @returns {string}
    */

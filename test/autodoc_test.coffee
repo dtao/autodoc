@@ -8,9 +8,12 @@ Lazy     = require('lazy.js')
 sinon    = require('sinon')
 should   = require('should')
 
-parseExampleFile = (fileName) ->
-  js = fs.readFileSync(path.join(__dirname, '..', 'example', fileName), 'utf-8')
+parseFile = (filePath) ->
+  js = fs.readFileSync(path.join(__dirname, '..', filePath), 'utf-8')
   Autodoc.parse(js)
+
+parseExampleFile = (fileName) ->
+  parseFile('example/' + fileName)
 
 describe 'Autodoc', ->
   describe '#parseComment', ->
@@ -87,3 +90,10 @@ describe 'Autodoc', ->
 
       it 'also respects the @memberOf tag for explicitly defining namespaces', ->
         listMembersForNamespace(data, 'R.strings').should.eql ['split']
+
+    describe '"utils.js"', ->
+      data = parseFile('resources/javascripts/utils.js')
+
+      it 'respects the @global tag, stripping namespace away', ->
+        listNamespaces(data).should.eql ['formatNumber']
+        # listMembersForNamespace('formatNumber').should.eql ['formatNumber']

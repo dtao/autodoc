@@ -449,7 +449,7 @@
    * @returns {FunctionInfo}
    */
   Autodoc.prototype.createFunctionInfo = function(fn, doc) {
-    var nameInfo    = Autodoc.parseName(Autodoc.getIdentifierName(fn[0])),
+    var nameInfo    = Autodoc.parseName(Autodoc.getIdentifierName(fn[0]), doc),
         description = this.markdownParser.parse(doc.description),
         params      = this.getParams(doc),
         returns     = this.getReturns(doc),
@@ -465,7 +465,7 @@
       name: nameInfo.name,
       shortName: nameInfo.shortName,
       identifier: nameInfo.identifier,
-      namespace: Autodoc.getTagDescription(doc, 'memberOf') || nameInfo.namespace,
+      namespace: nameInfo.namespace,
       description: description,
       params: params,
       returns: returns,
@@ -643,10 +643,12 @@
    */
 
   /**
-   * Takes, e.g., 'Foo#bar' and returns { name: 'Foo#bar', shortName: 'bar' }
+   * Takes, e.g., 'Foo#bar' and returns a { name, shortName, namespace,
+   * identifier} object.
    *
    * @public
    * @param {string} name
+   * @param {FunctionInfo=} doc
    * @returns {NameInfo}
    *
    * @examples
@@ -659,7 +661,7 @@
    * Autodoc.parseName('Foo').identifier         // => 'Foo'
    * Autodoc.parseName('Foo').namespace          // => null
    */
-  Autodoc.parseName = function(name) {
+  Autodoc.parseName = function(name, doc) {
     var parts = name.split(/[\.#]/),
 
         // e.g., the short name for 'Lib.utils.func' should be 'func'
@@ -668,6 +670,21 @@
         // a name like 'foo#bar#baz' wouldn't make sense; so we can safely join
         // w/ '.' to recreate the namespace
         namespace = parts.join('.');
+
+    if (doc) {
+      // Actually, if this doc is tagged @global, then it doesn't belong to a
+      // namespace.
+      if (Autodoc.hasTag(doc, 'global')) {
+        namespace = '';
+        name = shortName;
+
+      // On the other hand, if it's tagged @memberOf, then we want to use that
+      // tag for its explicit namespace.
+      } else if (Autodoc.hasTag(doc, 'memberOf')) {
+        namespace = Autodoc.getTagDescription(doc, 'memberOf');
+        name = namespace + (doc && !doc.isStatic) ? '#' : '.' + name;
+      }
+    }
 
     return {
       name: name,
