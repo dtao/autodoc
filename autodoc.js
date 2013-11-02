@@ -14,6 +14,10 @@
       var self = this;
 
       self.parent.each(function(node) {
+        if (!node) {
+          return;
+        }
+
         if (fn(node) === false) {
           return false;
         }
@@ -22,7 +26,7 @@
 
         if (children.length > 0) {
           // Give each child a reference to its parent.
-          Lazy(children).each(function(child) {
+          Lazy(children).compact().each(function(child) {
             child.parent = node;
           });
 
@@ -40,6 +44,12 @@
         case 'BlockStatement':
           return node.body;
 
+        case 'IfStatement':
+          return [node.consequent, node.alternate];
+
+        case 'ForInStatement':
+          return [node.body];
+
         case 'ExpressionStatement':
           return [node.expression];
 
@@ -49,8 +59,17 @@
         case 'CallExpression':
           return node.callee.type === 'FunctionExpression' ? [node.callee] : [];
 
+        case 'ConditionalExpression':
+          return [node.consequent, node.alternate];
+
         case 'ObjectExpression':
           return node.properties;
+
+        case 'NewExpression':
+          return [node.callee];
+
+        case 'UnaryExpression':
+          return [node.argument];
 
         case 'Property':
           return [node.key, node.value];
@@ -61,10 +80,14 @@
         case 'VariableDeclarator':
           return [node.init];
 
-        // Throw these away:
+        // The basic idea here is that unless a node could POSSIBLY include
+        // (potentially deep down somewhere) a function declaration/expression,
+        // we'll treat it as having no children.
         case 'Identifier':
+        case 'MemberExpression':
         case 'EmptyStatement':
         case 'ReturnStatement':
+        case 'ThrowStatement':
           return [];
 
         default:
