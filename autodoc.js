@@ -103,8 +103,10 @@
         case 'Literal':
         case 'Identifier':
         case 'MemberExpression':
+        case 'UpdateExpression':
         case 'ThisExpression':
         case 'EmptyStatement':
+        case 'BreakStatement':
         case 'ReturnStatement':
         case 'ThrowStatement':
           return [];
