@@ -3,7 +3,7 @@ Autodoc
 
 ![Build Status](https://travis-ci.org/dtao/autodoc.png)
 
-This is just a little something I'm working on to help eliminate a lot of the gruntwork involved in creating a JavaScript project. In particular it simplifies **writing and running tests**, and **generating API documentation**.
+Autodoc helps eliminate a lot of the gruntwork involved in creating a JavaScript project. In particular it simplifies **writing and executing tests**, running **performance benchmarks**, and **generating API documentation**.
 
 Here, let's play Show Don't Tell. Assume we have a file named **maths.js** with the following content:
 
@@ -22,6 +22,12 @@ var Maths = {};
  * Maths.isInteger(3.14)  // => false
  * Maths.isInteger('foo') // => false
  * Maths.isInteger(NaN)   // => false
+ *
+ * @benchmarks
+ * var number = 12345;
+ *
+ * Maths.isInteger(number)       // using Maths.isInteger
+ * String(number).match(/^\d+$/) // using simple regex
  */
 Maths.isInteger = function(x) {
   return x === Math.floor(x);
@@ -30,21 +36,25 @@ Maths.isInteger = function(x) {
 module.exports = Maths;
 ```
 
-We can use Autodoc to **translate those comments into runnable tests**:
+We can use Autodoc to **automatically verify those examples**:
 
-    $ autodoc -t maths.js
+    $ autodoc --test --verbose maths.js
 
 ![Specs screenshot](http://breakneck.danieltao.com/images/specs_screenshot.png)
 
-And what do we get without the `-t` option?
+We can also **run the performance benchmarks**:
+
+    $ autodoc --perf math.js
+
+![Benchmarks screenshot](http://breakneck.danieltao.com/images/specs_screenshot.png)
+
+Without either the `--test` or `--perf` options, by default Autodoc generates API documentation:
 
     $ autodoc maths.js
 
-Auto-generated documentation... *with* the specs right in the docs.
-
 ![Docs screenshot](http://breakneck.danieltao.com/images/docs_screenshot.png)
 
-Get the idea?
+...*with* the specs and the benchmarks, running in the browser, right there in the docs.
 
 Conventions
 -----------

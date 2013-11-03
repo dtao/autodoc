@@ -1,6 +1,6 @@
 {
   "name": "autodoc",
-  "version": "0.2.3",
+  "version": "0.3.0",
   "description": "Auto-generate docs, specs, and benchmarks from JSDoc-style comments",
   "main": "autodoc-node.js",
   "bin": {
