@@ -11,3 +11,5 @@ Now run *this* command:
     autodoc redundant.js
 
 Now open up **docs/index.html** in your browser and marvel at the sweet API docs that just got generated!
+
+There are some other examples in here too; but they are primarily for testing (as opposed to demonstrating).

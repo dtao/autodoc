@@ -1,5 +1,5 @@
-Project "Autodoc"
-===================
+Autodoc
+=======
 
 This is just a little something I'm working on to help eliminate a lot of the gruntwork involved in creating a JavaScript project. In particular it simplifies **writing and running tests**, and **generating API documentation**.
 
