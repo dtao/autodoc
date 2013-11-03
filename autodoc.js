@@ -164,7 +164,7 @@
     this.namespaces       = options.namespaces || [];
     this.tags             = options.tags || [];
     this.javascripts      = options.javascripts || [];
-    this.exampleHandlers  = Lazy(options.exampleHandlers || []).concat(context.exampleHandlers || []).toArray();
+    this.exampleHandlers  = options.exampleHandlers || [];
     this.template         = options.template;
     this.templateEngine   = options.templateEngine;
     this.templatePartials = options.templatePartials;

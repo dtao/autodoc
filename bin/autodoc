@@ -58,6 +58,11 @@ options.namespace   = _commander.namespaces;
 options.tags        = _commander.tags;
 options.javascripts = _commander.javascripts || ['../' + path.basename(filePath)];
 
+var defaults = require(path.join(__dirname, '../resources/javascripts/defaults.js'));
+
+global.assertEquality  = defaults.assertEquality;
+global.exampleHandlers = defaults.exampleHandlers;
+
 var resourcesDir = path.join(__dirname, '../resources');
 options.templatePartials = _Lazy(fs.readdirSync(resourcesDir))
   .map(function(fileName) {
@@ -77,8 +82,11 @@ if (handlersExists) {
   options.javascripts.push('handlers.js');
 
   // Also require it locally.
-  options.exampleHandlers = require(path.join(process.cwd(), handlersPath)).exampleHandlers;
+  global.exampleHandlers = require(path.join(process.cwd(), handlersPath)).exampleHandlers
+    .concat(global.exampleHandlers);
 }
+
+options.exampleHandlers = global.exampleHandlers;
 
 if (equalityExists) {
   // Same as w/ helpers
@@ -93,10 +101,6 @@ if (equalityExists) {
 if (docHelperExists) {
   options.javascripts.push('doc_helper.js');
 }
-
-global.exampleHandlers = (options.exampleHandlers || []).concat(
-  require(path.join(__dirname, '../resources/javascripts/defaults.js')).exampleHandlers
-);
 
 var libraryInfo = _Autodoc.parse(sourceCode, options);
 
