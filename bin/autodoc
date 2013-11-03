@@ -84,15 +84,21 @@ if (equalityExists) {
   // Same as w/ helpers
   options.javascripts.push('assertEquality.js');
 
-  // (We'll use it locally in runTests)
+  // We attach assertEquality to the global context because it's only used
+  // within the tests themselves, not within Autodoc (so no need to add it to
+  // options).
+  global.assertEquality = require(path.join(process.cwd(), equalityPath)).assertEquality;
 }
 
 if (docHelperExists) {
   options.javascripts.push('doc_helper.js');
 }
 
+global.exampleHandlers = (options.exampleHandlers || []).concat(
+  require(path.join(__dirname, '../resources/javascripts/defaults.js')).exampleHandlers
+);
+
 var libraryInfo = _Autodoc.parse(sourceCode, options);
-global.exampleHandlers = require(path.join(__dirname, '../resources/javascripts/defaults.js')).exampleHandlers;
 
 function runTests() {
   var templatePath = path.join(__dirname, '../resources/examples.js.mustache');

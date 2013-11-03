@@ -3,7 +3,7 @@
  * that gives you the ability to override them, effectively. (Of course you
  * could also always just obliterate this property.)
  */
-this.exampleHandlers = (this.exampleHandlers || []).concat([
+this.exampleHandlers = [
   {
     pattern: /^\s*instanceof (.*)\s*$/,
     test: function(match, actual) {
@@ -15,11 +15,11 @@ this.exampleHandlers = (this.exampleHandlers || []).concat([
       }
     }
   }
-]);
+];
 
 // A client library may have defined a custom assertEquality method, e.g.
 // in doc_helper.js; so we'll only use this default implementation if
 // necessary.
-this.assertEquality = this.assertEquality || function(expected, actual) {
+this.assertEquality = function(expected, actual) {
   expect(expected).toEqual(actual);
 };

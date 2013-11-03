@@ -5,8 +5,7 @@ var jasmine  = require('jasmine-node'),
     utils    = require(path.join(__dirname, '../resources/javascripts/utils')),
     defaults = require(path.join(__dirname, '../resources/javascripts/defaults'));
 
-global.exampleHandlers = defaults.exampleHandlers;
-global.assertEquality  = defaults.assertEquality;
+global.assertEquality = global.assertEquality || defaults.assertEquality;
 
 var reporterType = _commander.verbose ?
   jasmine.TerminalVerboseReporter :
