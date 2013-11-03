@@ -27,6 +27,18 @@ var {{shortName}} = {{{source}}};
   }
 }());
 
+function getBenchmarkLabel(benchmark) {
+  return benchmark.functionName + ' - ' + benchmark.name;
+}
+
+var maxFunctionNameLength = 0,
+    maxNameLength         = 0;
+
+suite.forEach(function(benchmark) {
+  maxFunctionNameLength = Math.max(maxFunctionNameLength, benchmark.functionName.length);
+  maxNameLength         = Math.max(maxNameLength, benchmark.name.length);
+});
+
 var benchmarkCycles = 0;
 Benchmark.options.onCycle = function(e) {
   var benchmark = e.target;
@@ -34,15 +46,15 @@ Benchmark.options.onCycle = function(e) {
   process.stdout.clearLine();
   process.stdout.cursorTo(0);
   process.stdout.write(
-    utils.padRight(benchmark.functionName, 30) + ' - ' +
-    utils.padRight(benchmark.name, 30) + ' x ' + benchmarkCycles++
+    utils.padRight(benchmark.functionName, maxFunctionNameLength) + ' - ' +
+    utils.padRight(benchmark.name, maxNameLength) + ' x ' + benchmarkCycles++
   );
 };
 
 suite.on('cycle', function(e) {
   var benchmark = e.target;
 
-  process.stdout.write(' - ' + benchmark.hz + ' ops/second\n');
+  process.stdout.write('\t- ' + utils.formatNumber(benchmark.hz) + ' ops/second\n');
 
   results.push({
     'function': benchmark.functionName,
