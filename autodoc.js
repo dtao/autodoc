@@ -185,6 +185,7 @@
    * @property {string} description
    * @property {string} code
    * @property {Array.<NamespaceInfo>} namespaces
+   * @property {Array.<FunctionInfo>} privateMembers
    */
 
   /**
@@ -254,6 +255,15 @@
           return null;
         }
 
+        // We did a 'groupBy', so fn is actually an array. That said, it almost
+        // certainly (or totally certainly?) contains exactly one element.
+        // Unless two functions have been declared on the same line. (But who
+        // would do such a thing?)
+        //
+        // ...I guess this is a use case for accepting a callback for toObject
+        // in Lazy.js, huh?
+        fn = fn[0];
+
         // Attempt to parse the comment. If it can't be parsed, or it appears to
         // be basically empty, then skip it.
         var doc = autodoc.parseComment(comment);
@@ -261,7 +271,7 @@
           return null;
         }
 
-        return autodoc.createFunctionInfo(fn, doc, Autodoc.getFunctionSource(doc, code));
+        return autodoc.createFunctionInfo(fn, doc, Autodoc.getFunctionSource(fn, code));
       })
       .compact();
 
@@ -307,6 +317,11 @@
       })
       .toArray();
 
+    var privateMembers = Lazy(namespaces)
+      .map('privateMembers')
+      .flatten()
+      .toArray();
+
     // If there's a line that looks like:
     //
     //     module.exports = Foo;
@@ -343,7 +358,8 @@
       description: librarySummary.description,
       code: code,
       namespaces: namespaces,
-      docs: docList
+      docs: docList,
+      privateMembers: privateMembers
     };
   };
 
@@ -444,6 +460,7 @@
    * @property {boolean} isConstructor
    * @property {boolean} isStatic
    * @property {boolean} isPublic
+   * @property {boolean} isPrivate
    * @property {boolean} hasExamples
    * @property {boolean} hasBenchmarks
    * @property {Array.<ParameterInfo>} params
@@ -465,13 +482,14 @@
    * @returns {FunctionInfo}
    */
   Autodoc.prototype.createFunctionInfo = function(fn, doc, source) {
-    var nameInfo    = Autodoc.parseName(Autodoc.getIdentifierName(fn[0])),
+    var nameInfo    = Autodoc.parseName(Autodoc.getIdentifierName(fn)),
         description = this.markdownParser.parse(doc.description),
         params      = this.getParams(doc),
         returns     = this.getReturns(doc),
         isCtor      = Autodoc.hasTag(doc, 'constructor'),
         isStatic    = nameInfo.name.indexOf('#') === -1, // That's right, hacky smacky
         isPublic    = Autodoc.hasTag(doc, 'public'),
+        isPrivate   = Autodoc.hasTag(doc, 'private'),
         signature   = Autodoc.getSignature(nameInfo, params),
         examples    = Autodoc.getExamples(doc),
         benchmarks  = Autodoc.getBenchmarks(doc),
@@ -488,6 +506,7 @@
       isConstructor: isCtor,
       isStatic: isStatic,
       isPublic: isPublic,
+      isPrivate: isPrivate,
       hasSignature: params.length > 0 || !!returns,
       signature: signature,
       examples: examples,
@@ -810,8 +829,8 @@
     }
 
     return {
-      left: Autodoc.trim(parts[1]),
-      right: Autodoc.trim(parts[2])
+      left: trim(parts[1]),
+      right: trim(parts[2])
     };
   };
 
@@ -966,6 +985,7 @@
    * @property {string} namespace
    * @property {FunctionInfo} constructorMethod
    * @property {Array.<FunctionInfo>} members
+   * @property {Array.<FunctionInfo>} privateMembers
    * @property {Array.<FunctionInfo>} allMembers
    * @property {boolean} hasExamples
    * @property {boolean} hasBenchmarks
@@ -1012,6 +1032,11 @@
       .compact()
       .toArray();
 
+    // Private members can be elevated to some visible scope when running tests.
+    var privateMembers = Lazy(allMembers)
+      .filter('isPrivate')
+      .toArray();
+
     // Decorate these docs w/ a meaningful "type" (this is more useful than just
     // a boolean flag, and it's easier to do here than in the template).
     Lazy(allMembers).each(function(member) {
@@ -1022,6 +1047,7 @@
       namespace: namespace,
       constructorMethod: constructorMethod,
       members: members,
+      privateMembers: privateMembers,
       allMembers: allMembers,
       hasExamples: Lazy(allMembers).any(function(m) { return m.hasExamples; }),
       hasBenchmarks: Lazy(allMembers).any(function(m) { return m.hasBenchmarks; }),
@@ -1111,18 +1137,23 @@
    * Removes leading and trailing whitespace from a string.
    *
    * @public
+   * @private
    * @param {string} string The string to trim.
    * @returns {string} The trimmed result.
    *
    * @examples
-   * Autodoc.trim('foo')     // => 'foo'
-   * Autodoc.trim('  foo')   // => 'foo'
-   * Autodoc.trim('foo  ')   // => 'foo'
-   * Autodoc.trim('  foo  ') // => 'foo'
+   * trim('foo')     // => 'foo'
+   * trim('  foo')   // => 'foo'
+   * trim('foo  ')   // => 'foo'
+   * trim('  foo  ') // => 'foo'
+   *
+   * @benchmarks
+   * trim('foo')        // no trimming necessary
+   * trim('   foo    ') // trimming necessary
    */
-  Autodoc.trim = function(string) {
+  function trim(string) {
     return string.replace(/^\s+/, '').replace(/\s+$/, '');
-  };
+  }
 
   /**
    * Splits a string into two parts on either side of a specified divider.
