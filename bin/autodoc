@@ -92,18 +92,9 @@ if (docHelperExists) {
 }
 
 var libraryInfo = _Autodoc.parse(sourceCode, options);
+global.exampleHandlers = require(path.join(__dirname, '../resources/javascripts/defaults.js')).exampleHandlers;
 
 function runTests() {
-  global.exampleHandlers = _Lazy(options.exampleHandlers)
-    .concat(_Autodoc.exampleHandlers)
-    .toArray();
-
-  global.assertEquality = equalityExists ?
-    require(path.join(process.cwd(), equalityPath)).assertEquality :
-    function(expected, actual) {
-      expect(actual).toEqual(expected);
-    };
-
   var templatePath = path.join(__dirname, '../resources/examples.js.mustache');
 
   options.template = fs.readFileSync(templatePath, 'utf-8');
@@ -166,6 +157,7 @@ function generateDocs() {
   copyFile(path.join(__dirname, '../resources/images/gears.gif'), path.join(outputDir, 'gears.gif'));
   copyFile(path.join(__dirname, '../resources/javascripts/utils.js'), path.join(outputDir, 'utils.js'));
   copyFile(path.join(__dirname, '../resources/javascripts/docs.js'), path.join(outputDir, 'docs.js'));
+  copyFile(path.join(__dirname, '../resources/javascripts/defaults.js'), path.join(outputDir, 'defaults.js'));
 
   console.log('Docs written to ' + outputDir + '/');
 

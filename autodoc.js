@@ -164,7 +164,7 @@
     this.namespaces       = options.namespaces || [];
     this.tags             = options.tags || [];
     this.javascripts      = options.javascripts || [];
-    this.exampleHandlers  = Lazy(options.exampleHandlers || []).concat(Autodoc.exampleHandlers).toArray();
+    this.exampleHandlers  = Lazy(options.exampleHandlers || []).concat(context.exampleHandlers || []).toArray();
     this.template         = options.template;
     this.templateEngine   = options.templateEngine;
     this.templatePartials = options.templatePartials;
@@ -177,25 +177,6 @@
    * Default Autodoc options. (See autodoc-node.js)
    */
   Autodoc.options = {};
-
-  /**
-   * Default example handlers. These come AFTER any custom handlers --
-   * that gives you the ability to override them, effectively. (Of course you
-   * could also always just obliterate this property.)
-   */
-  Autodoc.exampleHandlers = [
-    {
-      pattern: /^\s*instanceof (.*)\s*$/,
-      test: function(match, actual) {
-        var expectedType = match[1],
-            isInstance   = eval('actual instanceof ' + expectedType);
-
-        if (!isInstance) {
-          throw 'Expected ' + actual + ' to be an instance of ' + expectedType;
-        }
-      }
-    }
-  ];
 
   /**
    * @typedef {Object} LibraryInfo
