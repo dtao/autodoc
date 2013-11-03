@@ -8,17 +8,12 @@ Lazy     = require('lazy.js')
 sinon    = require('sinon')
 should   = require('should')
 
-parseExampleFile = (fileName) ->
-  js = fs.readFileSync(path.join(__dirname, '..', 'example', fileName), 'utf-8')
+parseFile = (filePath) ->
+  js = fs.readFileSync(path.join(__dirname, '..', filePath), 'utf-8')
   Autodoc.parse(js)
 
-getASTFromFile = (fileName) ->
-  js = fs.readFileSync(path.join(__dirname, '..', fileName), 'utf-8')
-  ast = esprima.parse js,
-    comment: true
-    loc: true
-    range: true
-  [ast, js]
+parseExampleFile = (fileName) ->
+  parseFile('example/' + fileName)
 
 describe 'Autodoc', ->
   describe '#parseComment', ->

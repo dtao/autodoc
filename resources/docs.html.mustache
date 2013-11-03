@@ -71,6 +71,7 @@
 
                 {{#namespaces}}
                 {{#allMembers}}
+                {{^excludeFromDocs}}
                 <section class="{{sectionType}}" id="{{identifier}}">
                     <h1>
                         {{shortName}}
@@ -186,6 +187,7 @@
                       {{> benchmarks}}
                     </script>
                 </section>
+                {{/excludeFromDocs}}
                 {{/allMembers}}
                 {{/namespaces}}
             </article>

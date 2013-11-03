@@ -290,15 +290,16 @@
           return null;
         }
 
-        return autodoc.createFunctionInfo(fn, doc, Autodoc.getFunctionSource(fn, code));
+        return autodoc.createFunctionInfo(fn, doc);
       })
-      .compact();
+      .compact()
+      .toArray();
 
     // If no tags have been explicitly provided, but we find any occurrences of
     // the @public tag, we'll use that as a hint that only those methods tagged
     // @public should be included. Otherwise include everything.
     if (this.tags.length === 0) {
-      if (docs.any(function(doc) { return doc.isPublic; })) {
+      if (Lazy(docs).any(function(doc) { return doc.isPublic; })) {
         this.tags.push('public');
       }
     }
@@ -306,19 +307,19 @@
     // Only include documentation for functions with the specified tag(s), if
     // provided.
     if (this.tags.length > 0) {
-      docs = docs.filter(function(doc) {
-        return Lazy(autodoc.tags).any(function(tag) {
+      Lazy(docs).each(function(doc) {
+        var hasTag = Lazy(autodoc.tags).any(function(tag) {
           return Lazy(doc.tags).contains(tag);
         });
+
+        if (!hasTag) {
+          doc.excludeFromDocs = true;
+        }
       });
     }
 
-    // Provide a flat list of all docs to make it easier to, e.g., apply some
-    // logic to every doclet in the library.
-    var docList = docs.toArray();
-
-    // Also group by namespace so that we can keep the docs organized.
-    var docGroups = Lazy(docList)
+    // Group by namespace so that we can keep the docs organized.
+    var docGroups = Lazy(docs)
       .groupBy(function(doc) {
         return doc.namespace || doc.shortName;
       })
@@ -698,10 +699,12 @@
    */
 
   /**
-   * Takes, e.g., 'Foo#bar' and returns { name: 'Foo#bar', shortName: 'bar' }
+   * Takes, e.g., 'Foo#bar' and returns a { name, shortName, namespace,
+   * identifier} object.
    *
    * @public
    * @param {string} name
+   * @param {FunctionInfo=} doc
    * @returns {NameInfo}
    *
    * @examples
@@ -714,7 +717,7 @@
    * Autodoc.parseName('Foo').identifier         // => 'Foo'
    * Autodoc.parseName('Foo').namespace          // => null
    */
-  Autodoc.parseName = function(name) {
+  Autodoc.parseName = function(name, doc) {
     var parts = name.split(/[\.#]/),
 
         // e.g., the short name for 'Lib.utils.func' should be 'func'
@@ -723,6 +726,21 @@
         // a name like 'foo#bar#baz' wouldn't make sense; so we can safely join
         // w/ '.' to recreate the namespace
         namespace = parts.join('.');
+
+    if (doc) {
+      // Actually, if this doc is tagged @global, then it doesn't belong to a
+      // namespace.
+      if (Autodoc.hasTag(doc, 'global')) {
+        namespace = '';
+        name = shortName;
+
+      // On the other hand, if it's tagged @memberOf, then we want to use that
+      // tag for its explicit namespace.
+      } else if (Autodoc.hasTag(doc, 'memberOf')) {
+        namespace = Autodoc.getTagDescription(doc, 'memberOf');
+        name = namespace + (doc && !doc.isStatic) ? '#' : '.' + name;
+      }
+    }
 
     return {
       name: name,
@@ -1076,7 +1094,6 @@
   /**
    * Replaces JsDoc references like '{@link MyClass}' with actual HTML links.
    *
-   * @public
    * @param {string} html
    * @returns {string} The HTML with JsDoc `@link` references replaced by links.
    *
@@ -1161,8 +1178,6 @@
   /**
    * Removes leading and trailing whitespace from a string.
    *
-   * @public
-   * @private
    * @param {string} string The string to trim.
    * @returns {string} The trimmed result.
    *
@@ -1183,8 +1198,6 @@
   /**
    * Splits a string into two parts on either side of a specified divider.
    *
-   * @public
-   * @private
    * @param {string} string The string to divide into two parts.
    * @param {string} divider The string used as the pivot point.
    * @returns {Array.<string>} The parts of the string before and after the
@@ -1205,7 +1218,28 @@
     }
 
     return [string.substring(0, seam), string.substring(seam + divider.length)];
-  }
+  };
+
+  /**
+   * Appends a bunch of whitespace to the end of a string to get it to a desired
+   * length. Has no effect if the string exceeds the specified length to begin
+   * with.
+   *
+   * @param {string} str The string to pad.
+   * @param {number} length The desired length of the string.
+   * @returns {string} The string with its fresh new white padding.
+   *
+   * @examples
+   * Autodoc.padRight('foo', 5) // => 'foo  '
+   * Autodoc.padRight('', 5)    // => '     '
+   * Autodoc.padRight('foo', 2) // => 'foo'
+   */
+  Autodoc.padRight = function(str, length) {
+    while (str.length < length) {
+      str += ' ';
+    }
+    return str;
+  };
 
   /**
    * Takes either a `{ parse }` object or an actual function and wraps it as a
