@@ -866,9 +866,9 @@
           return {
             id: exampleIdCounter++,
             input: pair.left,
-            inputForJs: Autodoc.escapeForJs(pair.left),
+            inputForJs: escapeForJs(pair.left),
             output: pair.right,
-            outputForJs: Autodoc.escapeForJs(pair.right)
+            outputForJs: escapeForJs(pair.right)
           };
         }).toArray()
       };
@@ -910,7 +910,7 @@
     return Autodoc.parseCommentLines(doc, 'benchmarks', function(data) {
       var benchmarks = Lazy(data.pairs)
         .map(function(pair) {
-          var parts = Autodoc.divide(pair.right, ' - ');
+          var parts = divide(pair.right, ' - ');
 
           return {
             caseId: benchmarkCaseIdCounter++,
@@ -1055,22 +1055,6 @@
   };
 
   /**
-   * Provides an escaped form of a string to facilitate dropping it "unescaped"
-   * (aside from this, of course) directly into a JS template.
-   *
-   * @public
-   * @param {string} string
-   * @returns {string}
-   *
-   * @examples
-   * Autodoc.escapeForJs('foo')            // => 'foo'
-   * Autodoc.escapeForJs("Hell's Kitchen") // => "Hell\\'s Kitchen"
-   */
-  Autodoc.escapeForJs = function(string) {
-    return string.replace(/'/g, "\\'");
-  };
-
-  /**
    * Replaces JsDoc references like '{@link MyClass}' with actual HTML links.
    *
    * @public
@@ -1134,6 +1118,28 @@
   };
 
   /**
+   * Provides an escaped form of a string to facilitate dropping it "unescaped"
+   * (aside from this, of course) directly into a JS template. Basically,
+   * escapes single quotes, double quotes, and newlines.
+   *
+   * @public
+   * @private
+   * @param {string} string
+   * @returns {string}
+   *
+   * @examples
+   * escapeForJs('foo')            // => 'foo'
+   * escapeForJs("Hell's Kitchen") // => "Hell\\'s Kitchen"
+   * escapeForJs('Dan "The Man"')  // => 'Dan \\"The Man\\"'
+   * escapeForJs('line 1\nline 2') // => 'line 1\\nline 2'
+   */
+  function escapeForJs(string) {
+    return string.replace(/'/g, "\\'")
+      .replace(/"/g, '\\"')
+      .replace(/\n/g, '\\n');
+  }
+
+  /**
    * Removes leading and trailing whitespace from a string.
    *
    * @public
@@ -1159,6 +1165,7 @@
    * Splits a string into two parts on either side of a specified divider.
    *
    * @public
+   * @private
    * @param {string} string The string to divide into two parts.
    * @param {string} divider The string used as the pivot point.
    * @returns {Array.<string>} The parts of the string before and after the
@@ -1166,20 +1173,20 @@
    *     if `divider` wasn't found.
    *
    * @examples
-   * Autodoc.divide('hello', 'll')   // => ['he', 'o']
-   * Autodoc.divide('banana', 'n')   // => ['ba', 'ana']
-   * Autodoc.divide('a->b->c', '->') // => ['a', 'b->c']
-   * Autodoc.divide('foo', 'xyz')    // => ['foo']
-   * Autodoc.divide('abc', 'abc')    // => ['', '']
+   * divide('hello', 'll')   // => ['he', 'o']
+   * divide('banana', 'n')   // => ['ba', 'ana']
+   * divide('a->b->c', '->') // => ['a', 'b->c']
+   * divide('foo', 'xyz')    // => ['foo']
+   * divide('abc', 'abc')    // => ['', '']
    */
-  Autodoc.divide = function(string, divider) {
+  function divide(string, divider) {
     var seam = string.indexOf(divider);
     if (seam === -1) {
       return [string];
     }
 
     return [string.substring(0, seam), string.substring(seam + divider.length)];
-  };
+  }
 
   /**
    * Takes either a `{ parse }` object or an actual function and wraps it as a
