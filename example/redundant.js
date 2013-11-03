@@ -24,6 +24,7 @@ var R = {
  * @returns {Array.<*>} A new array containing the same elements as the original one.
  *
  * @examples
+ * R.arrays.clone([])        // instanceof Array
  * R.arrays.clone([])        // => []
  * R.arrays.clone([1, 2, 3]) // => [1, 2, 3]
  *

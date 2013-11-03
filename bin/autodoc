@@ -107,7 +107,9 @@ function runTests() {
     includeStackTrace: true
   }));
 
-  global.exampleHandlers = options.exampleHandlers;
+  global.exampleHandlers = _Lazy(options.exampleHandlers)
+    .concat(_Autodoc.exampleHandlers)
+    .toArray();
 
   global.assertEquality = equalityExists ?
     require(path.join(process.cwd(), equalityPath)).assertEquality :
