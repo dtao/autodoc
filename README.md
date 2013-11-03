@@ -46,7 +46,7 @@ We can also **run the performance benchmarks**:
 
     $ autodoc --perf math.js
 
-![Benchmarks screenshot](http://breakneck.danieltao.com/images/specs_screenshot.png)
+![Benchmarks screenshot](http://breakneck.danieltao.com/images/benchmarks_screenshot.png)
 
 Without either the `--test` or `--perf` options, by default Autodoc generates API documentation:
 
