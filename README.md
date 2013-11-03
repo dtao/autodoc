@@ -3,7 +3,7 @@ Autodoc
 
 ![Build Status](https://travis-ci.org/dtao/autodoc.png)
 
-Autodoc helps eliminate a lot of the gruntwork involved in creating a JavaScript project. In particular it simplifies **writing and executing tests**, running **performance benchmarks**, and **generating API documentation**.
+Autodoc helps eliminate a lot of the gruntwork involved in creating a JavaScript project. In particular it simplifies **writing and executing tests**, **running performance benchmarks**, and **generating API documentation**.
 
 Here, let's play Show Don't Tell. Assume we have a file named **maths.js** with the following content:
 
