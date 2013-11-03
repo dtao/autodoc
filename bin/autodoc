@@ -18,6 +18,20 @@ function argToList(arg) {
   return arg.split(/,\s*/);
 }
 
+function argToGlobalsList(arg) {
+  var list = argToList(arg);
+  var pairs = _Lazy(list).map(function(pair) {
+    pair = pair.split(':');
+
+    return {
+      variable: pair[0],
+      library: pair[1]
+    };
+  });
+
+  return pairs.toArray();
+}
+
 _commander
   .version(packageInfo.version)
   .usage('[options] [file]')
@@ -30,6 +44,7 @@ _commander
   .option('--javascripts <sources>', 'specify additional JS dependencies (comma-separated)', argToList)
   .option('--tags <tag>', 'only use the methods tagged with the specified tag')
   .option('--variable <name>', 'provide a name for the variable traditionally used by the library (e.g., jQuery, $, _) -- used for tests and benchmarks')
+  .option('--globals <list>', 'provide a list of global references (e.g. _:underscore,$:jQuery) your tests and/or benchmarks require', argToGlobalsList)
   .option('--verbose', 'produce verbose output when running tests (has no effect otherwise)')
   .parse(process.argv);
 
@@ -87,6 +102,10 @@ if (handlersExists) {
 }
 
 options.exampleHandlers = global.exampleHandlers;
+options.extraOptions = {
+  globals: _commander.globals || [],
+  filePath: path.join(process.cwd(), filePath)
+};
 
 if (equalityExists) {
   // Same as w/ helpers
@@ -104,14 +123,13 @@ if (docHelperExists) {
 
 var libraryInfo = _Autodoc.parse(sourceCode, options);
 
+options.extraOptions.variable = _commander.variable ||
+  libraryInfo.referenceName || '__lib__';
+
 function runTests() {
   var templatePath = path.join(__dirname, '../resources/examples.js.mustache');
 
   options.template = fs.readFileSync(templatePath, 'utf-8');
-  options.extraOptions = {
-    variable: _commander.variable || libraryInfo.referenceName || '__lib__',
-    filePath: path.join(process.cwd(), filePath)
-  };
 
   var examplesJs = _Autodoc.generate(libraryInfo, options);
 
@@ -124,10 +142,6 @@ function runBenchmarks() {
   var templatePath = path.join(__dirname, '../resources/benchmarks.js.mustache');
 
   options.template = fs.readFileSync(templatePath, 'utf-8');
-  options.extraOptions = {
-    variable: _commander.variable || libraryInfo.referenceName || '__lib__',
-    filePath: path.join(process.cwd(), filePath)
-  };
 
   var benchmarksJs = _Autodoc.generate(libraryInfo, options);
 
