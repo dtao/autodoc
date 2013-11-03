@@ -1,6 +1,8 @@
 Autodoc
 =======
 
+![Build Status](https://travis-ci.org/dtao/autodoc.png)
+
 This is just a little something I'm working on to help eliminate a lot of the gruntwork involved in creating a JavaScript project. In particular it simplifies **writing and running tests**, and **generating API documentation**.
 
 Here, let's play Show Don't Tell. Assume we have a file named **maths.js** with the following content:
@@ -15,11 +17,11 @@ var Maths = {};
  * @returns {boolean} Whether or not `x` is an integer.
  *
  * @examples
- * Maths.isInteger(5)        // => true
- * Maths.isInteger(5.0)      // => true
- * Maths.isInteger(3.14)     // => false
- * Maths.isInteger('foo')    // => false
- * Maths.isInteger(NaN)      // => false
+ * Maths.isInteger(5)     // => true
+ * Maths.isInteger(5.0)   // => true
+ * Maths.isInteger(3.14)  // => false
+ * Maths.isInteger('foo') // => false
+ * Maths.isInteger(NaN)   // => false
  */
 Maths.isInteger = function(x) {
   return x === Math.floor(x);
