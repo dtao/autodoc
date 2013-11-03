@@ -8,6 +8,10 @@ var suite      = new Benchmark.Suite(),
     benchmarks = {},
     results    = [];
 
+{{#privateMembers}}
+var {{shortName}} = {{{source}}};
+{{/privateMembers}}
+
 {{#docs}}
 {{> benchmarks }}
 {{/docs}}
@@ -61,7 +65,7 @@ suite.on('complete', function() {
     }
   });
 
-  console.log('\nResults:\n');
+  console.log('\nResults:');
   console.log('\n' + table + '\n');
 });
 
