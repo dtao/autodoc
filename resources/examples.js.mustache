@@ -13,19 +13,18 @@ env.addReporter(new reporterType({
   includeStackTrace: true
 }));
 
-describe('{{variable}}', function() {
-  {{#privateMembers}}
-  var {{shortName}} = {{{source}}};
-  {{/privateMembers}}
-  {{#namespaces}}
-  {{#hasExamples}}
-  describe('{{namespace}}', function() {
-    {{#allMembers}}
-      {{> examples}}
-    {{/allMembers}}
-  });
-  {{/hasExamples}}
-  {{/namespaces}}
+{{#privateMembers}}
+var {{shortName}} = {{{source}}};
+{{/privateMembers}}
+
+{{#namespaces}}
+{{#hasExamples}}
+describe('{{namespace}}', function() {
+  {{#allMembers}}
+    {{> examples}}
+  {{/allMembers}}
 });
+{{/hasExamples}}
+{{/namespaces}}
 
 env.execute();
