@@ -290,7 +290,7 @@
           return null;
         }
 
-        return autodoc.createFunctionInfo(fn, doc);
+        return autodoc.createFunctionInfo(fn, doc, Autodoc.getFunctionSource(fn, code));
       })
       .compact()
       .toArray();
@@ -378,7 +378,7 @@
       description: librarySummary.description,
       code: code,
       namespaces: namespaces,
-      docs: docList,
+      docs: docs,
       privateMembers: privateMembers
     };
   };
@@ -1154,11 +1154,31 @@
   };
 
   /**
+   * Appends a bunch of whitespace to the end of a string to get it to a desired
+   * length. Has no effect if the string exceeds the specified length to begin
+   * with.
+   *
+   * @param {string} str The string to pad.
+   * @param {number} length The desired length of the string.
+   * @returns {string} The string with its fresh new white padding.
+   *
+   * @examples
+   * Autodoc.padRight('foo', 5) // => 'foo  '
+   * Autodoc.padRight('', 5)    // => '     '
+   * Autodoc.padRight('foo', 2) // => 'foo'
+   */
+  Autodoc.padRight = function(str, length) {
+    while (str.length < length) {
+      str += ' ';
+    }
+    return str;
+  };
+
+  /**
    * Provides an escaped form of a string to facilitate dropping it "unescaped"
    * (aside from this, of course) directly into a JS template. Basically,
    * escapes single quotes, double quotes, and newlines.
    *
-   * @public
    * @private
    * @param {string} string
    * @returns {string}
@@ -1178,6 +1198,7 @@
   /**
    * Removes leading and trailing whitespace from a string.
    *
+   * @private
    * @param {string} string The string to trim.
    * @returns {string} The trimmed result.
    *
@@ -1198,6 +1219,7 @@
   /**
    * Splits a string into two parts on either side of a specified divider.
    *
+   * @private
    * @param {string} string The string to divide into two parts.
    * @param {string} divider The string used as the pivot point.
    * @returns {Array.<string>} The parts of the string before and after the
@@ -1218,27 +1240,6 @@
     }
 
     return [string.substring(0, seam), string.substring(seam + divider.length)];
-  };
-
-  /**
-   * Appends a bunch of whitespace to the end of a string to get it to a desired
-   * length. Has no effect if the string exceeds the specified length to begin
-   * with.
-   *
-   * @param {string} str The string to pad.
-   * @param {number} length The desired length of the string.
-   * @returns {string} The string with its fresh new white padding.
-   *
-   * @examples
-   * Autodoc.padRight('foo', 5) // => 'foo  '
-   * Autodoc.padRight('', 5)    // => '     '
-   * Autodoc.padRight('foo', 2) // => 'foo'
-   */
-  Autodoc.padRight = function(str, length) {
-    while (str.length < length) {
-      str += ' ';
-    }
-    return str;
   };
 
   /**

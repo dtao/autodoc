@@ -15,6 +15,14 @@ parseFile = (filePath) ->
 parseExampleFile = (fileName) ->
   parseFile('example/' + fileName)
 
+getASTFromFile = (fileName) ->
+  js = fs.readFileSync(path.join(__dirname, '..', fileName), 'utf-8')
+  ast = esprima.parse js,
+    comment: true
+    loc: true
+    range: true
+  [ast, js]
+
 describe 'Autodoc', ->
   describe '#parseComment', ->
     it 'wraps some text in /* and */ to pass to doctrine', ->
