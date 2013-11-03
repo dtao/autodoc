@@ -1,6 +1,7 @@
 global.{{variable}} = require('{{{filePath}}}');
 
-var Autodoc   = require('autodoc'),
+var path      = require('path'),
+    utils     = require(path.join(__dirname, '../resources/javascripts/utils')),
     Benchmark = require('benchmark'),
     ST        = require('string-table');
 
@@ -33,8 +34,8 @@ Benchmark.options.onCycle = function(e) {
   process.stdout.clearLine();
   process.stdout.cursorTo(0);
   process.stdout.write(
-    Autodoc.padRight(benchmark.functionName, 30) + ' - ' +
-    Autodoc.padRight(benchmark.name, 30) + ' x ' + benchmarkCycles++
+    utils.padRight(benchmark.functionName, 30) + ' - ' +
+    utils.padRight(benchmark.name, 30) + ' x ' + benchmarkCycles++
   );
 };
 
@@ -58,7 +59,7 @@ suite.on('complete', function() {
     formatters: {
       'ops/second': function(value) {
         return {
-          value: value.toFixed(2),
+          value: utils.formatNumber(value),
           format: { alignment: 'right' }
         }
       }

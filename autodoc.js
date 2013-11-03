@@ -1154,27 +1154,6 @@
   };
 
   /**
-   * Appends a bunch of whitespace to the end of a string to get it to a desired
-   * length. Has no effect if the string exceeds the specified length to begin
-   * with.
-   *
-   * @param {string} str The string to pad.
-   * @param {number} length The desired length of the string.
-   * @returns {string} The string with its fresh new white padding.
-   *
-   * @examples
-   * Autodoc.padRight('foo', 5) // => 'foo  '
-   * Autodoc.padRight('', 5)    // => '     '
-   * Autodoc.padRight('foo', 2) // => 'foo'
-   */
-  Autodoc.padRight = function(str, length) {
-    while (str.length < length) {
-      str += ' ';
-    }
-    return str;
-  };
-
-  /**
    * Provides an escaped form of a string to facilitate dropping it "unescaped"
    * (aside from this, of course) directly into a JS template. Basically,
    * escapes single quotes, double quotes, and newlines.

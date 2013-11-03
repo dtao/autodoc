@@ -1,7 +1,8 @@
 global.{{variable}} = require('{{{filePath}}}');
 
-var jasmine = require('jasmine-node'),
-    env     = jasmine.getEnv();
+var jasmine  = require('jasmine-node'),
+    env      = jasmine.getEnv(),
+    utils    = require(path.join(__dirname, '../resources/javascripts/utils')),
 
 var reporterType = _commander.verbose ?
   jasmine.TerminalVerboseReporter :
