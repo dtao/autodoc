@@ -1,5 +1,18 @@
 global.{{variable}} = require('{{{filePath}}}');
 
+var jasmine = require('jasmine-node'),
+    env     = jasmine.getEnv();
+
+var reporterType = _commander.verbose ?
+  jasmine.TerminalVerboseReporter :
+  jasmine.TerminalReporter;
+
+env.addReporter(new reporterType({
+  print: process.stdout.write.bind(process.stdout),
+  color: true,
+  includeStackTrace: true
+}));
+
 describe('{{variable}}', function() {
   {{#privateMembers}}
   var {{shortName}} = {{{source}}};
@@ -14,3 +27,5 @@ describe('{{variable}}', function() {
   {{/hasExamples}}
   {{/namespaces}}
 });
+
+env.execute();

@@ -94,19 +94,6 @@ if (docHelperExists) {
 var libraryInfo = _Autodoc.parse(sourceCode, options);
 
 function runTests() {
-  var jasmine = require('jasmine-node'),
-      env     = jasmine.getEnv();
-
-  var reporterType = _commander.verbose ?
-    jasmine.TerminalVerboseReporter :
-    jasmine.TerminalReporter;
-
-  env.addReporter(new reporterType({
-    print: process.stdout.write.bind(process.stdout),
-    color: true,
-    includeStackTrace: true
-  }));
-
   global.exampleHandlers = _Lazy(options.exampleHandlers)
     .concat(_Autodoc.exampleHandlers)
     .toArray();
@@ -128,8 +115,6 @@ function runTests() {
   var examplesJs = _Autodoc.generate(libraryInfo, options);
 
   eval(examplesJs);
-
-  env.execute();
 
   return examplesJs;
 }
