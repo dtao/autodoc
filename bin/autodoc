@@ -12,7 +12,7 @@ var _Autodoc   = require(path.join(__dirname, '../autodoc-node')),
 
 // Read package info from package.json -- just one less thing to keep track of.
 var packagePath = path.join(__dirname, '../package.json'),
-    packageInfo = JSON.parse(fs.readFileSync(packagePath));
+    packageInfo = JSON.parse(readFile(packagePath));
 
 function argToList(arg) {
   return arg.split(/,\s*/);
@@ -30,6 +30,14 @@ function argToGlobalsList(arg) {
   });
 
   return pairs.toArray();
+}
+
+function fileExists(filePath) {
+  return (fs.existsSync || path.existsSync)(filePath);
+}
+
+function readFile(filePath) {
+  return fs.readFileSync(filePath, 'utf-8');
 }
 
 _commander
@@ -54,12 +62,8 @@ if (process.argv.length <= 2) {
   process.exit();
 }
 
-function fileExists(filePath) {
-  return (fs.existsSync || path.existsSync)(filePath);
-}
-
 var filePath        = process.argv.pop(),
-    sourceCode      = fs.readFileSync(filePath, 'utf-8'),
+    sourceCode      = readFile(filePath),
     outputDir       = _commander.output || 'docs',
     handlersPath    = path.join(outputDir, 'handlers.js'),
     handlersExists  = fileExists(handlersPath),
@@ -87,7 +91,7 @@ options.templatePartials = _Lazy(fs.readdirSync(resourcesDir))
   .map(function(match) {
     return [
       path.basename(match[1], '.js.mustache'),
-      fs.readFileSync(path.join(resourcesDir, match[0]), 'utf-8')
+      readFile(path.join(resourcesDir, match[0]))
     ];
   })
   .toObject();
@@ -129,7 +133,7 @@ options.extraOptions.variable = _commander.variable ||
 function runTests() {
   var templatePath = path.join(__dirname, '../resources/examples.js.mustache');
 
-  options.template = fs.readFileSync(templatePath, 'utf-8');
+  options.template = readFile(templatePath);
 
   var examplesJs = _Autodoc.generate(libraryInfo, options);
 
@@ -141,7 +145,7 @@ function runTests() {
 function runBenchmarks() {
   var templatePath = path.join(__dirname, '../resources/benchmarks.js.mustache');
 
-  options.template = fs.readFileSync(templatePath, 'utf-8');
+  options.template = readFile(templatePath);
 
   var benchmarksJs = _Autodoc.generate(libraryInfo, options);
 
@@ -154,7 +158,7 @@ function generateDocs() {
   var templatePath = _commander.template ||
     path.join(__dirname, '../resources/docs.html.mustache');
 
-  options.template = fs.readFileSync(templatePath, 'utf-8');
+  options.template = readFile(templatePath);
 
   var docsHtml = _Autodoc.generate(sourceCode, options);
 
