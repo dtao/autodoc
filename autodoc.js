@@ -884,9 +884,9 @@
           return {
             id: exampleIdCounter++,
             input: pair.left,
-            inputForJs: escapeForJs(pair.left),
+            inputForJs: Autodoc.escapeJsString(pair.left),
             output: pair.right,
-            outputForJs: escapeForJs(pair.right)
+            outputForJs: Autodoc.escapeJsString(pair.right)
           };
         }).toArray()
       };
@@ -1137,23 +1137,26 @@
   /**
    * Provides an escaped form of a string to facilitate dropping it "unescaped"
    * (aside from this, of course) directly into a JS template. Basically,
-   * escapes single quotes, double quotes, and newlines.
+   * escapes single quotes, double quotes, newlines, and backslashes.
    *
-   * @private
+   * @public
    * @param {string} string
    * @returns {string}
    *
    * @examples
-   * escapeForJs('foo')            // => 'foo'
-   * escapeForJs("Hell's Kitchen") // => "Hell\\'s Kitchen"
-   * escapeForJs('Dan "The Man"')  // => 'Dan \\"The Man\\"'
-   * escapeForJs('line 1\nline 2') // => 'line 1\\nline 2'
+   * Autodoc.escapeJsString('foo')                      // => 'foo'
+   * Autodoc.escapeJsString("Hell's Kitchen")           // => "Hell\\'s Kitchen"
+   * Autodoc.escapeJsString('Dan "The Man"')            // => 'Dan \\"The Man\\"'
+   * Autodoc.escapeJsString('line 1\nline 2')           // => 'line 1\\nline 2'
+   * Autodoc.escapeJsString('foo\\bar')                 // => 'foo\\\\bar'
+   * Autodoc.escapeJsString('dir\\"other dir"\\Moe\'s') // => 'dir\\\\\\"other dir\\"\\\\Moe\\\'s'
    */
-  function escapeForJs(string) {
-    return string.replace(/'/g, "\\'")
+  Autodoc.escapeJsString = function(string) {
+    return string.replace(/\\/g, '\\\\')
+      .replace(/'/g, "\\'")
       .replace(/"/g, '\\"')
       .replace(/\n/g, '\\n');
-  }
+  };
 
   /**
    * Removes leading and trailing whitespace from a string.

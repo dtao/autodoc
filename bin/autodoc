@@ -104,7 +104,7 @@ if (handlersExists) {
 options.exampleHandlers = global.exampleHandlers;
 options.extraOptions = {
   globals: _commander.globals || [],
-  filePath: path.join(process.cwd(), filePath)
+  filePath: _Autodoc.escapeJsString(path.join(process.cwd(), filePath))
 };
 
 if (equalityExists) {
