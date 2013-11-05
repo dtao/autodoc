@@ -8,7 +8,7 @@ describe('{{shortName}}', function() {
       {{#hasCustomHandler}}
       var handler = exampleHandlers[{{handlerIndex}}];
       var result  = {{{actual}}};
-      var match   = {{{outputPattern}}}.match(handler.pattern);
+      var match   = '{{{expectedEscaped}}}'.match(handler.pattern);
       handler.test(match, result);
       {{/hasCustomHandler}}
       {{#exampleSource}}
