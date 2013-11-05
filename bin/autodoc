@@ -127,7 +127,7 @@ if (equalityExists) {
   // We attach assertEquality to the global context because it's only used
   // within the tests themselves, not within Autodoc (so no need to add it to
   // options).
-  global.assertEquality = require(path.join(process.cwd(), equalityPath)).assertEquality;
+  global.assertEquality = require(path.join(process.cwd(), equalityPath)).assertEquality || global.assertEquality;
 }
 
 if (docHelperExists) {
