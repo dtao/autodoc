@@ -7,7 +7,7 @@
     "autodoc": "bin/autodoc"
   },
   "scripts": {
-    "test": "node bin/autodoc -t autodoc.js && mocha --compilers coffee:coffee-script"
+    "test": "node bin/autodoc -t autodoc.js && node bin/autodoc -t example/redundant.js && mocha --compilers coffee:coffee-script"
   },
   "repository": {
     "type": "git",
