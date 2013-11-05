@@ -75,7 +75,16 @@ var filePath        = process.argv.pop(),
 var options         = _Autodoc.options;
 options.namespace   = _commander.namespaces;
 options.tags        = _commander.tags;
-options.javascripts = _commander.javascripts || ['../' + path.basename(filePath)];
+options.javascripts = _commander.javascripts || [];
+
+// Always (?) include a reference to the library itself.
+// TODO: Rethink this. Hard-coding a path starting w/ '../' is dumb; there's no
+// guarantee that will be the correct relationship between outputDir and the
+// current working directory.
+var relativePath = '../' + path.basename(filePath);
+if (!_Lazy(options.javascripts).contains(relativePath)) {
+  options.javascripts.push(relativePath);
+}
 
 var defaults = require(path.join(__dirname, '../resources/javascripts/defaults.js'));
 
