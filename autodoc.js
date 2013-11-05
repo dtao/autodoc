@@ -451,19 +451,36 @@
       return;
     }
 
+    var templateEngine   = this.templateEngine,
+        templatePartials = this.templatePartials;
+
     this.eachExample(libraryInfo, function(example) {
       // Look at all of our examples. Those that are matched by some handler, we
       // will leave to be verified by handler.test, which will obviously need to
       // be available in the output HTML (bin/autodoc ensures this).
       Lazy(exampleHandlers).each(function(handler, i) {
-        if (handler.pattern.test(example.expected)) {
-          // Mark this example as being handled
-          example.hasCustomHandler = true;
-          example.handlerIndex = i;
+        var match = example.expected.match(handler.pattern);
 
-          // Force output to look like a string, so we can dump it in the
-          // middle of a <script> tag without a syntax error.
-          example.outputPattern = JSON.stringify(example.expected);
+        if (match) {
+          if (typeof handler.test === 'function') {
+            // Mark this example as being handled
+            example.hasCustomHandler = true;
+            example.handlerIndex = i;
+
+          } else if (typeof handler.template === 'string') {
+            if (!templatePartials[handler.template]) {
+              throw 'Template "' + handler.template + '" not defined.';
+            }
+
+            example.exampleSource = templateEngine.render(
+              templatePartials[handler.template],
+              Lazy(example).extend({ match: match }).toObject()
+            );
+
+          } else {
+            throw 'Custom example handlers must provide either a "test" function ' +
+              'or a "template" name.';
+          }
 
           // Exit early -- we found our handler!
           return false;

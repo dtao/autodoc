@@ -7,15 +7,20 @@
    */
   this.exampleHandlers = (context.exampleHandlers || []).concat([
     {
+      pattern: /^\s*(\w+)\s*===?\s*(.*)\s*$/,
+      template: 'equality'
+    },
+    {
+      pattern: /^\s*(\w+)\s*!==?\s*(.*)\s*$/,
+      template: 'inequality'
+    },
+    {
       pattern: /^\s*instanceof (.*)\s*$/,
-      test: function(match, actual) {
-        var expectedType = match[1],
-            isInstance   = eval('actual instanceof ' + expectedType);
-
-        if (!isInstance) {
-          throw 'Expected ' + actual + ' to be an instance of ' + expectedType;
-        }
-      }
+      template: 'instanceof'
+    },
+    {
+      pattern: /^\s*throws\s*$/,
+      template: 'throws'
     }
   ]);
 

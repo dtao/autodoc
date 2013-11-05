@@ -11,10 +11,15 @@ describe('{{shortName}}', function() {
       var match   = {{{outputPattern}}}.match(handler.pattern);
       handler.test(match, result);
       {{/hasCustomHandler}}
+      {{#exampleSource}}
+      {{{exampleSource}}}
+      {{/exampleSource}}
       {{^hasCustomHandler}}
+      {{^exampleSource}}
       var result   = {{{actual}}};
       var expected = {{{expected}}};
       assertEquality(expected, result);
+      {{/exampleSource}}
       {{/hasCustomHandler}}
     });
 
