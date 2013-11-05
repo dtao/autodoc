@@ -50,6 +50,9 @@
         case 'ForStatement':
         case 'ForInStatement':
         case 'WhileStatement':
+        case 'DoWhileStatement':
+        case 'LabeledStatement':
+        case 'WithStatement':
           return [node.body];
 
         case 'SwitchStatement':
@@ -61,11 +64,14 @@
         case 'ExpressionStatement':
           return [node.expression];
 
+        case 'TryStatement':
+          return [node.block];
+
         case 'AssignmentExpression':
           return [node.right];
 
         case 'CallExpression':
-          return node.callee.type === 'FunctionExpression' ? [node.callee] : [];
+          return [node.callee];
 
         case 'ConditionalExpression':
           return [node.consequent, node.alternate];
@@ -75,6 +81,9 @@
 
         case 'ArrayExpression':
           return node.elements;
+
+        case 'MemberExpression':
+          return node.object.type === 'FunctionExpression' ? [node.object] : [];
 
         case 'NewExpression':
           return [node.callee];
@@ -102,19 +111,28 @@
         // we'll treat it as having no children.
         case 'Literal':
         case 'Identifier':
-        case 'MemberExpression':
         case 'UpdateExpression':
         case 'ThisExpression':
         case 'EmptyStatement':
+        case 'ContinueStatement':
         case 'BreakStatement':
         case 'ReturnStatement':
         case 'ThrowStatement':
           return [];
 
         default:
-          throw 'Unknown node type "' + node.type + '" - ' +
+          throw 'Unknown node type "' + node.type + '"\n' +
+            'Data: ' + this.formatNode(node) + '\n\n' +
             'Report this to https://github.com/dtao/autodoc/issues';
       }
+    },
+
+    formatNode: function(node) {
+      var keys = Lazy(node).map(function(value, key) {
+        return (value && value.type) ? (key + ':' + value.type) : key;
+      });
+
+      return node.type + ' (' + keys.join(', ') + ')';
     }
   });
 
