@@ -24,9 +24,14 @@ var R = {
  * @returns {Array.<*>} A new array containing the same elements as the original one.
  *
  * @examples
+ * var arr1 = [],
+ *     arr2 = R.arrays.clone(arr1);
+ *
+ * arr2.push('foo');         // arr1.length == 0
  * R.arrays.clone([])        // instanceof Array
  * R.arrays.clone([])        // => []
  * R.arrays.clone([1, 2, 3]) // => [1, 2, 3]
+ * R.arrays.clone(null)      // throws
  *
  * @benchmarks
  * R.arrays.clone([1, 2, 3, 4, 5]) // redundant.js
