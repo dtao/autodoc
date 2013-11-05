@@ -37,11 +37,11 @@ header {
   @extend .row;
 
   .index {
-    @extend .col-md-2;
+    @extend .col-lg-3, .col-md-3;
   }
 
   article {
-    @extend .col-md-10;
+    @extend .col-lg-9, .col-md-9;
   }
 }
 
@@ -54,6 +54,10 @@ nav {
     li.nav-header {
       font-weight: bold;
       padding-left: 15px;
+
+      a {
+        margin-left: -15px;
+      }
     }
   }
 }
