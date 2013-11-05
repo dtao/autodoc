@@ -41,6 +41,10 @@ function readFile(filePath) {
 }
 
 function readPartialsFromFolder(folder) {
+  if (!fileExists(folder)) {
+    return {};
+  }
+
   return _Lazy(fs.readdirSync(folder))
     .map(function(fileName) {
       return fileName.match(/^_(.*\.js\.mustache)/);
