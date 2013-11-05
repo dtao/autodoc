@@ -27,6 +27,7 @@
     "lazy.js": ">= 0.1.2",
     "marked": "*",
     "mustache": ">= 0.7.2",
+    "node-sass": ">= 0.7.0",
     "string-table": ">= 0.1.5"
   },
   "devDependencies": {
