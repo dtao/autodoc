@@ -51,6 +51,7 @@ _commander
   .option('--namespaces <names>', 'provide a comma-separated list of the namespaces to document (defaults to all, in alphabetical order)', argToList)
   .option('--javascripts <sources>', 'specify additional JS dependencies (comma-separated)', argToList)
   .option('--tags <tag>', 'only use the methods tagged with the specified tag')
+  .option('--grep <pattern>', 'only run tests/benchmarks for methods whose names match the given pattern')
   .option('--variable <name>', 'provide a name for the variable traditionally used by the library (e.g., jQuery, $, _) -- used for tests and benchmarks')
   .option('--globals <list>', 'provide a list of global references (e.g. _:underscore,$:jQuery) your tests and/or benchmarks require', argToGlobalsList)
   .option('--verbose', 'produce verbose output when running tests (has no effect otherwise)')
@@ -75,6 +76,7 @@ var filePath        = process.argv.pop(),
 var options         = _Autodoc.options;
 options.namespace   = _commander.namespaces;
 options.tags        = _commander.tags;
+options.grep        = _commander.grep;
 options.javascripts = _commander.javascripts || [];
 
 // Always (?) include a reference to the library itself.

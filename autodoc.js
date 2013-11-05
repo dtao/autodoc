@@ -159,6 +159,7 @@
    * @property {Parser|function(string):*} markdownParser
    * @property {Array.<string>} namespaces
    * @property {Array.<string>} tags
+   * @property {string} grep
    * @property {Array.<string>} javascripts
    * @property {string} template
    * @property {TemplateEngine} templateEngine
@@ -181,6 +182,7 @@
     this.markdownParser   = wrapParser(options.markdownParser, Autodoc.processInternalLinks);
     this.namespaces       = options.namespaces || [];
     this.tags             = options.tags || [];
+    this.grep             = options.grep;
     this.javascripts      = options.javascripts || [];
     this.exampleHandlers  = options.exampleHandlers || [];
     this.template         = options.template;
@@ -401,6 +403,25 @@
 
     // Additional stuff we want to tack on.
     libraryInfo.javascripts = this.javascripts;
+
+    // If the grep option was provided, filter out all methods not matching the
+    // specified pattern.
+    var grep = this.grep;
+    if (grep) {
+      grep = new RegExp(grep);
+
+      Lazy(libraryInfo.namespaces).each(function(namespace) {
+        namespace.allMembers = Lazy(namespace.allMembers)
+          .filter(function(member) {
+            return grep.test(member.name);
+          })
+          .toArray();
+
+        namespace.hasExamples = Lazy(namespace.allMembers).any(function(member) {
+          return member.hasExamples;
+        });
+      });
+    }
 
     // Allow for arbitrary additional options, e.g. if the user wants to use
     // a custom template.
