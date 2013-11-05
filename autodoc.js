@@ -894,9 +894,11 @@
    * Autodoc.parsePair(' bar(baz) //=> 10 ') // => { left: 'bar(baz)', right: '10' }
    * Autodoc.parsePair('foo // => bar')      // => { left: 'foo', right: 'bar' }
    * Autodoc.parsePair('foo // bar')         // => { left: 'foo', right: 'bar' }
+   * Autodoc.parsePair('// bar')             // => null
+   * Autodoc.parsePair('foo //')             // => null
    */
   Autodoc.parsePair = function(line) {
-    var parts = line.match(/^(.*)\s*\/\/[ ]*(?:=>)?\s*(.*)$/);
+    var parts = line.match(/^\s*([^\s].*)\s*\/\/\s*(?:=>)?\s*([^\s].*)$/);
 
     if (!parts) {
       return null;
