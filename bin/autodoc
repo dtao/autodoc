@@ -40,6 +40,21 @@ function readFile(filePath) {
   return fs.readFileSync(filePath, 'utf-8');
 }
 
+function readPartialsFromFolder(folder) {
+  return _Lazy(fs.readdirSync(folder))
+    .map(function(fileName) {
+      return fileName.match(/^_(.*\.js\.mustache)/);
+    })
+    .compact()
+    .map(function(match) {
+      return [
+        path.basename(match[1], '.js.mustache'),
+        readFile(path.join(folder, match[0]))
+      ];
+    })
+    .toObject();
+}
+
 _commander
   .version(packageInfo.version)
   .usage('[options] [file]')
@@ -94,17 +109,8 @@ global.assertEquality  = defaults.assertEquality;
 global.exampleHandlers = defaults.exampleHandlers;
 
 var resourcesDir = path.join(__dirname, '../resources');
-options.templatePartials = _Lazy(fs.readdirSync(resourcesDir))
-  .map(function(fileName) {
-    return fileName.match(/^_(.*\.js\.mustache)/);
-  })
-  .compact()
-  .map(function(match) {
-    return [
-      path.basename(match[1], '.js.mustache'),
-      readFile(path.join(resourcesDir, match[0]))
-    ];
-  })
+options.templatePartials = _Lazy(readPartialsFromFolder(resourcesDir))
+  .extend(readPartialsFromFolder(outputDir))
   .toObject();
 
 if (handlersExists) {
