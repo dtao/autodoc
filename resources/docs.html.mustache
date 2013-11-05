@@ -50,7 +50,9 @@
                             {{/constructorMethod}}
                         </li>
                         {{#members}}
+                        {{^excludeFromDocs}}
                         <li><a href="#{{identifier}}">{{shortName}}</a></li>
+                        {{/excludeFromDocs}}
                         {{/members}}
                         {{/namespaces}}
                     </ul>
