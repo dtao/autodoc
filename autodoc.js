@@ -456,14 +456,14 @@
       // will leave to be verified by handler.test, which will obviously need to
       // be available in the output HTML (bin/autodoc ensures this).
       Lazy(exampleHandlers).each(function(handler, i) {
-        if (handler.pattern.test(example.output)) {
+        if (handler.pattern.test(example.expected)) {
           // Mark this example as being handled
           example.hasCustomHandler = true;
           example.handlerIndex = i;
 
           // Force output to look like a string, so we can dump it in the
           // middle of a <script> tag without a syntax error.
-          example.outputPattern = JSON.stringify(example.output);
+          example.outputPattern = JSON.stringify(example.expected);
 
           // Exit early -- we found our handler!
           return false;
@@ -843,7 +843,7 @@
   };
 
   /**
-   * Given a line like 'input // => output', parses this into a { left, right }
+   * Given a line like 'left // => right', parses this into a { left, right }
    * pair. Trims leading and trailing whitespace around both parts. The '=>'
    * part is optional.
    *
@@ -873,10 +873,10 @@
   /**
    * @typedef {Object} ExampleInfo
    * @property {number} id
-   * @property {string} input
-   * @property {string} inputForJs
-   * @property {string} output
-   * @property {string} outputForJs
+   * @property {string} actual
+   * @property {string} actualEscaped
+   * @property {string} expected
+   * @property {string} expectedEscaped
    */
 
   /**
@@ -901,10 +901,10 @@
         list: Lazy(data.pairs).map(function(pair) {
           return {
             id: exampleIdCounter++,
-            input: pair.left,
-            inputForJs: Autodoc.escapeJsString(pair.left),
-            output: pair.right,
-            outputForJs: Autodoc.escapeJsString(pair.right)
+            actual: pair.left,
+            actualEscaped: Autodoc.escapeJsString(pair.left),
+            expected: pair.right,
+            expectedEscaped: Autodoc.escapeJsString(pair.right)
           };
         }).toArray()
       };

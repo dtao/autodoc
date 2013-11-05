@@ -4,23 +4,23 @@ describe('{{shortName}}', function() {
   {{{setup}}}
   {{#list}}
   (function() {
-    var spec = it('{{{inputForJs}}} => {{{outputForJs}}}', function() {
+    var spec = it('{{{actualEscaped}}} => {{{expectedEscaped}}}', function() {
       {{#hasCustomHandler}}
       var handler = exampleHandlers[{{handlerIndex}}];
-      var result  = {{{input}}};
+      var result  = {{{actual}}};
       var match   = {{{outputPattern}}}.match(handler.pattern);
       handler.test(match, result);
       {{/hasCustomHandler}}
       {{^hasCustomHandler}}
-      var result   = {{{input}}};
-      var expected = {{{output}}};
+      var result   = {{{actual}}};
+      var expected = {{{expected}}};
       assertEquality(expected, result);
       {{/hasCustomHandler}}
     });
 
     spec.exampleId = '{{identifier}}-{{id}}';
-    spec.input = '{{{inputForJs}}}';
-    spec.output = '{{{outputForJs}}}';
+    spec.actual = '{{{actualEscaped}}}';
+    spec.expected = '{{{expectedEscaped}}}';
   }());
   {{/list}}
   {{/examples}}
