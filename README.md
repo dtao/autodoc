@@ -95,43 +95,52 @@ Use the `@examples` tag to define specs in an extremely concise format:
 
 The result will be a table in the API docs displaying your spec results.
 
+#### Default Handlers
+
+Autodoc supports the following syntaxes for defining assertions:
+
+    // The result of calling foo() should be 'bar'
+    foo() // => 'bar'
+
+    // The result of calling foo() should be an instance of Foo
+    foo() // instanceof Foo
+
+    // After calling 'foo()', x should equal 5
+    foo() // x == 5
+
+    // After calling 'foo()', x should NOT equal 5
+    foo() // x != 5
+
+    // Calling 'foo()' should throw an exception
+    foo() // throws
+
+#### Custom Handlers
+
 You can provide custom handlers to do something a little more advanced than a straight-up equality comparison here (e.g., say your library creates some fancy object, but you just want to verify certain properties with an object literal). To do this, add a file called **handlers.js** to your output folder (whatever you specified with `-o`, or **docs** by default) and in it define a global\* `exampleHandlers` array that looks like this:
 
 ```javascript
 this.exampleHandlers = [
   {
     pattern: /pattern 1/,
-    test: function(match, actual) {
-      // some logic to run when pattern 1 is matched
-    }
+    template: 'template1'
   },
   {
     pattern: /pattern 2/,
-    test: function(match, actual) {
-      // some logic to run when pattern 2 is matched
-    }
+    template: 'template2'
   },
   ...
 ];
 ```
 
-For every example in your comments, the expected output will first be checked against all of your custom handlers (in order) to see if there's a match; otherwise, Autodoc will perform a simple equality comparison using a method called `assertEquality`.
+For every example in your comments, the expected output (the part to the right of `// =>`) will first be checked against all of your custom handlers (in order) to see if there's a match.
 
-By default Autodoc uses [Jasmine](http://pivotal.github.io/jasmine/)\*\*, so under the hood `assertEquality` is implemented using `expect(a).toEqual(b)`. If you want to implement your own `assertEquality` method, add a file called **assertEquality.js** to your output folder with something like this:
+The `template` property should name a Mustache template file in your output folder following the naming convention **_[template name].js.mustache** (so the example above would require two files, _template1.js.mustache and _template2.js.mustache). The data passed to the template property will include the properties `{ actual, actualEscaped, expected, expectedEscaped, match }`.
 
-```javascript
-this.assertEquality = function(expected, actual) {
-  // Maybe for this hypothetical library we don't care about capitalization.
-  if (typeof expected === 'string') {
-    expected = expected.toLowerCase();
-  }
-  if (typeof actual === 'string') {
-    actual = actual.toLowerCase();
-  }
-
-  expect(actual).toEqual(expected);
-};
-```
+- `actual`: The literal string taken directly from the comment on the left of the `// =>`
+- `actualEscaped`: An escaped version of `actual` suitable for, e.g., putting inside a JavaScript string in your template
+- `expected`: The literal string taken from the comment on the right side of the `// =>`
+- `expectedEscaped`: Same as `actualEscaped`, but for `expected`
+- `match`: The match data captured by the `pattern` property of your custom handler
 
 <sub>\*Yeah yeah, I know, *globals are bad*. I need to think about this...</sub>
 
