@@ -8,8 +8,7 @@ var fs   = require('fs'),
 // just mean Autodoc, clearly).
 var _Autodoc   = require(path.join(__dirname, '../autodoc-node')),
     _Lazy      = require('lazy.js'),
-    _commander = require('commander'),
-    _sass      = require('node-sass');
+    _commander = require('commander');
 
 // Read package info from package.json -- just one less thing to keep track of.
 var packagePath = path.join(__dirname, '../package.json'),
@@ -39,23 +38,6 @@ function fileExists(filePath) {
 
 function readFile(filePath) {
   return fs.readFileSync(filePath, 'utf-8');
-}
-
-function writeFile(destination, content) {
-  var directory = path.dirname(destination);
-  if (!fileExists(directory)) {
-    fs.mkdirSync(directory);
-  }
-
-  fs.writeFileSync(destination, content);
-}
-
-function copyFile(source, destination, force) {
-  // Don't obliterate files that are already there.
-  // TODO: Think about this a bit more.
-  if (force || !fileExists(destination)) {
-    fs.createReadStream(source).pipe(fs.createWriteStream(destination));
-  }
 }
 
 _commander
@@ -179,13 +161,27 @@ function generateDocs() {
   options.template = readFile(templatePath);
 
   var docsHtml = _Autodoc.generate(sourceCode, options);
+
+  function writeFile(destination, content) {
+    var directory = path.dirname(destination);
+    if (!fileExists(directory)) {
+      fs.mkdirSync(directory);
+    }
+
+    fs.writeFileSync(destination, content);
+  }
+
   writeFile(path.join(outputDir, 'index.html'), docsHtml);
 
-  var cssPath  = path.join(__dirname, '../resources/stylesheets'),
-      docsSass = readFile(path.join(cssPath, 'docs.scss')),
-      docsCss  = _sass.renderSync({ data: docsSass, includePaths: [cssPath] });
-  writeFile(path.join(outputDir, 'docs.css'), docsCss);
+  function copyFile(source, destination, force) {
+    // Don't obliterate files that are already there.
+    // TODO: Think about this a bit more.
+    if (force || !fileExists(destination)) {
+      fs.createReadStream(source).pipe(fs.createWriteStream(destination));
+    }
+  }
 
+  copyFile(path.join(__dirname, '../resources/stylesheets/docs.css'), path.join(outputDir, 'docs.css'));
   copyFile(path.join(__dirname, '../resources/images/gears.gif'), path.join(outputDir, 'gears.gif'), true);
   copyFile(path.join(__dirname, '../resources/javascripts/utils.js'), path.join(outputDir, 'utils.js'), true);
   copyFile(path.join(__dirname, '../resources/javascripts/docs.js'), path.join(outputDir, 'docs.js'), true);
