@@ -1,8 +1,8 @@
-global.{{variable}} = require('{{{filePath}}}');
-
 {{#globals}}
-global.{{variable}} = require('{{library}}');
+global.{{variable}} = require(path.join(process.cwd(), './{{library}}'));
 {{/globals}}
+
+global.{{variable}} = require('{{{filePath}}}');
 
 var jasmine  = require('jasmine-node'),
     env      = jasmine.getEnv();
