@@ -1,8 +1,8 @@
 $(document).ready(function() {
   function highlightCode() {
-    $('pre code').each(function() {
-      $(this).html(hljs.highlight('javascript', this.textContent).value);
-    });
+    SyntaxHighlighter.defaults.gutter = false;
+    SyntaxHighlighter.defaults.toolbar = false;
+    SyntaxHighlighter.all();
   }
 
   function runSpecs() {
