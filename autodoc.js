@@ -665,11 +665,14 @@
   Autodoc.prototype.getLibrarySummary = function(comments) {
     var autodoc = this;
 
-    var docWithFileOverview = Lazy(comments)
+    var docs = Lazy(comments)
       .map(function(comment) {
         return autodoc.parseComment(comment);
       })
       .compact()
+      .toArray();
+
+    var docWithFileOverview = Lazy(docs)
       .filter(function(doc) {
         return Lazy(doc.tags).where({ title: 'fileOverview' }).any();
       })
@@ -685,6 +688,9 @@
       if (libraryNameTag) {
         libraryName = libraryNameTag.description;
       }
+
+    } else if (docs.length > 0) {
+      libraryDesc = docs[0].description;
     }
 
     return {
