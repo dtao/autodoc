@@ -11,7 +11,7 @@ main {
 header {
   @extend .page-header;
 
-  .description {
+  p {
     @extend .lead;
   }
 }
@@ -60,10 +60,6 @@ nav {
       }
     }
   }
-}
-
-section.description p {
-  @extend .lead;
 }
 
 section.constructor:nth-of-type(n+2),

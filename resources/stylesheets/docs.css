@@ -338,14 +338,14 @@ hr {
 p {
   margin: 0 0 10.5px; }
 
-.lead, header .description, section.description p {
+.lead, header p {
   margin-bottom: 21px;
   font-size: 17.25px;
   font-weight: 200;
   line-height: 1.4; }
 
 @media (min-width: 768px) {
-  .lead, header .description, section.description p {
+  .lead, header p {
     font-size: 22.5px; } }
 small {
   font-size: 85%; }

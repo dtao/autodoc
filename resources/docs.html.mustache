@@ -32,6 +32,10 @@
     <main>
         <header>
             <h1>{{name}}</h1>
+
+            {{#description}}
+            {{{description}}}
+            {{/description}}
         </header>
 
         <!-- Notification area for failing specs -->
@@ -63,12 +67,6 @@
             </div>
 
             <article>
-                {{#description}}
-                <section class="description">
-                    {{{description}}}
-                </section>
-                {{/description}}
-
                 {{#namespaces}}
                 {{#allMembers}}
                 {{^excludeFromDocs}}
