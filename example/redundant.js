@@ -13,7 +13,8 @@
 var R = {
   arrays: {},
   objects: {},
-  strings: {}
+  strings: {},
+  numbers: {}
 };
 
 /**
@@ -131,6 +132,95 @@ var strings = {
 };
 
 R.strings = strings;
+
+/**
+ * Parses a string as a number. This duplicates `Number`, `parseInt`, and
+ * `parseFixed`.
+ *
+ * @memberOf R.numbers
+ * @param {string} string The string to parse.
+ * @returns {number} The parsed number.
+ *
+ * @examples
+ * R.numbers.parse('5')         // => 5
+ * R.numbers.parse('123')       // => 123
+ * R.numbers.parse(' 123 ')     // => 123
+ * R.numbers.parse(' 3.14 ')    // => 3.14
+ * R.numbers.parse('0123')      // => 123
+ * R.numbers.parse(' 0123 ')    // => 123
+ * R.numbers.parse('03.14')     // => 3.14
+ * R.numbers.parse('123456789') // => 123456789
+ * R.numbers.parse('1234.5678') // => 1234.5678
+ * R.numbers.parse('')          // NaN
+ * R.numbers.parse('foo')       // NaN
+ * R.numbers.parse('1.23.45')   // NaN
+ *
+ * @benchmarks
+ * R.numbers.parse('123456789') // redundant.js
+ * Number('123456789')          // native (Number)
+ * parseInt('123456789', 10)    // native (parseInt)
+ */
+R.numbers['parse'] = function(string) {
+  var state   = 0,
+      index   = 0,
+      len     = string.length,
+      whole   = NaN,
+      decimal = 0,
+      power   = 0,
+      digit;
+
+  // States:
+  // 0 - leading space
+  // 1 - number
+  // 2 - decimal
+  // 3 - trailing space
+  while (index < len) {
+    digit = string.charCodeAt(index++) - 48;
+
+    switch (digit) {
+      case -16: // space
+      case -35: // carriage return
+      case -38: // newline
+      case -39: // tab
+        if (state === 1 || state === 2) {
+          state = 3;
+          continue;
+        }
+        if (state === 0 || state === 3) {
+          continue;
+        }
+        return NaN;
+
+      case -2: // decimal point
+        if (state === 1) {
+          state = 2;
+          continue;
+        }
+        return NaN;
+    }
+
+    if (digit < 0 || digit > 9) {
+      return NaN;
+    }
+
+    switch (state) {
+      case 0:
+        state = 1;
+        whole = digit;
+        continue;
+
+      case 1:
+        whole = (whole * 10) + digit;
+        continue;
+
+      case 2:
+        decimal += (digit * Math.pow(10, --power));
+        continue;
+    }
+  }
+
+  return whole + decimal;
+};
 
 if (typeof module === 'object' && module && module.exports) {
   module.exports = R;
