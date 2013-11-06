@@ -1,7 +1,4 @@
 /**
- * @name Autodoc
- *
- * @fileOverview
  * Autodoc helps eliminate a lot of the gruntwork involved in creating a
  * JavaScript project. In particular it simplifies **writing and executing
  * tests**, **running performance benchmarks**, and **generating API
@@ -560,7 +557,7 @@
    * @returns {FunctionInfo}
    */
   Autodoc.prototype.createFunctionInfo = function(fn, doc, source) {
-    var nameInfo    = Autodoc.parseName(Autodoc.getIdentifierName(fn), doc),
+    var nameInfo    = Autodoc.parseName(Autodoc.getIdentifierName(fn) || '', doc),
         description = this.markdownParser.parse(doc.description),
         params      = this.getParams(doc),
         returns     = this.getReturns(doc),
@@ -716,6 +713,15 @@
     if (!node) {
       return null;
     }
+
+    // Here's a little hackery for you:
+    // Flag every node as we look at it, to prevent some kind of weird infinite
+    // recursion... which can happen otherwise, probably because my logic is
+    // sloppy.
+    if (node.alreadyVisited) {
+      return null;
+    }
+    node.alreadyVisited = true;
 
     switch (node.type) {
       case 'Identifier':
