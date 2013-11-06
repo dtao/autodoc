@@ -421,6 +421,12 @@
           return member.hasExamples;
         });
       });
+
+      libraryInfo.docs = Lazy(libraryInfo.docs)
+        .filter(function(member) {
+          return grep.test(member.name)
+        })
+        .toArray();
     }
 
     // Allow for arbitrary additional options, e.g. if the user wants to use
