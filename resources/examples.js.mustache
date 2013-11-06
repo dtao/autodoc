@@ -19,6 +19,9 @@ env.addReporter(new reporterType({
 
 {{#privateMembers}}
 var {{shortName}} = {{{source}}};
+{{#methods}}
+{{longName}} = {{{source}}};
+{{/methods}}
 {{/privateMembers}}
 
 {{#namespaces}}

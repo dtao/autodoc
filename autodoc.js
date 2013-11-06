@@ -352,6 +352,12 @@
       .flatten()
       .toArray();
 
+    Lazy(privateMembers).each(function(member) {
+      member.methods = Lazy(docs)
+        .where({ namespace: member.shortName })
+        .toArray();
+    });
+
     // If there's a line that looks like:
     //
     //     module.exports = Foo;
@@ -570,6 +576,7 @@
     return {
       name: nameInfo.name,
       shortName: nameInfo.shortName,
+      longName: nameInfo.longName,
       identifier: nameInfo.identifier,
       namespace: nameInfo.namespace,
       description: description,
@@ -748,6 +755,7 @@
    * @typedef {Object} NameInfo
    * @property {string} name
    * @property {string} shortName
+   * @property {string} longName
    * @property {string} namespace
    * @property {string} identifier
    */
@@ -777,6 +785,24 @@
         // e.g., the short name for 'Lib.utils.func' should be 'func'
         shortName = parts.pop(),
 
+        // keep the long name too, for e.g. regurgitating it back in a template
+        // (this is what we do w/ elevating private members)
+        // YES, I realize this is just reversing what already happened in
+        // getIdentifierName. I haven't really thought that hard about the right
+        // approach there. (I wrote the rest of this code a little while ago --
+        // by which I mean like just a few days, but that might as well be
+        // forever -- and so I don't really remember what assumptions I had in
+        // my head at the time. SO, I will do this stupid thing for now and
+        // leave this obscenely long comment here to shame myself into one day
+        // circling back and fixing it. Or, nobody will ever notice this and
+        // I'll totally get away with it.
+        //
+        // You know what? If you're reading this, create an issue:
+        // https://github.com/dtao/autodoc/issues/new
+        //
+        // How's that?
+        longName  = name.replace(/#/, '.prototype.'),
+
         // a name like 'foo#bar#baz' wouldn't make sense; so we can safely join
         // w/ '.' to recreate the namespace
         namespace = parts.join('.');
@@ -799,6 +825,7 @@
     return {
       name: name,
       shortName: shortName,
+      longName: longName,
       namespace: namespace || null,
       identifier: name.replace(/[\.#]/g, '-')
     };
