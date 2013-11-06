@@ -818,6 +818,7 @@
 
   /**
    * @typedef PairInfo
+   * @property {number} lineNumber
    * @property {string} left
    * @property {string} right
    */
@@ -845,13 +846,14 @@
         pairs        = [];
 
     Lazy(commentLines)
-      .each(function(line) {
+      .each(function(line, i) {
         var pair = Autodoc.parsePair(line);
 
         if (!pair && pairs.length === 0) {
           initialLines.push(line);
 
         } else if (pair) {
+          pair.lineNumber = i + 1;
           pairs.push(pair);
         }
       });
@@ -913,6 +915,7 @@
   /**
    * @typedef {Object} ExampleInfo
    * @property {number} id
+   * @property {number} lineNumber
    * @property {string} actual
    * @property {string} actualEscaped
    * @property {string} expected
@@ -941,6 +944,7 @@
         list: Lazy(data.pairs).map(function(pair) {
           return {
             id: exampleIdCounter++,
+            lineNumber: pair.lineNumber,
             actual: pair.left,
             actualEscaped: Autodoc.escapeJsString(pair.left),
             expected: pair.right,
