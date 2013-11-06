@@ -1,7 +1,7 @@
 Autodoc
 =======
 
-![Build Status](https://travis-ci.org/dtao/autodoc.png)
+[![Build Status](https://travis-ci.org/dtao/autodoc.png)](https://travis-ci.org/dtao/autodoc)
 
 Autodoc helps eliminate a lot of the gruntwork involved in creating a JavaScript project. In particular it simplifies **writing and executing tests**, **running performance benchmarks**, and **generating API documentation**.
 
