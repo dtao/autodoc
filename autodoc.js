@@ -1,3 +1,12 @@
+/**
+ * @name Autodoc
+ *
+ * @fileOverview
+ * Autodoc helps eliminate a lot of the gruntwork involved in creating a
+ * JavaScript project. In particular it simplifies **writing and executing
+ * tests**, **running performance benchmarks**, and **generating API
+ * documentation**.
+ */
 (function(context) {
 
   var Lazy = context.Lazy;
