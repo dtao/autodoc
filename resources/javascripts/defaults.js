@@ -7,19 +7,23 @@
    */
   this.exampleHandlers = (context.exampleHandlers || []).concat([
     {
-      pattern: /^\s*(\w[\w\.]*)\s*===?\s*(.*)\s*$/,
+      pattern: /^(\w[\w\.]*)\s*===?\s*(.*)$/,
       template: 'equality'
     },
     {
-      pattern: /^\s*(\w[\w\.]*)\s*!==?\s*(.*)\s*$/,
+      pattern: /^(\w[\w\.]*)\s*!==?\s*(.*)$/,
       template: 'inequality'
     },
     {
-      pattern: /^\s*instanceof (.*)\s*$/,
+      pattern: /^instanceof (.*)$/,
       template: 'instanceof'
     },
     {
-      pattern: /^\s*throws\s*$/,
+      pattern: /^NaN$/,
+      template: 'nan'
+    },
+    {
+      pattern: /^throws$/,
       template: 'throws'
     }
   ]);
