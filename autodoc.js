@@ -715,51 +715,68 @@
    * @param {Object} object
    * @return {Object}
    */
-  Autodoc.getIdentifierName = function(node) {
+  Autodoc.getIdentifierName = function(node, alreadyVisited) {
     if (!node) {
       return null;
     }
 
-    // Here's a little hackery for you:
-    // Flag every node as we look at it, to prevent some kind of weird infinite
-    // recursion... which can happen otherwise, probably because my logic is
-    // sloppy.
-    if (node.alreadyVisited) {
+    // Little one-off array-based set implementation. Because... I just felt
+    // like doing it this way.
+    alreadyVisited = alreadyVisited || (function() {
+      var nodes = [];
+
+      return {
+        include: function(node) {
+          nodes.push(node);
+        },
+
+        includes: function(node) {
+          for (var i = 0; i < nodes.length; ++i) {
+            if (nodes[i] === node) {
+              return true;
+            }
+          }
+          return false;
+        }
+      };
+    }());
+
+    if (alreadyVisited.includes(node)) {
       return null;
     }
-    node.alreadyVisited = true;
+    alreadyVisited.include(node);
 
     switch (node.type) {
       case 'Identifier':
         return node.name;
 
       case 'FunctionDeclaration':
-        return Autodoc.getIdentifierName(node.id);
+        return Autodoc.getIdentifierName(node.id, alreadyVisited);
 
       case 'AssignmentExpression':
-        return Autodoc.getIdentifierName(node.left);
+        return Autodoc.getIdentifierName(node.left, alreadyVisited);
 
       case 'MemberExpression':
         return (
-          Autodoc.getIdentifierName(node.object) + '.' +
-          (node.computed ? node.property.value : Autodoc.getIdentifierName(node.property))
+          Autodoc.getIdentifierName(node.object, alreadyVisited) + '.' +
+          (node.computed ? node.property.value : Autodoc.getIdentifierName(node.property, alreadyVisited))
         ).replace(/\.prototype\./, '#');
 
       case 'Property':
-        return Autodoc.getIdentifierName(node.parent) + '.' +
-          Autodoc.getIdentifierName(node.key);
+        return Autodoc.getIdentifierName(node.parent, alreadyVisited) + '.' +
+          Autodoc.getIdentifierName(node.key, alreadyVisited);
 
       case 'FunctionExpression':
-        return Autodoc.getIdentifierName(node.parent);
+        return Autodoc.getIdentifierName(node.parent, alreadyVisited);
 
       case 'VariableDeclarator':
-        return Autodoc.getIdentifierName(node.id);
+        return Autodoc.getIdentifierName(node.id, alreadyVisited);
 
       case 'ExpressionStatement':
-        return Autodoc.getIdentifierName(node.expression);
+        return Autodoc.getIdentifierName(node.expression, alreadyVisited);
 
       default:
-        return Autodoc.getIdentifierName(node.parent);
+        return Autodoc.getIdentifierName(node.parent, alreadyVisited);
     }
   };
 
