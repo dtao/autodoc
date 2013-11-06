@@ -74,7 +74,7 @@ Alternately, you can simply dump a JSON representation of everything Autodoc rea
 
 To spice up your API docs with some custom JavaScript, add a file called **doc_helper.js** to the output folder. Autodoc will automatically detect it there and add a `<script>` tag referencing it to the resulting HTML. You can add other arbitrary JavaScript files by providing a comma-delimited list via the `--javascripts` option.
 
-You can create your own **docs.css** file, or modify the one Autodoc puts there, and Autodoc will not overwrite it. You can also specify your own template (currently only Mustche templates are supported, though that will change) using the `--template` option. Note that in this case, some other features are not guaranteed to work; e.g., Autodoc would not magically know where to add `<script>` tags linking to **doc_helper.js** or other custom JavaScript files. You'd need to put those in the template yourself.
+You can create your own **docs.css** file, or modify the one Autodoc puts there, and Autodoc will not overwrite it. You can also specify your own template (currently only Mustache templates are supported, though that will change) using the `--template` option. Note that in this case, some other features are not guaranteed to work; e.g., Autodoc would not magically know where to add `<script>` tags linking to **doc_helper.js** or other custom JavaScript files. You'd need to put those in the template yourself.
 
 ### Documentation
 
@@ -87,7 +87,8 @@ Use the `@name` tag in a comment at the top of the file for Autodoc to know the 
 Use the `@examples` tag to define specs in an extremely concise format:
 
 ```javascript
-/*
+/**
+ * @examples
  * myFunction(input1) // => expectedResult1
  * myFunction(input2) // => expectedResult2
  */
