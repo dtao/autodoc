@@ -545,7 +545,7 @@
    * @returns {FunctionInfo}
    */
   Autodoc.prototype.createFunctionInfo = function(fn, doc, source) {
-    var nameInfo    = Autodoc.parseName(Autodoc.getIdentifierName(fn)),
+    var nameInfo    = Autodoc.parseName(Autodoc.getIdentifierName(fn), doc),
         description = this.markdownParser.parse(doc.description),
         params      = this.getParams(doc),
         returns     = this.getReturns(doc),
@@ -562,7 +562,7 @@
       name: nameInfo.name,
       shortName: nameInfo.shortName,
       identifier: nameInfo.identifier,
-      namespace: Autodoc.getTagDescription(doc, 'memberOf') || nameInfo.namespace,
+      namespace: nameInfo.namespace,
       description: description,
       params: params,
       returns: returns,
@@ -712,8 +712,10 @@
         return Autodoc.getIdentifierName(node.left);
 
       case 'MemberExpression':
-        return (Autodoc.getIdentifierName(node.object) + '.' +
-          Autodoc.getIdentifierName(node.property)).replace(/\.prototype\./, '#');
+        return (
+          Autodoc.getIdentifierName(node.object) + '.' +
+          (node.computed ? node.property.value : Autodoc.getIdentifierName(node.property))
+        ).replace(/\.prototype\./, '#');
 
       case 'Property':
         return Autodoc.getIdentifierName(node.parent) + '.' +
