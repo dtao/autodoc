@@ -6368,22 +6368,16 @@ nav {
     nav ul li.nav-header a {
       margin-left: -15px; }
 
+section.constructor:nth-of-type(n+2),
+section.method:nth-of-type(n+2) {
+  border-top: 1px solid #ddd;
+  margin-top: 50px; }
+
 table th p, table td p {
   margin: 0; }
 
 .signature table tfoot tr {
   background-color: #b1c2c6; }
-
-.examples table th, .examples table td {
-  width: 40%; }
-  .examples table th:last-child, .examples table td:last-child {
-    width: 20%; }
-.examples table tr td {
-  transition: color 0.5s;
-  transition: background-color 0.5s; }
-.examples table tr.highlight td {
-  color: #000;
-  background-color: #ff8 !important; }
 
 .perf {
   position: relative; }
@@ -6403,3 +6397,39 @@ table th p, table td p {
     opacity: 0.5; }
   .perf.loading table, .perf.loaded table {
     display: table; }
+
+.CodeMirror {
+  height: auto;
+  margin-bottom: 20px; }
+
+.CodeMirror-scroll {
+  overflow-y: hidden;
+  overflow-x: auto; }
+
+.CodeMirror-linebackground {
+  transition: background-color 1s; }
+  .CodeMirror-linebackground.passed {
+    background-color: #dfd; }
+  .CodeMirror-linebackground.failed {
+    background-color: #fdd; }
+  .CodeMirror-linebackground.highlight {
+    background-color: #ff8 !important; }
+
+.CodeMirror-gutters {
+  width: 30px;
+  background-color: #fff; }
+
+div.gutter-marker {
+  display: inline-block;
+  width: 30px;
+  text-align: center; }
+  div.gutter-marker.passed {
+    color: #080; }
+  div.gutter-marker.failed {
+    color: #f00; }
+
+pre {
+  color: #000;
+  transition: background-color 1s; }
+  pre.highlight {
+    background-color: #ff8 !important; }

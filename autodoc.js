@@ -853,7 +853,7 @@
           initialLines.push(line);
 
         } else if (pair) {
-          pair.lineNumber = i + 1;
+          pair.lineNumber = i;
           pairs.push(pair);
         }
       });

@@ -1,7 +1,13 @@
 $(document).ready(function() {
+  var codeMirrors = {};
+
   function highlightCode() {
-    $('pre code').each(function() {
-      $(this).html(hljs.highlight('javascript', this.textContent).value);
+    $('textarea').each(function() {
+      codeMirrors[this.id] = CodeMirror.fromTextArea(this, {
+        gutters: ['result'],
+        mode: 'javascript',
+        readOnly: true
+      });
     });
   }
 
@@ -12,25 +18,28 @@ $(document).ready(function() {
 
     jasmineEnv.addReporter({
       reportSpecResults: function(spec) {
-        var matchingRow = $('#example-' + spec.exampleId);
-        var resultCell = $('td:last-child', matchingRow);
+        var editorId       = 'source-' + spec.suiteId,
+            matchingEditor = codeMirrors[editorId];
 
-        if (spec.results().passed()) {
-          matchingRow.addClass('passed');
-          resultCell.text('Passed');
-          return;
-        }
+        var style = spec.results().passed() ? 'passed' : 'failed';
+        matchingEditor.addLineClass(spec.lineNumber, 'background', style);
 
-        matchingRow.addClass('failed');
+        var gutterMarker = $('<div>')
+          .addClass('gutter-marker')
+          .addClass(style)
+          .html(spec.results().passed() ? '&#10004;' : '&times;');
 
-        var errorsList = $('<ul>').appendTo(resultCell);
+        matchingEditor.setGutterMarker(spec.lineNumber, 'result', gutterMarker[0]);
+
+        var lastElement = matchingEditor.getWrapperElement();
         _(spec.results().getItems())
           .filter(function(item) { return item.passed && !item.passed(); })
           .pluck('message')
           .each(function(errorMessage) {
-            $('<li>')
+            lastElement = $('<pre>')
               .text(errorMessage)
-              .appendTo(errorsList);
+              .attr('id', 'example-' + spec.exampleId)
+              .insertBefore(lastElement);
 
             var notice = $('<p>')
               .text(errorMessage)
@@ -38,6 +47,8 @@ $(document).ready(function() {
 
             var link = $('<a>')
               .attr('href', '#example-' + spec.exampleId)
+              .attr('data-editor-id', editorId)
+              .attr('data-line-number', spec.lineNumber)
               .text('See specs')
               .appendTo(notice);
           });
@@ -50,16 +61,24 @@ $(document).ready(function() {
   $(document).on('click', '#spec-failures a', function(e) {
     e.preventDefault();
 
-    var exampleTarget = $(this).attr('href'),
+    var link          = $(this),
+        exampleTarget = link.attr('href'),
         targetExample = $(exampleTarget),
+        targetEditor  = codeMirrors[link.attr('data-editor-id')],
+        targetLine    = Number(link.attr('data-line-number')),
         parentSection = targetExample.closest('section');
 
     // Show the section where the example is located.
     parentSection[0].scrollIntoView();
 
     // Highlight the example.
+    targetEditor.addLineClass(targetLine, 'background', 'highlight');
     targetExample.addClass('highlight');
-    setTimeout(function() { targetExample.removeClass('highlight'); }, 750);
+
+    setTimeout(function() {
+      targetEditor.removeLineClass(targetLine, 'background', 'highlight');
+      targetExample.removeClass('highlight');
+    }, 1500);
   });
 
   $(document).on('click', '.perf button', function() {

@@ -4,15 +4,16 @@
 <head>
     <title>{{name}}</title>
 
-    <link rel="stylesheet" type="text/css" href="http://yandex.st/highlightjs/7.3/styles/default.min.css" />
+    <link rel="stylesheet" type="text/css" href="//cdn.jsdelivr.net/codemirror/3.14.0/codemirror.css" />
     <link rel="stylesheet" type="text/css" href="docs.css" />
-    <script src="http://pivotal.github.io/jasmine/lib/jasmine-1.3.1/jasmine.js"></script>
-    <script src="http://lodash.com/_js/lodash.js"></script>
-    <script src="http://benchmarkjs.com/_js/benchmark.js"></script>
-    <script src="http://code.jquery.com/jquery-1.10.1.min.js"></script>
-    <script src="http://code.highcharts.com/highcharts.js"></script>
-    <script src="http://danieltao.com/HighTables/hightables.js"></script>
-    <script src="http://yandex.st/highlightjs/7.3/highlight.min.js"></script>
+    <script src="//pivotal.github.io/jasmine/lib/jasmine-1.3.1/jasmine.js"></script>
+    <script src="//lodash.com/_js/lodash.js"></script>
+    <script src="//benchmarkjs.com/_js/benchmark.js"></script>
+    <script src="//code.jquery.com/jquery-1.10.1.min.js"></script>
+    <script src="//code.highcharts.com/highcharts.js"></script>
+    <script src="//danieltao.com/HighTables/hightables.js"></script>
+    <script src="//cdn.jsdelivr.net/codemirror/3.14.0/codemirror.js"></script>
+    <script src="//cdn.jsdelivr.net/codemirror/3.14.0/mode/javascript/javascript.js"></script>
     <script type="text/javascript" src="utils.js"></script>
     <script type="text/javascript" src="docs.js"></script>
 
@@ -60,9 +61,11 @@
             </div>
 
             <article>
+                {{#description}}
                 <section class="description">
-                    {{{description}}}
+                    {{{.}}}
                 </section>
+                {{/description}}
 
                 {{#namespaces}}
                 {{#allMembers}}
@@ -79,7 +82,7 @@
                     <div class="signature">
                         <h3>Signature</h3>
 
-                        <pre><code>{{{signature}}}</code></pre>
+                        <textarea>{{{signature}}}</textarea>
 
                         <table id="{{name}}-parameters">
                             <thead>
@@ -121,27 +124,7 @@
                         <h3>Examples</h3>
 
                         {{#examples}}
-                        <pre><code>{{{code}}}</code></pre>
-
-                        <table id="{{name}}-examples">
-                            <thead>
-                                <tr>
-                                    <th>Input</th>
-                                    <th>Expected</th>
-                                    <th>Result</th>
-                                </tr>
-                            </thead>
-
-                            <tbody>
-                                {{#list}}
-                                <tr id="example-{{identifier}}-{{id}}">
-                                    <td>{{{actual}}}</td>
-                                    <td>{{{expected}}}</td>
-                                    <td></td>
-                                </tr>
-                                {{/list}}
-                            </tbody>
-                        </table>
+                        <textarea id="source-{{identifier}}">{{{code}}}</textarea>
                         {{/examples}}
                     </div>
                     {{/hasExamples}}
@@ -151,10 +134,9 @@
                         <h3>Benchmarks</h3>
 
                         {{#benchmarks}}
-                        <pre><code>{{{code}}}</code></pre>
+                        <textarea>{{{code}}}</textarea>
 
                         <table id="{{identifier}}-perf-tests">
-                            <!-- Gah, HighTables is stupid... doesn't account for <thead> :( -->
                             <tr>
                                 <th>Implementation</th>
                                 {{#cases}}
