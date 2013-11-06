@@ -1131,6 +1131,7 @@
       allMembers: allMembers,
       hasExamples: Lazy(allMembers).any(function(m) { return m.hasExamples; }),
       hasBenchmarks: Lazy(allMembers).any(function(m) { return m.hasBenchmarks; }),
+      excludeFromDocs: Lazy(allMembers).all(function(m) { return m.excludeFromDocs; })
     };
   };
 
