@@ -4,7 +4,7 @@ $(document).ready(function() {
   function highlightCode() {
     $('textarea').each(function() {
       codeMirrors[this.id] = CodeMirror.fromTextArea(this, {
-        gutters: ['result'],
+        gutters: this.className.match(/source-examples/) ? ['result'] : [],
         mode: 'javascript',
         readOnly: true
       });
