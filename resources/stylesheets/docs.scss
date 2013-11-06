@@ -62,6 +62,10 @@ nav {
   }
 }
 
+section.description p {
+  @extend .lead;
+}
+
 section.constructor:nth-of-type(n+2),
 section.method:nth-of-type(n+2) {
   border-top: 1px solid #ddd;
@@ -142,10 +146,6 @@ table {
 
 .CodeMirror-linebackground {
   transition: background-color 1s;
-
-  &.passed {
-    background-color: #dfd;
-  }
 
   &.failed {
     background-color: #fdd;
