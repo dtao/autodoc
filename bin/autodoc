@@ -65,7 +65,7 @@ _commander
   .option('-t, --test', 'run tests')
   .option('-p, --perf', 'run performance benchmarks')
   .option('-d, --dump', 'dump data to console and exit')
-  .option('-o, --output <destination>', 'specify an output directory (defaults to "docs")')
+  .option('-o, --output <destination>', 'specify an output directory (defaults to "autodoc")')
   .option('--language <language>', 'specify the library language: either javascript (default) or coffeescript')
   .option('--template <path>', 'use a custom Mustache template')
   .option('--namespaces <names>', 'provide a comma-separated list of the namespaces to document (defaults to all, in alphabetical order)', argToList)
@@ -85,7 +85,7 @@ if (process.argv.length <= 2) {
 
 var filePath        = process.argv.pop(),
     sourceCode      = readFile(filePath),
-    outputDir       = _commander.output || 'docs',
+    outputDir       = _commander.output || 'autodoc',
     handlersPath    = path.join(outputDir, 'handlers.js'),
     handlersExists  = fileExists(handlersPath),
     equalityPath    = path.join(outputDir, 'assertEquality.js'),
