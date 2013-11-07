@@ -198,7 +198,7 @@
     this.extraOptions     = options.extraOptions || {};
   }
 
-  Autodoc.VERSION = '0.4.2';
+  Autodoc.VERSION = '0.5.0';
 
   /**
    * Default Autodoc options. (See autodoc-node.js)
