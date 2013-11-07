@@ -8,7 +8,7 @@ node_modules/
 .DS_Store
 
 # Ignore any files generated for the example
-docs/
+autodoc/
 
 # Ignore debug log
 npm-debug.log
