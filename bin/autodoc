@@ -100,13 +100,11 @@ options.grep        = _commander.grep;
 options.javascripts = _commander.javascripts || [];
 options.language    = _commander.language || 'javascript';
 
-// Always (?) include a reference to the library itself.
-// TODO: Rethink this. Hard-coding a path starting w/ '../' is dumb; there's no
-// guarantee that will be the correct relationship between outputDir and the
-// current working directory.
-var relativePath = '../' + path.basename(filePath);
-if (!_Lazy(options.javascripts).contains(relativePath)) {
-  options.javascripts.push(relativePath);
+// Always include a reference to the library itself.
+// Down below, we'll copy the library to the output folder.
+var libraryFileName = path.basename(filePath);
+if (!_Lazy(options.javascripts).contains(libraryFileName)) {
+  options.javascripts.push(libraryFileName);
 }
 
 var defaults = require(path.join(__dirname, '../resources/javascripts/defaults.js'));
@@ -209,6 +207,7 @@ function generateDocs() {
   copyFile(path.join(__dirname, '../resources/javascripts/utils.js'), path.join(outputDir, 'utils.js'), true);
   copyFile(path.join(__dirname, '../resources/javascripts/docs.js'), path.join(outputDir, 'docs.js'), true);
   copyFile(path.join(__dirname, '../resources/javascripts/defaults.js'), path.join(outputDir, 'defaults.js'), true);
+  copyFile(filePath, path.join(outputDir, libraryFileName));
 
   console.log('Docs written to ' + outputDir + '/');
 
