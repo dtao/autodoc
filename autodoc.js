@@ -186,7 +186,7 @@
     this.codeParser       = wrapParser(options.codeParser);
     this.commentParser    = wrapParser(options.commentParser);
     this.markdownParser   = wrapParser(options.markdownParser, Autodoc.processInternalLinks);
-    this.compiler         = options.compiler[options.language];
+    this.compiler         = options.compiler[options.language || 'javascript'];
     this.namespaces       = options.namespaces || [];
     this.tags             = options.tags || [];
     this.grep             = options.grep;
