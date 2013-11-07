@@ -574,8 +574,8 @@
         isPublic    = Autodoc.hasTag(doc, 'public'),
         isPrivate   = Autodoc.hasTag(doc, 'private'),
         signature   = Autodoc.getSignature(nameInfo, params),
-        examples    = Autodoc.getExamples(doc),
-        benchmarks  = Autodoc.getBenchmarks(doc),
+        examples    = this.getExamples(doc),
+        benchmarks  = this.getBenchmarks(doc),
         tags        = Lazy(doc.tags).pluck('title').toArray();
 
     return {
@@ -715,6 +715,122 @@
    */
   Autodoc.prototype.parseComment = function(comment) {
     return this.commentParser.parse('/*' + comment.value + '*/', { unwrap: true });
+  };
+
+  /**
+   * @typedef {Object} ExampleInfo
+   * @property {number} id
+   * @property {number} lineNumber
+   * @property {string} actual
+   * @property {string} actualEscaped
+   * @property {string} expected
+   * @property {string} expectedEscaped
+   */
+
+  /**
+   * @typedef {Object} ExampleCollection
+   * @property {string} code
+   * @property {string} setup
+   * @property {Array.<ExampleInfo>} list
+   */
+
+  /**
+   * Produces a { setup, examples } object providing some examples of a function.
+   *
+   * @param {Object} doc
+   * @returns {ExampleCollection}
+   */
+  Autodoc.prototype.getExamples = function(doc) {
+    var self = this,
+        exampleIdCounter = 1;
+
+    return Autodoc.parseCommentLines(doc, 'examples', function(data) {
+      return {
+        code: data.content,
+        setup: self.compileSnippet(data.preamble),
+        list: Lazy(data.pairs).map(function(pair) {
+          return {
+            id: exampleIdCounter++,
+            lineNumber: pair.lineNumber,
+            actual: self.compileSnippet(pair.left),
+            actualEscaped: Autodoc.escapeJsString(pair.left),
+            expected: pair.right,
+            expectedEscaped: Autodoc.escapeJsString(pair.right)
+          };
+        }).toArray()
+      };
+    });
+  };
+
+  /**
+   * @typedef {Object} BenchmarkCase
+   * @property {number} caseId
+   * @property {string} impl
+   * @property {string} name
+   * @property {string} label
+   */
+
+  /**
+   * @typedef {Object} BenchmarkInfo
+   * @property {number} id
+   * @property {string} name
+   * @property {Array.<BenchmarkCase>} cases
+   */
+
+  /**
+   * @typedef {Object} BenchmarkCollection
+   * @property {string} code
+   * @property {string} setup
+   * @property {Array.<BenchmarkInfo>} list
+   */
+
+  /**
+   * Produces a { setup, benchmarks } object providing some benchmarks for a function.
+   *
+   * @param {Object} doc
+   * @returns {BenchmarkCollection}
+   */
+  Autodoc.prototype.getBenchmarks = function(doc) {
+    var self = this,
+        benchmarkCaseIdCounter = 1,
+        benchmarkIdCounter     = 1;
+
+    return Autodoc.parseCommentLines(doc, 'benchmarks', function(data) {
+      var benchmarks = Lazy(data.pairs)
+        .map(function(pair) {
+          var parts = divide(pair.right, ' - ');
+
+          return {
+            caseId: benchmarkCaseIdCounter++,
+            impl: self.compileSnippet(pair.left),
+            name: parts[0],
+            label: parts[1] || 'Ops/second'
+          };
+        })
+        .groupBy('name')
+        .map(function(group) {
+          return {
+            id: benchmarkIdCounter++,
+            name: group[0],
+            cases: group[1]
+          }
+        })
+        .toArray();
+
+      return {
+        code: data.content,
+        setup: self.compileSnippet(data.preamble),
+        list: benchmarks,
+        cases: benchmarks.length > 0 ? benchmarks[0].cases : []
+      };
+    });
+  };
+
+  /**
+   * Compiles just a little snippet of code.
+   */
+  Autodoc.prototype.compileSnippet = function(code) {
+    return trim(this.compiler.compile(code, { bare: true }));
   };
 
   /**
@@ -994,112 +1110,6 @@
   };
 
   /**
-   * @typedef {Object} ExampleInfo
-   * @property {number} id
-   * @property {number} lineNumber
-   * @property {string} actual
-   * @property {string} actualEscaped
-   * @property {string} expected
-   * @property {string} expectedEscaped
-   */
-
-  /**
-   * @typedef {Object} ExampleCollection
-   * @property {string} code
-   * @property {string} setup
-   * @property {Array.<ExampleInfo>} list
-   */
-
-  /**
-   * Produces a { setup, examples } object providing some examples of a function.
-   *
-   * @param {Object} doc
-   * @returns {ExampleCollection}
-   */
-  Autodoc.getExamples = function(doc) {
-    var exampleIdCounter = 1;
-    return Autodoc.parseCommentLines(doc, 'examples', function(data) {
-      return {
-        code: data.content,
-        setup: data.preamble,
-        list: Lazy(data.pairs).map(function(pair) {
-          return {
-            id: exampleIdCounter++,
-            lineNumber: pair.lineNumber,
-            actual: pair.left,
-            actualEscaped: Autodoc.escapeJsString(pair.left),
-            expected: pair.right,
-            expectedEscaped: Autodoc.escapeJsString(pair.right)
-          };
-        }).toArray()
-      };
-    });
-  };
-
-  /**
-   * @typedef {Object} BenchmarkCase
-   * @property {number} caseId
-   * @property {string} impl
-   * @property {string} name
-   * @property {string} label
-   */
-
-  /**
-   * @typedef {Object} BenchmarkInfo
-   * @property {number} id
-   * @property {string} name
-   * @property {Array.<BenchmarkCase>} cases
-   */
-
-  /**
-   * @typedef {Object} BenchmarkCollection
-   * @property {string} code
-   * @property {string} setup
-   * @property {Array.<BenchmarkInfo>} list
-   */
-
-  /**
-   * Produces a { setup, benchmarks } object providing some benchmarks for a function.
-   *
-   * @param {Object} doc
-   * @returns {BenchmarkCollection}
-   */
-  Autodoc.getBenchmarks = function(doc) {
-    var benchmarkCaseIdCounter = 1,
-        benchmarkIdCounter     = 1;
-
-    return Autodoc.parseCommentLines(doc, 'benchmarks', function(data) {
-      var benchmarks = Lazy(data.pairs)
-        .map(function(pair) {
-          var parts = divide(pair.right, ' - ');
-
-          return {
-            caseId: benchmarkCaseIdCounter++,
-            impl: pair.left,
-            name: parts[0],
-            label: parts[1] || 'Ops/second'
-          };
-        })
-        .groupBy('name')
-        .map(function(group) {
-          return {
-            id: benchmarkIdCounter++,
-            name: group[0],
-            cases: group[1]
-          }
-        })
-        .toArray();
-
-      return {
-        code: data.content,
-        setup: data.preamble,
-        list: benchmarks,
-        cases: benchmarks.length > 0 ? benchmarks[0].cases : []
-      };
-    });
-  };
-
-  /**
    * Produces a string representation of a type object.
    *
    * @param {Object} type
@@ -1310,10 +1320,11 @@
    * @returns {string} The trimmed result.
    *
    * @examples
-   * trim('foo')     // => 'foo'
-   * trim('  foo')   // => 'foo'
-   * trim('foo  ')   // => 'foo'
-   * trim('  foo  ') // => 'foo'
+   * trim('foo')                 // => 'foo'
+   * trim('  foo')               // => 'foo'
+   * trim('foo  ')               // => 'foo'
+   * trim('  foo  ')             // => 'foo'
+   * trim(' \t\n\r foo \r\n\t ') // => 'foo'
    *
    * @benchmarks
    * trim('foo')        // no trimming necessary

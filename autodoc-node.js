@@ -15,8 +15,8 @@ Autodoc.options.compiler = {
 
   'coffeescript': (function(compiler) {
 
-    function compile(source) {
-      var js = compiler.compile(source);
+    function compile(source, options) {
+      var js = compiler.compile(source, options);
 
       // Basically we want to eliminate blank lines after block comments so that
       // Autodoc can do the whole associate-doclets-with-functions thing. I'm
