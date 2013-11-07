@@ -25,6 +25,14 @@
     {
       pattern: /^throws$/,
       template: 'throws'
+    },
+    {
+      pattern: /^calls\s+(\w+)\s+(\d+)\s+times?$/,
+      template: 'calls'
+    },
+    {
+      pattern: /^calls\s+(\w+)\s+(\d+)\s+times? asynchronously$/,
+      template: 'calls_async'
     }
   ]);
 
