@@ -15,6 +15,9 @@ var suite      = new Benchmark.Suite(),
 
 {{#privateMembers}}
 var {{shortName}} = {{{source}}};
+{{#methods}}
+{{longName}} = {{{source}}};
+{{/methods}}
 {{/privateMembers}}
 
 {{#docs}}
