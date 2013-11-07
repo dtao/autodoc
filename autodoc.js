@@ -301,7 +301,7 @@
         // Attempt to parse the comment. If it can't be parsed, or it appears to
         // be basically empty, then skip it.
         var doc = autodoc.parseComment(comment);
-        if (typeof doc === 'undefined' || !doc.description) {
+        if (typeof doc === 'undefined') {
           return null;
         }
 
