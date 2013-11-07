@@ -43,16 +43,36 @@ class C
       when 'function' then return -> @obj.apply(this, arguments)
 
     return null if @obj is null
-    return @cloneArray() if @obj instanceof Array
-    return @cloneObject()
+    return cloneArray(@obj) if @obj instanceof Array
+    return cloneObject(@obj)
 
-  cloneArray: ->
-    @obj.slice(0)
+###
+Clones an array
 
-  cloneObject: ->
-    clone = {}
-    for key of @obj
-      clone[key] = @obj[key]
-    clone
+@private
+@examples
+arr = [1, 2, 3]
+
+cloneArray(arr)         // [1, 2, 3]
+cloneArray(arr).push(4) // arr == [1, 2, 3]
+###
+cloneArray = (arr) ->
+  arr.slice(0)
+
+###
+Clones an object
+
+@private
+@examples
+obj = { foo: 'bar' }
+
+cloneObject(obj)             // { foo: 'bar' }
+cloneObject(obj).foo = 'baz' // obj == { foo: 'bar' }
+###
+cloneObject = (obj) ->
+  clone = {}
+  for key of obj
+    clone[key] = obj[key]
+  clone
 
 module.exports = C
