@@ -506,7 +506,8 @@
       // will leave to be verified by handler.test, which will obviously need to
       // be available in the output HTML (bin/autodoc ensures this).
       Lazy(exampleHandlers).each(function(handler, i) {
-        var match = example.expected.match(handler.pattern);
+        var match = example.expected.match(handler.pattern),
+            data;
 
         if (match) {
           if (typeof handler.test === 'function') {
@@ -519,9 +520,12 @@
               throw 'Template "' + handler.template + '" not defined.';
             }
 
+            data = typeof handler.data === 'function' ?
+              handler.data(match) : { match: match };
+
             example.exampleSource = templateEngine.render(
               templatePartials[handler.template],
-              Lazy(example).extend({ match: match }).toObject()
+              Lazy(example).extend(data).toObject()
             );
 
           } else {
