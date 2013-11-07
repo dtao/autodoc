@@ -130,47 +130,6 @@ table {
   }
 }
 
-.CodeMirror {
-  height: auto;
-  margin-bottom: 20px;
-}
-
-.CodeMirror-scroll {
-  overflow-y: hidden;
-  overflow-x: auto;
-}
-
-.CodeMirror-linebackground {
-  transition: background-color 1s;
-
-  &.failed {
-    background-color: #fdd;
-  }
-
-  &.highlight {
-    background-color: #ff8 !important;
-  }
-}
-
-.CodeMirror-gutters {
-  width: 30px;
-  background-color: #fff;
-}
-
-div.gutter-marker {
-  display: inline-block;
-  width: 30px;
-  text-align: center;
-
-  &.passed {
-    color: #080;
-  }
-
-  &.failed {
-    color: #f00;
-  }
-}
-
 pre {
   color: #000;
 
