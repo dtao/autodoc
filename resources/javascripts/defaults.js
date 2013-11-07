@@ -7,11 +7,11 @@
    */
   this.exampleHandlers = (context.exampleHandlers || []).concat([
     {
-      pattern: /^(\w[\w\.]*)\s*===?\s*(.*)$/,
+      pattern: /^(\w[\w\.\(\)\[\]'"]*)\s*===?\s*(.*)$/,
       template: 'equality'
     },
     {
-      pattern: /^(\w[\w\.]*)\s*!==?\s*(.*)$/,
+      pattern: /^(\w[\w\.\(\)\[\]'"]*)\s*!==?\s*(.*)$/,
       template: 'inequality'
     },
     {
