@@ -66,6 +66,7 @@ _commander
   .option('-p, --perf', 'run performance benchmarks')
   .option('-d, --dump', 'dump data to console and exit')
   .option('-o, --output <destination>', 'specify an output directory (defaults to "docs")')
+  .option('--language <language>', 'specify the library language: either javascript (default) or coffeescript')
   .option('--template <path>', 'use a custom Mustache template')
   .option('--namespaces <names>', 'provide a comma-separated list of the namespaces to document (defaults to all, in alphabetical order)', argToList)
   .option('--javascripts <sources>', 'specify additional JS dependencies (comma-separated)', argToList)
@@ -97,6 +98,7 @@ options.namespace   = _commander.namespaces;
 options.tags        = _commander.tags;
 options.grep        = _commander.grep;
 options.javascripts = _commander.javascripts || [];
+options.language    = _commander.language || 'javascript';
 
 // Always (?) include a reference to the library itself.
 // TODO: Rethink this. Hard-coding a path starting w/ '../' is dumb; there's no

@@ -186,6 +186,7 @@
     this.codeParser       = wrapParser(options.codeParser);
     this.commentParser    = wrapParser(options.commentParser);
     this.markdownParser   = wrapParser(options.markdownParser, Autodoc.processInternalLinks);
+    this.compiler         = options.compiler[options.language];
     this.namespaces       = options.namespaces || [];
     this.tags             = options.tags || [];
     this.grep             = options.grep;
@@ -249,6 +250,13 @@
    */
   Autodoc.prototype.parse = function(code) {
     var autodoc = this;
+
+    // Compile the input code into something codeParser can parse. (For
+    // JavaScript, this should just spit the same code right back out. For
+    // CoffeeScript, it will compile it to JS then do a bit of post-processing
+    // on it to ensure our AST-traversal and doclet-grouping stuff all still
+    // works.)
+    code = this.compiler.compile(code);
 
     // Generate the abstract syntax tree.
     var ast = this.codeParser.parse(code, {
