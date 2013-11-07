@@ -20,6 +20,7 @@
   },
   "dependencies": {
     "benchmark": ">= 1.0.0",
+    "coffee-script": ">= 1.6.1",
     "commander": "*",
     "doctrine": "git://github.com/dtao/doctrine.git",
     "esprima": "*",
