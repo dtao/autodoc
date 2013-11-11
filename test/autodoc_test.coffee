@@ -31,10 +31,15 @@ getASTFromFile = (fileName) ->
 
 describe 'Autodoc', ->
   describe '#parseComment', ->
-    it 'wraps some text in /* and */ to pass to doctrine', ->
+    it 'does NOT wrap comment text in /* and */ before passing to doctrine', ->
       parser = { parse: sinon.spy() }
       new Autodoc({ commentParser: parser }).parseComment({ value: 'foo' })
-      sinon.assert.calledWith(parser.parse, '/*foo*/', { unwrap: true })
+      sinon.assert.calledWith(parser.parse, 'foo', { unwrap: true })
+
+    it 'strips out surrounding /* and */ before parsing comments', ->
+      parser = { parse: sinon.spy() }
+      new Autodoc({ commentParser: parser }).parseComment({ value: '/*foo*/' })
+      sinon.assert.calledWith(parser.parse, 'foo', { unwrap: true })
 
   describe 'getIdentifierName', ->
     parse = (code) ->

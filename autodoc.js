@@ -753,7 +753,16 @@
    * @returns {Object}
    */
   Autodoc.prototype.parseComment = function(comment) {
-    return this.commentParser.parse('/*' + comment.value + '*/', { unwrap: true });
+    var value = comment.value;
+
+    // I think I'm going crazy? For some reason I was originally wrapping
+    // comments in /* and */ before parsing them with doctrine. Now it seems
+    // that was never necessary and, in fact, just introduced ugliness with
+    // CoffeeScript. So I'm completely reversing course, and REMOVING these
+    // strings instead of introducing them. Seems to fix the issue.
+    value = value.replace(/^\s*\/\*|\*\/\s*$/g, '');
+
+    return this.commentParser.parse(value, { unwrap: true });
   };
 
   /**
