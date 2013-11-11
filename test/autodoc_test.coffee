@@ -103,6 +103,11 @@ describe 'Autodoc', ->
         .pluck('shortName')
         .toArray()
 
+    getMemberName = (data, shortName) ->
+      Lazy(data.docs)
+        .findWhere({ shortName: shortName })
+        .name
+
     describe '"helloWorld.js" example', ->
       data = parseExampleFile('helloWorld.js')
 
@@ -136,6 +141,9 @@ describe 'Autodoc', ->
 
       it 'also respects the @memberOf tag for explicitly defining namespaces', ->
         listMembersForNamespace(data, 'R.strings').should.eql ['split']
+
+      it 'respects the @memberOf tag for the purpose of naming functions', ->
+        getMemberName(data, 'parse').should.eql 'R.numbers.parse'
 
     describe '"module.js example', ->
       data = parseExampleFile('module.js')

@@ -998,7 +998,7 @@
    * Autodoc.parseName('Foo').identifier         // => 'Foo'
    * Autodoc.parseName('Foo').namespace          // => null
    */
-  Autodoc.parseName = function(name, doc) {
+  Autodoc.parseName = function(name, fn) {
     var parts = name.split(/[\.#]/),
 
         // e.g., the short name for 'Lib.utils.func' should be 'func'
@@ -1026,18 +1026,20 @@
         // w/ '.' to recreate the namespace
         namespace = parts.join('.');
 
-    if (doc) {
-      // Actually, if this doc is tagged @global, then it doesn't belong to a
-      // namespace.
-      if (Autodoc.hasTag(doc, 'global')) {
+    if (fn) {
+      // Actually, if this function is tagged @global, then it doesn't belong to
+      // a namespace.
+      if (Autodoc.hasTag(fn, 'global')) {
         namespace = '';
         name = shortName;
 
       // On the other hand, if it's tagged @memberOf, then we want to use that
-      // tag for its explicit namespace.
-      } else if (Autodoc.hasTag(doc, 'memberOf')) {
-        namespace = Autodoc.getTagDescription(doc, 'memberOf');
-        name = namespace + (doc && !doc.isStatic) ? '#' : '.' + name;
+      // tag for its explicit namespace. (We'll assume static members unless the
+      // @instance tag is present.)
+      } else if (Autodoc.hasTag(fn, 'memberOf')) {
+        namespace = Autodoc.getTagDescription(fn, 'memberOf');
+        name = namespace + ((fn && Autodoc.hasTag(fn, 'instance')) ? '#' : '.') +
+          shortName;
       }
     }
 
