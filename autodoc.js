@@ -186,7 +186,9 @@
     this.codeParser       = wrapParser(options.codeParser);
     this.commentParser    = wrapParser(options.commentParser);
     this.markdownParser   = wrapParser(options.markdownParser, Autodoc.processInternalLinks);
-    this.compiler         = options.compiler[options.language || 'javascript'];
+    this.highlighter      = options.highlighter;
+    this.language         = options.language || 'javascript';
+    this.compiler         = options.compiler[this.language];
     this.namespaces       = options.namespaces || [];
     this.tags             = options.tags || [];
     this.grep             = options.grep;
@@ -196,6 +198,10 @@
     this.templateEngine   = options.templateEngine;
     this.templatePartials = options.templatePartials;
     this.extraOptions     = options.extraOptions || {};
+
+    if (this.highlighter) {
+      this.highlighter.loadMode(this.language);
+    }
   }
 
   Autodoc.VERSION = '0.5.0';
@@ -281,7 +287,7 @@
 
     // Go through all of of the comments in the AST, attempting to associate
     // each with a function.
-    var docs = Lazy(ast.comments)
+    var functions = Lazy(ast.comments)
       .map(function(comment) {
         // Find the function right after this comment. If none exists, skip it.
         var fn = functions[comment.loc.end.line + 1];
@@ -322,7 +328,7 @@
     // Only include documentation for functions with the specified tag(s), if
     // provided.
     if (this.tags.length > 0) {
-      Lazy(docs).each(function(doc) {
+      Lazy(functions).each(function(doc) {
         var hasTag = Lazy(autodoc.tags).any(function(tag) {
           return Lazy(doc.tags).contains(tag);
         });
@@ -333,22 +339,22 @@
       });
     }
 
-    // Group by namespace so that we can keep the docs organized.
-    var docGroups = Lazy(docs)
-      .groupBy(function(doc) {
-        return doc.namespace || doc.shortName;
+    // Group by namespace so that we can keep the functions organized.
+    var functionsByNamespace = Lazy(functions)
+      .groupBy(function(fn) {
+        return fn.namespace || fn.shortName;
       })
       .toObject();
 
     // Only include specified namespaces, if the option has been provided.
     // Otherwise use all namespaces.
     if (this.namespaces.length === 0) {
-      this.namespaces = Object.keys(docGroups);
+      this.namespaces = Object.keys(functionsByNamespace);
     }
 
     var namespaces = Lazy(this.namespaces)
       .map(function(namespace) {
-        return Autodoc.createNamespaceInfo(docGroups, namespace);
+        return Autodoc.createNamespaceInfo(functionsByNamespace, namespace);
       })
       .toArray();
 
@@ -358,7 +364,7 @@
       .toArray();
 
     Lazy(privateMembers).each(function(member) {
-      member.methods = Lazy(docs)
+      member.methods = Lazy(functions)
         .where({ namespace: member.shortName })
         .toArray();
     });
@@ -399,7 +405,7 @@
       description: librarySummary.description,
       code: code,
       namespaces: namespaces,
-      docs: docs,
+      docs: functions,
       privateMembers: privateMembers
     };
   };
@@ -546,6 +552,9 @@
    * @property {boolean} isStatic
    * @property {boolean} isPublic
    * @property {boolean} isPrivate
+   * @property {boolean} hasSignature
+   * @property {string} signature
+   * @property {string} highlightedSignature
    * @property {boolean} hasExamples
    * @property {boolean} hasBenchmarks
    * @property {Array.<ParameterInfo>} params
@@ -595,6 +604,7 @@
       isPrivate: isPrivate,
       hasSignature: params.length > 0 || !!returns,
       signature: signature,
+      highlightedSignature: this.highlightCode(signature),
       examples: examples,
       hasExamples: examples.list.length > 0,
       benchmarks: benchmarks,
@@ -732,6 +742,7 @@
   /**
    * @typedef {Object} ExampleCollection
    * @property {string} code
+   * @property {string} highlightedCode
    * @property {string} setup
    * @property {Array.<ExampleInfo>} list
    */
@@ -749,6 +760,7 @@
     return Autodoc.parseCommentLines(doc, 'examples', function(data) {
       return {
         code: data.content,
+        highlightedCode: self.highlightCode(data.content),
         setup: self.compileSnippet(data.preamble),
         list: Lazy(data.pairs).map(function(pair) {
           return {
@@ -782,6 +794,7 @@
   /**
    * @typedef {Object} BenchmarkCollection
    * @property {string} code
+   * @property {string} highlightedCode
    * @property {string} setup
    * @property {Array.<BenchmarkInfo>} list
    */
@@ -821,11 +834,31 @@
 
       return {
         code: data.content,
+        highlightedCode: self.highlightCode(data.content),
         setup: self.compileSnippet(data.preamble),
         list: benchmarks,
         cases: benchmarks.length > 0 ? benchmarks[0].cases : []
       };
     });
+  };
+
+  /**
+   * Does syntax highlighting on a bit of code.
+   */
+  Autodoc.prototype.highlightCode = function(code) {
+    var highlighter = this.highlighter;
+
+    var highlightedCode = (highlighter && typeof highlighter.highlight === 'function') ?
+      highlighter.highlight(code, { mode: this.language }) :
+      code;
+
+    // Wrap each line in a <span> including the line number.
+    return Lazy(highlightedCode)
+      .split('\n')
+      .map(function(line, i) {
+        return '<span class="line" data-line-no="' + i + '">' + line + '</span>';
+      })
+      .join('\n');
   };
 
   /**
