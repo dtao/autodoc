@@ -4,17 +4,15 @@
 <head>
     <title>{{name}}</title>
 
-    <link rel="stylesheet" type="text/css" href="//cdn.jsdelivr.net/codemirror/3.14.0/codemirror.css" />
     <link rel="stylesheet" type="text/css" href="docs.css" />
     <link rel="stylesheet" type="text/css" href="examples.css" />
+    <link rel="stylesheet" type="text/css" href="highlight.css" />
     <script src="//pivotal.github.io/jasmine/lib/jasmine-1.3.1/jasmine.js"></script>
     <script src="//lodash.com/_js/lodash.js"></script>
     <script src="//benchmarkjs.com/_js/benchmark.js"></script>
     <script src="//code.jquery.com/jquery-1.10.1.min.js"></script>
     <script src="//code.highcharts.com/highcharts.js"></script>
     <script src="//danieltao.com/HighTables/hightables.js"></script>
-    <script src="//cdn.jsdelivr.net/codemirror/3.14.0/codemirror.js"></script>
-    <script src="//cdn.jsdelivr.net/codemirror/3.14.0/mode/javascript/javascript.js"></script>
     <script type="text/javascript" src="utils.js"></script>
     <script type="text/javascript" src="docs.js"></script>
 
@@ -83,7 +81,7 @@
                     <div class="signature">
                         <h3>Signature</h3>
 
-                        <textarea>{{{signature}}}</textarea>
+                        <pre>{{{highlightedSignature}}}</pre>
 
                         <table id="{{name}}-parameters">
                             <thead>
@@ -125,7 +123,7 @@
                         <h3>Examples</h3>
 
                         {{#examples}}
-                        <textarea class="source-examples" id="source-{{identifier}}">{{{code}}}</textarea>
+                        <pre class="source-examples" id="source-{{identifier}}">{{{highlightedCode}}}</pre>
                         {{/examples}}
                     </div>
                     {{/hasExamples}}
@@ -135,7 +133,7 @@
                         <h3>Benchmarks</h3>
 
                         {{#benchmarks}}
-                        <textarea>{{{code}}}</textarea>
+                        <pre class="cm-s-default">{{{highlightedCode}}}</pre>
 
                         <table id="{{identifier}}-perf-tests">
                             <tr>

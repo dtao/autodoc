@@ -129,13 +129,3 @@ table {
     }
   }
 }
-
-pre {
-  color: #000;
-
-  transition: background-color 1s;
-
-  &.highlight {
-    background-color: #ff8 !important;
-  }
-}

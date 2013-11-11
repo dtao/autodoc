@@ -6397,9 +6397,3 @@ table th p, table td p {
     opacity: 0.5; }
   .perf.loading table, .perf.loaded table {
     display: table; }
-
-pre {
-  color: #000;
-  transition: background-color 1s; }
-  pre.highlight {
-    background-color: #ff8 !important; }

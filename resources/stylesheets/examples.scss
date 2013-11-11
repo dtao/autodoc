@@ -1,40 +1,41 @@
-.CodeMirror {
-  height: auto;
-  margin-bottom: 20px;
-}
+pre {
+  background-color: #fff;
+  border: 0;
+  border-top: 1px solid black;
+  border-bottom: 1px solid black;
+  border-radius: 0;
 
-.CodeMirror-scroll {
-  overflow-y: hidden;
-  overflow-x: auto;
-}
-
-.CodeMirror-linebackground {
   transition: background-color 1s;
-
-  &.failed {
-    background-color: #fdd;
-  }
 
   &.highlight {
     background-color: #ff8 !important;
   }
-}
 
-.CodeMirror-gutters {
-  width: 30px;
-  background-color: #fff;
-}
+  span.line {
+    position: relative;
+    display: inline-block;
+    width: 100%;
 
-div.gutter-marker {
-  display: inline-block;
-  width: 30px;
-  text-align: center;
+    &.passed:before {
+      content: "\2713"; // checkmark
 
-  &.passed {
-    color: #080;
-  }
+      position: absolute;
+      top: -3px;
+      display: inline-block;
+      left: -20px;
+      color: #080;
+      font-size: 125%;
+    }
 
-  &.failed {
-    color: #f00;
+    &.failed:before {
+      content: "\00D7"; // x
+
+      position: absolute;
+      top: -3px;
+      display: inline-block;
+      left: -20px;
+      color: #f00;
+      font-size: 125%;
+    }
   }
 }

@@ -212,8 +212,9 @@ function generateDocs() {
     }
   }
 
-  copyFile(path.join(__dirname, '../resources/stylesheets/docs.css'), path.join(outputDir, 'docs.css'));
   copyFile(path.join(__dirname, '../resources/stylesheets/docs.css'), path.join(outputDir, 'examples.css'));
+  copyFile(path.join(__dirname, '../resources/stylesheets/examples.css'), path.join(outputDir, 'examples.css'), true);
+  copyFile(path.join(__dirname, '../resources/stylesheets/highlight.css'), path.join(outputDir, 'highlight.css'), true);
   copyFile(path.join(__dirname, '../resources/images/gears.gif'), path.join(outputDir, 'gears.gif'), true);
   copyFile(path.join(__dirname, '../resources/javascripts/utils.js'), path.join(outputDir, 'utils.js'), true);
   copyFile(path.join(__dirname, '../resources/javascripts/docs.js'), path.join(outputDir, 'docs.js'), true);
