@@ -114,7 +114,17 @@ options.language    = _commander.language || inferLanguage(filePath);
 // Down below, we'll copy the library to the output folder.
 var libraryFileName = path.basename(filePath);
 if (!_Lazy(options.javascripts).contains(libraryFileName)) {
-  options.javascripts.push(libraryFileName);
+  if (options.language === 'coffeescript') {
+    options.javascripts.push('http://coffeescript.org/extras/coffee-script.js');
+
+    options.javascripts.push({
+      language: 'coffeescript',
+      src: libraryFileName
+    });
+
+  } else {
+    options.javascripts.push(libraryFileName);
+  }
 }
 
 var defaults = require(path.join(__dirname, '../resources/javascripts/defaults.js'));
@@ -160,6 +170,17 @@ var libraryInfo = _Autodoc.parse(sourceCode, options);
 
 options.extraOptions.variable = _commander.variable ||
   libraryInfo.referenceName || '__lib__';
+
+// Update all JavaScript options to look like { language, src } instead of just
+// strings. (This is specifically for CoffeeScript suppot.)
+for (var i = 0; i < options.javascripts.length; ++i) {
+  if (typeof options.javascripts[i] === 'string') {
+    options.javascripts[i] = {
+      language: 'javascript',
+      src: options.javascripts[i]
+    };
+  }
+}
 
 function runTests() {
   var templatePath = path.join(__dirname, '../resources/examples.js.mustache');

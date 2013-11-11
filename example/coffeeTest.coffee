@@ -1,3 +1,10 @@
+###
+@name CoffeeTest
+
+@fileOverview
+A test of Autodoc for CoffeeScript
+###
+
 class C
   ###
   Wraps any old object as a C instance.
@@ -75,4 +82,7 @@ cloneObject = (obj) ->
     clone[key] = obj[key]
   clone
 
-module.exports = C
+if typeof module == 'object'
+  module.exports = C
+else
+  @C = C

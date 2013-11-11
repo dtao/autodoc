@@ -1,4 +1,4 @@
-$(document).ready(function() {
+window.addEventListener('load', function() {
   function runSpecs() {
     var failureNotices = $('#spec-failures');
 

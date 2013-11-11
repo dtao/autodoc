@@ -14,10 +14,9 @@
     <script src="//code.highcharts.com/highcharts.js"></script>
     <script src="//danieltao.com/HighTables/hightables.js"></script>
     <script type="text/javascript" src="utils.js"></script>
-    <script type="text/javascript" src="docs.js"></script>
 
     {{#javascripts}}
-    <script type="text/javascript" src="{{{.}}}"></script>
+    <script type="text/{{{language}}}" src="{{{src}}}"></script>
     {{/javascripts}}
 
     <script type="text/javascript" src="defaults.js"></script>
@@ -159,15 +158,17 @@
                     {{/hasBenchmarks}}
 
                     <script type="text/javascript">
-                      {{#privateMembers}}
-                      var {{shortName}} = {{{source}}};
-                      {{#methods}}
-                      {{longName}} = {{{source}}};
-                      {{/methods}}
-                      {{/privateMembers}}
+                      window.addEventListener('load', function() {
+                        {{#privateMembers}}
+                        var {{shortName}} = {{{source}}};
+                        {{#methods}}
+                        {{longName}} = {{{source}}};
+                        {{/methods}}
+                        {{/privateMembers}}
 
-                      {{> examples}}
-                      {{> benchmarks}}
+                        {{> examples}}
+                        {{> benchmarks}}
+                      });
                     </script>
                 </section>
                 {{/excludeFromDocs}}
@@ -176,6 +177,8 @@
             </article>
         </div>
     </main>
+
+    <script type="text/javascript" src="docs.js"></script>
 </body>
 
 </html>
