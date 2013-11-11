@@ -28,117 +28,12 @@
           return false;
         }
 
-        var children = self.getNodeChildren(node);
+        var children = Autodoc.getNodeChildren(node);
 
         if (children.length > 0) {
-          // Give each child a reference to its parent.
-          Lazy(children).compact().each(function(child) {
-            child.parent = node;
-          });
-
           return Lazy(children).nodes().each(fn);
         }
       });
-    },
-
-    getNodeChildren: function(node) {
-      switch (node.type) {
-        case 'FunctionDeclaration':
-        case 'FunctionExpression':
-          return [node.body];
-
-        case 'BlockStatement':
-          return node.body;
-
-        case 'IfStatement':
-          return [node.consequent, node.alternate];
-
-        case 'ForStatement':
-        case 'ForInStatement':
-        case 'WhileStatement':
-        case 'DoWhileStatement':
-        case 'LabeledStatement':
-        case 'WithStatement':
-          return [node.body];
-
-        case 'SwitchStatement':
-          return node.cases;
-
-        case 'SwitchCase':
-          return node.consequent;
-
-        case 'ExpressionStatement':
-          return [node.expression];
-
-        case 'TryStatement':
-          return [node.block];
-
-        case 'AssignmentExpression':
-          return [node.right];
-
-        case 'CallExpression':
-          return [node.callee];
-
-        case 'ConditionalExpression':
-          return [node.consequent, node.alternate];
-
-        case 'ObjectExpression':
-          return node.properties;
-
-        case 'ArrayExpression':
-          return node.elements;
-
-        case 'MemberExpression':
-          return node.object.type === 'FunctionExpression' ? [node.object] : [];
-
-        case 'NewExpression':
-          return [node.callee];
-
-        case 'UnaryExpression':
-          return [node.argument];
-
-        case 'BinaryExpression':
-          return [node.left, node.right];
-
-        case 'LogicalExpression':
-          return [node.left, node.right];
-
-        case 'Property':
-          return [node.key, node.value];
-
-        case 'VariableDeclaration':
-          return node.declarations;
-
-        case 'VariableDeclarator':
-          return [node.init];
-
-        // The basic idea here is that unless a node could POSSIBLY include
-        // (potentially deep down somewhere) a function declaration/expression,
-        // we'll treat it as having no children.
-        case 'Literal':
-        case 'Identifier':
-        case 'UpdateExpression':
-        case 'ThisExpression':
-        case 'EmptyStatement':
-        case 'ContinueStatement':
-        case 'BreakStatement':
-        case 'ReturnStatement':
-        case 'ThrowStatement':
-          return [];
-
-        default:
-          throw 'Unknown node type "' + node.type + '"\n' +
-            'Data: ' + this.formatNode(node) + '\n\n' +
-            'Report this to https://github.com/dtao/autodoc/issues';
-      }
-    },
-
-    formatNode: function(node) {
-      var keys = Lazy(node).map(function(value, key) {
-        return (value && value.type) ? (key + ':' + value.type) : key;
-      });
-
-      return node.type + ' (' + keys.join(', ') + ')';
     }
   });
 
@@ -247,6 +142,135 @@
   };
 
   /**
+   * Visits every node in an AST and assigns each a `parent` property, which
+   * references the parent node in the structure of the AST.
+   *
+   * @param {Object} node The node in the AST to traverse.
+   */
+  Autodoc.assignParents = function(node) {
+    var children = Autodoc.getNodeChildren(node);
+
+    Lazy(children).compact().each(function(child) {
+      child.parent = node;
+      Autodoc.assignParents(child);
+    });
+  };
+
+  /**
+   * Returns an array of all the nodes directly underneath the current node in
+   * an AST.
+   *
+   * @param {Object} node
+   * @returns {Array.<*>} The node's direct children.
+   */
+  Autodoc.getNodeChildren = function(node) {
+    switch (node.type) {
+      case 'Program':
+      case 'BlockStatement':
+        return node.body;
+
+      case 'FunctionDeclaration':
+      case 'FunctionExpression':
+        return [node.body];
+
+      case 'IfStatement':
+        return [node.consequent, node.alternate];
+
+      case 'ForStatement':
+      case 'ForInStatement':
+      case 'WhileStatement':
+      case 'DoWhileStatement':
+      case 'LabeledStatement':
+      case 'WithStatement':
+        return [node.body];
+
+      case 'SwitchStatement':
+        return node.cases;
+
+      case 'SwitchCase':
+        return node.consequent;
+
+      case 'ExpressionStatement':
+        return [node.expression];
+
+      case 'TryStatement':
+        return [node.block];
+
+      case 'AssignmentExpression':
+        return [node.right];
+
+      case 'CallExpression':
+        return [node.callee];
+
+      case 'ConditionalExpression':
+        return [node.consequent, node.alternate];
+
+      case 'ObjectExpression':
+        return node.properties;
+
+      case 'ArrayExpression':
+        return node.elements;
+
+      case 'MemberExpression':
+        return node.object.type === 'FunctionExpression' ? [node.object] : [];
+
+      case 'NewExpression':
+        return [node.callee];
+
+      case 'UnaryExpression':
+        return [node.argument];
+
+      case 'BinaryExpression':
+        return [node.left, node.right];
+
+      case 'LogicalExpression':
+        return [node.left, node.right];
+
+      case 'Property':
+        return [node.key, node.value];
+
+      case 'VariableDeclaration':
+        return node.declarations;
+
+      case 'VariableDeclarator':
+        return [node.init];
+
+      // The basic idea here is that unless a node could POSSIBLY include
+      // (potentially deep down somewhere) a function declaration/expression,
+      // we'll treat it as having no children.
+      case 'Literal':
+      case 'Identifier':
+      case 'UpdateExpression':
+      case 'ThisExpression':
+      case 'EmptyStatement':
+      case 'ContinueStatement':
+      case 'BreakStatement':
+      case 'ReturnStatement':
+      case 'ThrowStatement':
+        return [];
+
+      default:
+        throw 'Unknown node type "' + node.type + '"\n' +
+          'Data: ' + Autodoc.formatNode(node) + '\n\n' +
+          'Report this to https://github.com/dtao/autodoc/issues';
+    }
+  };
+
+  /**
+   * Provides a useful string representation of a node.
+   *
+   * @param {Object} node
+   * @returns {string}
+   */
+  Autodoc.formatNode = function(node) {
+    var keys = Lazy(node).map(function(value, key) {
+      return (value && value.type) ? (key + ':' + value.type) : key;
+    });
+
+    return node.type + ' (' + keys.join(', ') + ')';
+  };
+
+  /**
    * Parses an arbitrary blob of JavaScript code and returns an object
    * containing all of the data necessary to generate a project website with
    * docs, specs, and performance benchmarks.
@@ -270,6 +294,9 @@
       loc: true,
       range: true
     });
+
+    // Give each node a reference to its parent (useful).
+    Autodoc.assignParents(ast);
 
     // This is kind of stupid... for now, I'm just assuming the library will
     // have a @fileOverview tag and @name tag in the header comments.
@@ -916,6 +943,10 @@
         return Autodoc.getIdentifierName(node.left, alreadyVisited);
 
       case 'MemberExpression':
+        if (node.parent && node.parent.type !== 'AssignmentExpression') {
+          return null;
+        }
+
         return (
           Autodoc.getIdentifierName(node.object, alreadyVisited) + '.' +
           (node.computed ? node.property.value : Autodoc.getIdentifierName(node.property, alreadyVisited))

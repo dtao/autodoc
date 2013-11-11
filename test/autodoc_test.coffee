@@ -15,13 +15,19 @@ parseFile = (filePath) ->
 parseExampleFile = (fileName) ->
   parseFile('example/' + fileName)
 
-getASTFromFile = (fileName) ->
-  js = fs.readFileSync(path.join(__dirname, '..', fileName), 'utf-8')
-  ast = esprima.parse js,
+getASTFromSource = (source) ->
+  ast = esprima.parse source,
     comment: true
     loc: true
     range: true
-  [ast, js]
+
+  Autodoc.assignParents(ast)
+
+  [ast, source]
+
+getASTFromFile = (fileName) ->
+  source = fs.readFileSync(path.join(__dirname, '..', fileName), 'utf-8')
+  getASTFromSource(source)
 
 describe 'Autodoc', ->
   describe '#parseComment', ->
@@ -32,7 +38,9 @@ describe 'Autodoc', ->
 
   describe 'getIdentifierName', ->
     parse = (code) ->
-      esprima.parse(code).body[0]
+      ast = esprima.parse(code)
+      Autodoc.assignParents(ast)
+      ast.body[0]
 
     it 'gets the name of a function declaration', ->
       node = parse('function foo() {}')
@@ -45,6 +53,15 @@ describe 'Autodoc', ->
     it 'gets the name of an object member assigned a function expression', ->
       node = parse('foo.bar = function() {}')
       Autodoc.getIdentifierName(node).should.eql('foo.bar')
+
+    it 'does not infer a name from a call expression on an anonymous function', ->
+      [ast, source] = getASTFromSource('(function() {}).call()')
+
+      node = ast.body[0] # ExpressionStatement
+        .expression      # CallExpression
+        .callee          # MemberExpression
+
+      should(Autodoc.getIdentifierName(node)).eql(null)
 
     it 'replaces ".prototype." with "#"', ->
       node = parse('Foo.prototype.bar = function() {}')
