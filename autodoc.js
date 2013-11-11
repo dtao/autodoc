@@ -314,7 +314,7 @@
     // the @public tag, we'll use that as a hint that only those methods tagged
     // @public should be included. Otherwise include everything.
     if (this.tags.length === 0) {
-      if (Lazy(docs).any(function(doc) { return doc.isPublic; })) {
+      if (Lazy(functions).any('isPublic')) {
         this.tags.push('public');
       }
     }
@@ -437,9 +437,7 @@
           })
           .toArray();
 
-        namespace.hasExamples = Lazy(namespace.allMembers).any(function(member) {
-          return member.hasExamples;
-        });
+        namespace.hasExamples = Lazy(namespace.allMembers).any('hasExamples');
       });
 
       libraryInfo.docs = Lazy(libraryInfo.docs)
@@ -1224,9 +1222,9 @@
       members: members,
       privateMembers: privateMembers,
       allMembers: allMembers,
-      hasExamples: Lazy(allMembers).any(function(m) { return m.hasExamples; }),
-      hasBenchmarks: Lazy(allMembers).any(function(m) { return m.hasBenchmarks; }),
-      excludeFromDocs: (namespace === '') || Lazy(allMembers).all(function(m) { return m.excludeFromDocs; })
+      hasExamples: Lazy(allMembers).any('hasExamples'),
+      hasBenchmarks: Lazy(allMembers).any('hasBenchmarks'),
+      excludeFromDocs: (namespace === '') || Lazy(allMembers).all('excludeFromDocs')
     };
   };
 
@@ -1267,9 +1265,7 @@
         property   = node.left.property,
         identifier = node.right;
 
-    if (!Lazy([object, property, identifier]).all(function(node) {
-      return node.type === 'Identifier';
-    })) {
+    if (!Lazy([object, property, identifier]).all({ type: 'Identifier' })) {
       return null;
     }
 

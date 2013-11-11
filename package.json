@@ -26,7 +26,7 @@
     "doctrine": "git://github.com/dtao/doctrine.git",
     "esprima": "*",
     "jasmine-node": "*",
-    "lazy.js": ">= 0.1.2",
+    "lazy.js": ">= 0.2.0",
     "marked": "*",
     "mustache": ">= 0.7.2",
     "string-table": ">= 0.1.5"
