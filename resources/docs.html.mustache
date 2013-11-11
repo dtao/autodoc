@@ -159,6 +159,13 @@
                     {{/hasBenchmarks}}
 
                     <script type="text/javascript">
+                      {{#privateMembers}}
+                      var {{shortName}} = {{{source}}};
+                      {{#methods}}
+                      {{longName}} = {{{source}}};
+                      {{/methods}}
+                      {{/privateMembers}}
+
                       {{> examples}}
                       {{> benchmarks}}
                     </script>
