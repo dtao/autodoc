@@ -369,7 +369,7 @@
     // Group by namespace so that we can keep the functions organized.
     var functionsByNamespace = Lazy(functions)
       .groupBy(function(fn) {
-        return fn.namespace || fn.shortName;
+        return fn.namespace || '[private]';
       })
       .toObject();
 
