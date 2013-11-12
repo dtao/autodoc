@@ -1081,13 +1081,16 @@
    * @returns {string}
    */
   Autodoc.getSignature = function(name, params) {
-    var formattedParams = '(' + Lazy(params).pluck('name').join(', ') + ')';
+    var formattedParams = '(' + Lazy(params).pluck('name').join(', ') + ')',
+        signature;
 
     if (name.name === name.shortName) {
-      return 'function ' + name.shortName + formattedParams;
+      signature = 'function ' + name.shortName + formattedParams;
     } else {
-      return name.namespace + '.' + name.shortName + ' = function' + formattedParams;
+      signature = name.namespace + '.' + name.shortName + ' = function' + formattedParams;
     }
+
+    return signature + ' { /*...*/ }';
   };
 
   /**
