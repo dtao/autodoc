@@ -369,7 +369,13 @@
     // Group by namespace so that we can keep the functions organized.
     var functionsByNamespace = Lazy(functions)
       .groupBy(function(fn) {
-        return fn.namespace || '[private]';
+        if(fn.namespace) {
+          return fn.namespace;
+        } else if (fn.isGlobal) {
+          return fn.shortName;
+        } else {
+          return '[private]';
+        }
       })
       .toObject();
 
@@ -610,6 +616,7 @@
         isCtor      = Autodoc.hasTag(doc, 'constructor'),
         isStatic    = nameInfo.name.indexOf('#') === -1, // That's right, hacky smacky
         isPublic    = Autodoc.hasTag(doc, 'public'),
+        isGlobal    = fn.parent.type === 'Program',
         isPrivate   = Autodoc.hasTag(doc, 'private'),
         signature   = Autodoc.getSignature(nameInfo, params),
         examples    = this.getExamples(doc),
@@ -626,6 +633,7 @@
       params: params,
       returns: returns,
       isConstructor: isCtor,
+      isGlobal: isGlobal,
       isStatic: isStatic,
       isPublic: isPublic,
       isPrivate: isPrivate,

@@ -16,6 +16,16 @@ function Foo() {};
  * @returns {string}
  */
 Foo.getName = function() {
+
+  /**
+   * This is some documentation
+   *
+   * @returns {string}
+   */
+  function privateFunction() {
+    return 'this is a private function but it still needs documentation';
+  }
+
   return 'foo';
 };
 
