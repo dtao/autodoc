@@ -369,13 +369,7 @@
     // Group by namespace so that we can keep the functions organized.
     var functionsByNamespace = Lazy(functions)
       .groupBy(function(fn) {
-        if(fn.namespace) {
-          return fn.namespace;
-        } else if (fn.isGlobal) {
-          return fn.shortName;
-        } else {
-          return '[private]';
-        }
+        return fn.isPrivate ? '[private]' : (fn.namespace || fn.shortName);
       })
       .toObject();
 
@@ -1310,7 +1304,7 @@
       allMembers: allMembers,
       hasExamples: Lazy(allMembers).any('hasExamples'),
       hasBenchmarks: Lazy(allMembers).any('hasBenchmarks'),
-      excludeFromDocs: (namespace === '') || Lazy(allMembers).all('excludeFromDocs')
+      excludeFromDocs: (namespace === '[private]') || Lazy(allMembers).all('excludeFromDocs')
     };
   };
 

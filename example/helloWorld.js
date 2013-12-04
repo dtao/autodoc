@@ -20,6 +20,7 @@ Foo.getName = function() {
   /**
    * This is some documentation
    *
+   * @private
    * @returns {string}
    */
   function privateFunction() {
