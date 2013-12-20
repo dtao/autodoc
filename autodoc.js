@@ -861,11 +861,11 @@
           };
         })
         .groupBy('name')
-        .map(function(group) {
+        .map(function(cases, name) {
           return {
             id: benchmarkIdCounter++,
-            name: group[0],
-            cases: group[1]
+            name: name,
+            cases: cases
           }
         })
         .toArray();
