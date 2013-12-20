@@ -604,7 +604,7 @@
    */
   Autodoc.prototype.createFunctionInfo = function(fn, doc, source) {
     var nameInfo    = Autodoc.parseName(Autodoc.getIdentifierName(fn) || '', doc),
-        description = this.markdownParser.parse(doc.description),
+        description = this.parseMarkdown(doc.description),
         params      = this.getParams(doc),
         returns     = this.getReturns(doc),
         isCtor      = Autodoc.hasTag(doc, 'constructor'),
@@ -659,7 +659,7 @@
    *     objects.
    */
   Autodoc.prototype.getParams = function(doc) {
-    var markdownParser = this.markdownParser;
+    var self = this;
 
     return Lazy(doc.tags)
       .where({ title: 'param' })
@@ -667,7 +667,7 @@
         return {
           name: tag.name,
           type: Autodoc.formatType(tag.type),
-          description: markdownParser.parse(tag.description || '')
+          description: self.parseMarkdown(tag.description || '')
         };
       })
       .toArray();
@@ -695,7 +695,7 @@
 
     return {
       type: Autodoc.formatType(returnTag.type),
-      description: this.markdownParser.parse(returnTag.description || '')
+      description: this.parseMarkdown(returnTag.description || '')
     };
   };
 
@@ -744,7 +744,7 @@
 
     return {
       name: libraryName,
-      description: this.markdownParser.parse(libraryDesc)
+      description: this.parseMarkdown(libraryDesc)
     };
   };
 
@@ -897,6 +897,20 @@
         return '<span class="line" data-line-no="' + i + '">' + line + '</span>';
       })
       .join('\n');
+  };
+
+  /**
+   * Parses Markdown + does syntax highlighting (maybe).
+   */
+  Autodoc.prototype.parseMarkdown = function(markdown) {
+    var self = this;
+
+    return this.markdownParser.parse(markdown, {
+      gfm: true,
+      highlight: function(code) {
+        return self.highlightCode(code);
+      }
+    });
   };
 
   /**

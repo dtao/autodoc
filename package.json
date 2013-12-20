@@ -27,7 +27,7 @@
     "esprima": "*",
     "jasmine-node": "*",
     "lazy.js": ">= 0.2.0",
-    "marked": "*",
+    "marked": ">= 0.2.10",
     "mustache": ">= 0.7.2",
     "string-table": ">= 0.1.5"
   },
