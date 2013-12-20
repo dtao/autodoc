@@ -78,6 +78,8 @@ _commander
   .option('-o, --output <destination>', 'specify an output directory (defaults to "autodoc")')
   .option('--language <language>', 'specify the library language: either javascript (default) or coffeescript')
   .option('--template <path>', 'use a custom Mustache template')
+  .option('--handlers <path>', 'specify a path to a custom handlers file')
+  .option('--partials <path>', 'specify a folder containing additional Mustache partials')
   .option('--namespaces <names>', 'provide a comma-separated list of the namespaces to document (defaults to all, in alphabetical order)', argToList)
   .option('--javascripts <sources>', 'specify additional JS dependencies (comma-separated)', argToList)
   .option('--tags <tag>', 'only use the methods tagged with the specified tag')
@@ -96,7 +98,8 @@ if (process.argv.length <= 2) {
 var filePath        = process.argv.pop(),
     sourceCode      = readFile(filePath),
     outputDir       = _commander.output || 'autodoc',
-    handlersPath    = path.join(outputDir, 'handlers.js'),
+    handlersPath    = _commander.handlers || path.join(outputDir, 'handlers.js'),
+    partialsDir     = _commander.partials || outputDir,
     handlersExists  = fileExists(handlersPath),
     equalityPath    = path.join(outputDir, 'assertEquality.js'),
     equalityExists  = fileExists(equalityPath),
@@ -134,13 +137,10 @@ global.exampleHandlers = defaults.exampleHandlers;
 
 var resourcesDir = path.join(__dirname, '../resources');
 options.templatePartials = _Lazy(readPartialsFromFolder(resourcesDir))
-  .extend(readPartialsFromFolder(outputDir))
+  .extend(readPartialsFromFolder(partialsDir))
   .toObject();
 
 if (handlersExists) {
-  // First of all, include it in the actual docs HTML.
-  options.javascripts.push('handlers.js');
-
   // Also require it locally.
   global.exampleHandlers = require(path.join(process.cwd(), handlersPath)).exampleHandlers
     .concat(global.exampleHandlers);
