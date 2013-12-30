@@ -54,7 +54,7 @@ Now we can also use Autodoc to quickly race these two implementations against on
 
 ![Benchmarks screenshot](http://breakneck.danieltao.com/images/benchmarks_screenshot.png)
 
-All righty. Let's say we're completely delusional and actually think this library is useful, so we want to share it with the world. We'll add some simple comments describing what each function does and wrap the library up in a semi-reasonable way so it runs in either Node or the browser:
+All righty. Let's say we're completely delusional and actually think this library is useful, so we want to share it with the world. We'll add some simple comments describing what each function does, remove the `@private` tags, and wrap the library up in a semi-reasonable way so it runs in either Node or the browser:
 
 ```javascript
 /**
