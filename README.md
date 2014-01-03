@@ -26,7 +26,7 @@ function isInteger(x) {
 }
 ```
 
-Notice the `@private` tag. This is necessary because we're doing nothing to expose this function (i.e., there's no `module.exports` for Node); so it lets Autodoc know: "Hey, this function is private but I want to test it anyway."
+Notice the `@private` tag. This is necessary because we're doing nothing to expose this function (i.e., there's no `module.exports` for Node); so it lets Autodoc know: "Hey, this function is not exposed publicly but I want to test it anyway."
 
 Now, without doing anything else, right away we can use Autodoc to test this function against our examples.
 
