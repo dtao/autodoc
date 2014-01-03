@@ -8,7 +8,8 @@ var fs   = require('fs'),
 // just mean Autodoc, clearly).
 var _Autodoc   = require(path.join(__dirname, '../autodoc-node')),
     _Lazy      = require('lazy.js'),
-    _commander = require('commander');
+    _commander = require('commander'),
+    _resolve   = require('resolve');
 
 // Read package info from package.json -- just one less thing to keep track of.
 var packagePath = path.join(__dirname, '../package.json'),
@@ -33,7 +34,7 @@ function argToGlobals(arg) {
     .map(function(library, variable) {
       return {
         variable: variable,
-        library: library
+        library: _resolve.sync(library, { basedir: process.cwd() })
       };
     })
     .toArray();
