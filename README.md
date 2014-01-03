@@ -32,7 +32,18 @@ Now, without doing anything else, right away we can use Autodoc to test this fun
 
     $ autodoc --test --verbose numbers.js
 
-![Specs screenshot](http://breakneck.danieltao.com/images/specs_screenshot.png)
+    [private]
+
+        isInteger
+            isInteger(5) => true
+            isInteger(5.0) => true
+            isInteger(-5) => true
+            isInteger(3.14) => false
+            isInteger('foo') => false
+            isInteger(NaN) => false
+
+    Finished in 0.006 seconds
+    6 tests, 6 assertions, 0 failures, 0 skipped
 
 OK, sweet. Now let's say we've just thought up another possible implementation. Let's add that to the file:
 
@@ -52,7 +63,15 @@ Now we can also use Autodoc to quickly race these two implementations against on
 
     $ autodoc --perf numbers.js
 
-![Benchmarks screenshot](http://breakneck.danieltao.com/images/benchmarks_screenshot.png)
+    isIntegerLike - using Math.floor   x 112  - 2,157,257.568 ops/second
+    isIntegerLike - using RegExp: ^d+$ x 104  - 1,820,548.837 ops/second
+
+    Results:
+
+    | Function      | Benchmark          | Ops/second    |
+    ------------------------------------------------------
+    | isIntegerLike | using Math.floor   | 2,157,257.568 |
+    | isIntegerLike | using RegExp: ^d+$ | 1,820,548.837 |
 
 All righty. Let's say we're completely delusional and actually think this library is useful, so we want to share it with the world. We'll add some simple comments describing what each function does, remove the `@private` tags, and wrap the library up in a semi-reasonable way so it runs in either Node or the browser:
 
