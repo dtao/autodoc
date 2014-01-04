@@ -113,6 +113,11 @@ describe 'Autodoc', ->
         .findWhere({ shortName: shortName })
         .name
 
+    listPrivateFunctions = (data) ->
+      Lazy(data.privateMembers)
+        .pluck('name')
+        .toArray()
+
     describe '"helloWorld.js" example', ->
       data = parseExampleFile('helloWorld.js')
 
@@ -153,8 +158,18 @@ describe 'Autodoc', ->
       it 'respects the @memberOf tag for the purpose of naming functions', ->
         getMemberName(data, 'parse').should.eql 'R.numbers.parse'
 
-    describe '"module.js example', ->
+    describe '"module.js" example', ->
       data = parseExampleFile('module.js')
 
       it 'takes reference name from the module.exports line, if there is one', ->
         data.referenceName.should.eql 'Module'
+
+    describe 'a library defined in a function passed as a parameter to an IIFE', ->
+      data = parseExampleFile('genieTest.js')
+
+      # Not sure how else to describe this!
+      it 'is able to find the namespaces', ->
+        listNamespaces(data).should.eql ['Genie', '[private]']
+
+      it 'is able to find the private functions', ->
+        listPrivateFunctions(data).should.eql ['baz']

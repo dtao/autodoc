@@ -200,7 +200,7 @@
         return [node.right];
 
       case 'CallExpression':
-        return [node.callee];
+        return [node.callee].concat(node.arguments);
 
       case 'ConditionalExpression':
         return [node.consequent, node.alternate];
