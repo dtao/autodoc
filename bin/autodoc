@@ -48,6 +48,15 @@ function readFile(filePath) {
   return fs.readFileSync(filePath, 'utf-8');
 }
 
+function writeFile(destination, content) {
+  var directory = path.dirname(destination);
+  if (!fileExists(directory)) {
+    fs.mkdirSync(directory);
+  }
+
+  fs.writeFileSync(destination, content);
+}
+
 function readPartialsFromFolder(folder) {
   if (!fileExists(folder)) {
     return {};
@@ -79,7 +88,7 @@ function inferLanguage(fileName) {
 
 _commander
   .version(packageInfo.version)
-  .usage('[options] [file]')
+  .usage('[options] file[,file2,file3,...]')
   .option('-t, --test', 'run tests')
   .option('-p, --perf', 'run performance benchmarks')
   .option('-d, --dump', 'dump data to console and exit')
@@ -104,8 +113,7 @@ if (process.argv.length <= 2) {
   process.exit();
 }
 
-var filePath        = process.argv.pop(),
-    sourceCode      = readFile(filePath),
+var filePaths       = argToList(process.argv.pop()),
     outputDir       = _commander.output || 'autodoc',
     handlersPath    = _commander.handlers || path.join(outputDir, 'handlers.js'),
     partialsDir     = _commander.partials || outputDir,
@@ -122,9 +130,14 @@ options.grep        = _commander.grep;
 options.javascripts = _commander.javascripts || [];
 options.language    = _commander.language || inferLanguage(filePath);
 
+// TODO: This is just straight up wrong. I shouldn't be treating the first file
+// as THE library file. But... that's what I'm doing for now, because it will
+// sort of work...
+var filePath        = filePaths[0],
+    libraryFileName = path.basename(filePath);
+
 // Always include a reference to the library itself.
 // Down below, we'll copy the library to the output folder.
-var libraryFileName = path.basename(filePath);
 if (!_Lazy(options.javascripts).contains(libraryFileName)) {
   if (options.language === 'coffeescript') {
     options.javascripts.push('http://coffeescript.org/extras/coffee-script.js');
@@ -177,7 +190,28 @@ if (docHelperExists) {
   options.javascripts.push('doc_helper.js');
 }
 
-var libraryInfo = _Autodoc.parse(sourceCode, options);
+var libraryInfo = _Lazy(filePaths)
+  .map(function(filePath) {
+    var sourceCode = readFile(filePath);
+    return _Autodoc.parse(sourceCode, options);
+  })
+  .reduce(function(mergedInfo, info) {
+    var push = Array.prototype.push;
+
+    _Lazy(info.namespaces).each(function(namespace) {
+      var existingNamespace = _Lazy(mergedInfo.namespaces).findWhere({
+        namespace: namespace.namespace
+      });
+
+      if (existingNamespace) {
+        push.apply(existingNamespace.allMembers, namespace.allMembers);
+        push.apply(existingNamespace.members, namespace.members);
+      } else {
+        mergedInfo.namespaces.push(namespace);
+      }
+    });
+    return mergedInfo;
+  });
 
 options.extraOptions.variable = _commander.variable ||
   libraryInfo.referenceName || '__lib__';
@@ -223,16 +257,7 @@ function generateDocs() {
 
   options.template = readFile(templatePath);
 
-  var docsHtml = _Autodoc.generate(sourceCode, options);
-
-  function writeFile(destination, content) {
-    var directory = path.dirname(destination);
-    if (!fileExists(directory)) {
-      fs.mkdirSync(directory);
-    }
-
-    fs.writeFileSync(destination, content);
-  }
+  var docsHtml = _Autodoc.generate(libraryInfo, options);
 
   writeFile(path.join(outputDir, 'index.html'), docsHtml);
 
@@ -251,7 +276,7 @@ function generateDocs() {
   copyFile(path.join(__dirname, '../resources/javascripts/utils.js'), path.join(outputDir, 'utils.js'), true);
   copyFile(path.join(__dirname, '../resources/javascripts/docs.js'), path.join(outputDir, 'docs.js'), true);
   copyFile(path.join(__dirname, '../resources/javascripts/defaults.js'), path.join(outputDir, 'defaults.js'), true);
-  copyFile(filePath, path.join(outputDir, libraryFileName));
+  _Lazy(filePaths).each(function(filePath) { copyFile(filePath, path.join(outputDir, path.basename(filePath))); });
 
   console.log('Docs written to ' + outputDir + '/');
 
