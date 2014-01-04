@@ -355,13 +355,13 @@
     // Only include documentation for functions with the specified tag(s), if
     // provided.
     if (this.tags.length > 0) {
-      Lazy(functions).each(function(doc) {
+      Lazy(functions).each(function(fn) {
         var hasTag = Lazy(autodoc.tags).any(function(tag) {
-          return Lazy(doc.tags).contains(tag);
+          return Lazy(fn.tags).contains(tag);
         });
 
         if (!hasTag) {
-          doc.excludeFromDocs = true;
+          fn.excludeFromDocs = true;
         }
       });
     }
