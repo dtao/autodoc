@@ -116,7 +116,7 @@ var filePath        = process.argv.pop(),
     docHelperExists = fileExists(docHelperPath);
 
 var options         = _Autodoc.options;
-options.namespace   = _commander.namespaces;
+options.namespaces  = _commander.namespaces;
 options.tags        = _commander.tags;
 options.grep        = _commander.grep;
 options.javascripts = _commander.javascripts || [];
