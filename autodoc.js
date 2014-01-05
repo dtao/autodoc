@@ -1242,6 +1242,9 @@
       case 'FunctionType':
         return 'function(' + Lazy(type.params).map(Autodoc.formatType).join(', ') + '):' + Autodoc.formatType(type.result);
 
+      case 'ArrayType':
+        return type.elements;
+
       default:
         throw 'Unable to format type ' + type.type + '!\n\n' + JSON.stringify(type, null, 2);
     }
