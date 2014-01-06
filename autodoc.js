@@ -1212,6 +1212,8 @@
    * @returns {string}
    */
   Autodoc.formatType = function(type) {
+    if (!type) { return '*'; }
+
     switch (type.type) {
       case 'NameExpression':
         return type.name;
