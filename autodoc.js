@@ -376,7 +376,7 @@
     // Only include specified namespaces, if the option has been provided.
     // Otherwise use all namespaces.
     if (this.namespaces.length === 0) {
-      this.namespaces = Object.keys(functionsByNamespace);
+      this.namespaces = Object.keys(functionsByNamespace).sort();
     }
 
     var namespaces = Lazy(this.namespaces)
@@ -1308,6 +1308,7 @@
     // Private members can be elevated to some visible scope when running tests.
     var privateMembers = Lazy(allMembers)
       .filter('isPrivate')
+      .sortBy('name')
       .toArray();
 
     // Decorate these docs w/ a meaningful "type" (this is more useful than just
