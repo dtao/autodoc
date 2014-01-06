@@ -1245,6 +1245,9 @@
       case 'ArrayType':
         return type.elements;
 
+      case 'NullableType':
+        return '?' + Autodoc.formatType(type.expression);
+
       default:
         throw 'Unable to format type ' + type.type + '!\n\n' + JSON.stringify(type, null, 2);
     }
