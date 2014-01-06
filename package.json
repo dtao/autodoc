@@ -23,7 +23,7 @@
     "codemirror-highlight": ">= 1.1.1",
     "coffee-script": ">= 1.6.1",
     "commander": "*",
-    "doctrine": ">= 0.1.0",
+    "doctrine": "git://github.com/dtao/doctrine.git",
     "esprima": "*",
     "jasmine-node": "*",
     "lazy.js": "git://github.com/dtao/lazy.js.git",
