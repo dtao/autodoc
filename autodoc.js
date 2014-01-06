@@ -795,7 +795,7 @@
     var self = this,
         exampleIdCounter = 1;
 
-    return Autodoc.parseCommentLines(doc, 'examples', function(data) {
+    return Autodoc.parseCommentLines(doc, ['examples', 'example'], function(data) {
       return {
         code: data.content,
         highlightedCode: self.highlightCode(data.content),
@@ -1123,17 +1123,17 @@
    */
 
   /**
-   * Takes a doclet and a tag name, then reads all of the lines from that tag
-   * and splits them across '=>', finally calling a callback on each left/right
-   * pair. (Does that make any sense? Whatever.)
+   * Takes a doclet and a tag name (or list of tag names), then reads all of the
+   * lines from that tag and splits them across '=>', finally calling a callback
+   * on each left/right pair. (Does that make any sense? Whatever.)
    *
    * @param {Object} doc
-   * @param {string} tagName
+   * @param {string|string[]} tagNames
    * @param {DataCallback} callback
    * @returns {Array.<*>} An array of whatever the callback returns.
    */
-  Autodoc.parseCommentLines = function(doc, tagName, callback) {
-    var comment      = Autodoc.getTagDescription(doc, tagName),
+  Autodoc.parseCommentLines = function(doc, tagNames, callback) {
+    var comment      = Autodoc.getTagDescription(doc, tagNames),
         commentLines = comment.split('\n'),
         initialLines = [],
         pairs        = [];
@@ -1162,11 +1162,19 @@
    * Gets the text from a given comment tag.
    *
    * @param {Object} doc
-   * @param {string} tagName
+   * @param {string|string[]} tagNames
    * @returns {string}
    */
-  Autodoc.getTagDescription = function(doc, tagName) {
-    var tag = Lazy(doc.tags).findWhere({ title: tagName });
+  Autodoc.getTagDescription = function(doc, tagNames) {
+    var tag;
+
+    if (!(tagNames instanceof Array)) {
+      tagNames = [tagNames];
+    }
+
+    for (var i = 0, len = tagNames.length; !tag && (i < len); ++i) {
+      tag = Lazy(doc.tags).findWhere({ title: tagNames[i] });
+    }
 
     if (typeof tag === 'undefined') {
       return '';

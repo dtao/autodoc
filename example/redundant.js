@@ -79,7 +79,7 @@ R.objects = {
    * @param {Object} object The object whose keys you want to get.
    * @returns {Array.<string>} The keys of the object.
    *
-   * @examples
+   * @example
    * R.objects.keys({ foo: 1, bar: 2 }) // => ['foo', 'bar']
    *
    * @benchmarks
