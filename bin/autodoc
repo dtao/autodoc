@@ -234,6 +234,10 @@ function runTests() {
 
   var examplesJs = _Autodoc.generate(libraryInfo, options);
 
+  if (_commander.dump) {
+    console.log(examplesJs);
+  }
+
   eval(examplesJs);
 
   return examplesJs;
@@ -246,12 +250,20 @@ function runBenchmarks() {
 
   var benchmarksJs = _Autodoc.generate(libraryInfo, options);
 
+  if (_commander.dump) {
+    console.log(benchmarksJs);
+  }
+
   eval(benchmarksJs);
 
   return benchmarksJs;
 }
 
 function generateDocs() {
+  if (_commander.dump) {
+    console.log(JSON.stringify(libraryInfo, null, 2));
+  }
+
   var templatePath = _commander.template ||
     path.join(__dirname, '../resources/docs.html.mustache');
 
@@ -284,25 +296,13 @@ function generateDocs() {
 }
 
 if (_commander.test) {
-  var examplesJs = runTests();
-
-  if (_commander.dump) {
-    console.log(examplesJs);
-  }
+  runTests();
 }
 
 if (_commander.perf) {
-  var perfJs = runBenchmarks();
-
-  if (_commander.dump) {
-    console.log(perfJs);
-  }
+  runBenchmarks();
 }
 
 if (!(_commander.test || _commander.perf)) {
   generateDocs();
-
-  if (_commander.dump) {
-    console.log(JSON.stringify(libraryInfo, null, 2));
-  }
 }
