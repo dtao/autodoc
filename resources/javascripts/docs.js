@@ -62,6 +62,16 @@ window.addEventListener('load', function() {
     }, 1500);
   });
 
+  $(document).on('click', '.reveal-source', function(e) {
+    e.preventDefault();
+
+    var link = $(this);
+    var target = $(link.attr('href'));
+
+    link.closest('pre').hide();
+    target.show();
+  });
+
   $(document).on('click', '.perf button', function() {
     var button = $(this);
     var suite  = new Benchmark.Suite();

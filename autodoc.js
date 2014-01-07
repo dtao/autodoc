@@ -618,6 +618,7 @@
    * @property {BenchmarkCollection} benchmarks
    * @property {Array.<string>} tags
    * @property {string} source
+   * @property {string} highlightedSource
    */
 
   /**
@@ -661,13 +662,14 @@
       isPrivate: isPrivate,
       hasSignature: params.length > 0 || !!returns,
       signature: signature,
-      highlightedSignature: this.highlightCode(signature),
+      highlightedSignature: insertSignatureLink(this.highlightCode(signature), nameInfo.identifier),
       examples: examples,
       hasExamples: examples.list.length > 0,
       benchmarks: benchmarks,
       hasBenchmarks: benchmarks.list.length > 0,
       tags: tags,
-      source: source
+      source: source,
+      highlightedSource: this.highlightCode(source)
     };
   };
 
@@ -1593,6 +1595,14 @@
         return postprocess(parseMethod.apply(parser, arguments));
       }
     };
+  }
+
+  /**
+   * Updates the HTML representing a function's signature by replacing the '...'
+   * with a link to the full source.
+   */
+  function insertSignatureLink(html, identifier) {
+    return html.replace('/*...*/', '<a class="reveal-source" href="#source-' + identifier + '">/*...*/</a>');
   }
 
   if (typeof module !== 'undefined' && module.exports) {

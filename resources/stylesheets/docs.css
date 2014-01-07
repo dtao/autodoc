@@ -6378,6 +6378,8 @@ table th p, table td p {
 
 .signature table tfoot tr {
   background-color: #b1c2c6; }
+.signature pre.function-source {
+  display: none; }
 
 .perf {
   position: relative; }
