@@ -226,6 +226,9 @@
       case 'LogicalExpression':
         return [node.left, node.right];
 
+      case 'SequenceExpression':
+        return node.expressions;
+
       case 'Property':
         return [node.key, node.value];
 
