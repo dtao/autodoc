@@ -196,7 +196,8 @@ describe 'Autodoc', ->
     it 'can read @typedefs', ->
       getTypeDef(data, 'TypeInfo').should.eql {
         name: 'TypeInfo',
-        description: 'A custom type defined by a library.',
+        identifier: 'TypeInfo',
+        description: '<p>A custom type defined by a library.</p>\n',
         properties: [
           {
             name: 'name',
