@@ -174,6 +174,10 @@ describe 'Autodoc', ->
         keysExamples[0].should.have.property('actual', 'R.objects.keys({ foo: 1, bar: 2 })')
         keysExamples[0].should.have.property('expected', "['foo', 'bar']")
 
+      it 'supports multiline expectations', ->
+        insertExamples = listExamplesForMember(data, 'insert')
+        insertExamples[1].should.have.property('expected', "[{\n  foo: 'bar'\n}]")
+
     describe '"module.js" example', ->
       data = parseExampleFile('module.js')
 

@@ -1225,22 +1225,43 @@
     var comment      = Autodoc.getTagDescription(doc, tagNames),
         commentLines = comment.split('\n'),
         initialLines = [],
-        pairs        = [];
+        pairs        = [],
+        currentPair  = null;
 
     Lazy(commentLines)
       .each(function(line, i) {
+        // Allow multiline expectations as long as subsequent lines are indented
+        if ((/^\s+/).test(line) && currentPair) {
+          currentPair.right += '\n' + line;
+          currentPair.isMultiline = true;
+          return;
+        }
+
         var pair = Autodoc.parsePair(line);
 
         if (!pair && pairs.length === 0) {
           initialLines.push(line);
 
         } else if (pair) {
+          // Join pairs that actually take up two lines, like:
+          // actual();
+          // => expectation
           if (!pair.left) {
             pair.left = (pairs.length > 0 ? commentLines[i - 1] : initialLines.pop()) || '';
           }
 
           pair.lineNumber = i;
           pairs.push(pair);
+
+          currentPair = pair;
+
+        } else {
+          // Allow one final unindented line at the end of a multiline
+          // expectation.
+          if (currentPair && currentPair.isMultiline) {
+            currentPair.right += '\n' + line;
+          }
+          currentPair = null;
         }
       });
 
