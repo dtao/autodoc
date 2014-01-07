@@ -308,11 +308,12 @@
     // Extract all of the functions from the AST, and map them to their location
     // in the code (this is so that we can associate each function with its
     // accompanying doc comments, if any).
-    var functions = Lazy(ast.body).nodes()
+    var functionsByLine = Lazy(ast.body).nodes()
       .filter(function(node) {
         return node.type === 'FunctionDeclaration' || node.type === 'FunctionExpression';
       })
       .groupBy(function(node) { return node.loc.start.line; })
+      .map(function(list, line) { return [line, list[0]]; })
       .toObject();
 
     // Go through all of of the comments in the AST, attempting to associate
@@ -320,19 +321,10 @@
     var functions = Lazy(ast.comments)
       .map(function(comment) {
         // Find the function right after this comment. If none exists, skip it.
-        var fn = functions[comment.loc.end.line + 1];
+        var fn = functionsByLine[comment.loc.end.line + 1];
         if (typeof fn === 'undefined') {
           return null;
         }
-
-        // We did a 'groupBy', so fn is actually an array. That said, it almost
-        // certainly (or totally certainly?) contains exactly one element.
-        // Unless two functions have been declared on the same line. (But who
-        // would do such a thing?)
-        //
-        // ...I guess this is a use case for accepting a callback for toObject
-        // in Lazy.js, huh?
-        fn = fn[0];
 
         // Attempt to parse the comment. If it can't be parsed, or it appears to
         // be basically empty, then skip it.
