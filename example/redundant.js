@@ -55,7 +55,8 @@ R.arrays.clone = function(array) {
  * @returns {Array.<*>} The array with the element inserted.
  *
  * @examples
- * R.arrays.insert([1, 2], 1, 'foo') // => [1, 'foo', 2]
+ * R.arrays.insert([1, 2], 1, 'foo')
+ * // => [1, 'foo', 2]
  *
  * @benchmarks
  * R.arrays.insert([1, 2, 3, 4, 5], 2, 'foo') // redundant.js

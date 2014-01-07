@@ -1149,6 +1149,10 @@
           initialLines.push(line);
 
         } else if (pair) {
+          if (!pair.left) {
+            pair.left = (pairs.length > 0 ? commentLines[i - 1] : initialLines.pop()) || '';
+          }
+
           pair.lineNumber = i;
           pairs.push(pair);
         }
@@ -1200,19 +1204,25 @@
    * Autodoc.parsePair(' bar(baz) //=> 10 ') // => { left: 'bar(baz)', right: '10' }
    * Autodoc.parsePair('foo // => bar')      // => { left: 'foo', right: 'bar' }
    * Autodoc.parsePair('foo // bar')         // => { left: 'foo', right: 'bar' }
+   * Autodoc.parsePair('// => 5')            // => { left: '', right: '5' }
    * Autodoc.parsePair('// bar')             // => null
    * Autodoc.parsePair('foo //')             // => null
    */
   Autodoc.parsePair = function(line) {
-    var parts = line.match(/^\s*([^\s].*)\s*\/\/\s*(?:=>)?\s*([^\s].*)$/);
+    var parts = line.match(/^\s*(.*)\s*\/\/\s*(=>)?\s*([^\s].*)$/);
 
     if (!parts) {
       return null;
     }
 
+    // The => is only optional for single-line pairs.
+    if (!parts[1] && !parts[2]) {
+      return null;
+    }
+
     return {
       left: trim(parts[1]),
-      right: trim(parts[2])
+      right: trim(parts[3])
     };
   };
 
