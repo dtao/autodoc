@@ -738,7 +738,7 @@
     return {
       identifier: name,
       name: name,
-      description: description,
+      description: this.parseMarkdown(description),
       properties: properties
     };
   };
