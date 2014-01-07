@@ -42,6 +42,7 @@
         <div class="layout">
             <div class="index">
                 <nav>
+                    <h2>Namespaces</h2>
                     <ul>
                         {{#namespaces}}
                         {{^excludeFromDocs}}
@@ -55,16 +56,27 @@
                         </li>
                         {{#members}}
                         {{^excludeFromDocs}}
-                        <li><a href="#{{identifier}}">{{shortName}}</a></li>
+                        <li><a href="#{{identifier}}" class="{{descriptor}}">{{shortName}}</a></li>
                         {{/excludeFromDocs}}
                         {{/members}}
                         {{/excludeFromDocs}}
                         {{/namespaces}}
                     </ul>
+
+                    <h2>Types</h2>
+                    <ul>
+                        {{#types}}
+                        <li><a href="#{{identifier}}">{{name}}</a></li>
+                        {{/types}}
+                    </ul>
                 </nav>
             </div>
 
             <article>
+                {{#types}}
+                {{> typeSection}}
+                {{/types}}
+
                 {{#namespaces}}
                 {{#allMembers}}
                 {{^excludeFromDocs}}

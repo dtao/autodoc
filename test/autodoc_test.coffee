@@ -29,6 +29,40 @@ getASTFromFile = (fileName) ->
   source = fs.readFileSync(path.join(__dirname, '..', fileName), 'utf-8')
   getASTFromSource(source)
 
+listNamespaces = (data) ->
+  Lazy(data.namespaces)
+    .pluck('namespace')
+    .toArray()
+
+listMembersForNamespace = (data, namespace) ->
+  members = Lazy(data.namespaces)
+    .findWhere({ namespace: namespace })
+    .members
+
+  Lazy(members)
+    .pluck('shortName')
+    .toArray()
+
+getMemberName = (data, shortName) ->
+  Lazy(data.docs)
+    .findWhere({ shortName: shortName })
+    .name
+
+listExamplesForMember = (data, shortName) ->
+  Lazy(data.docs)
+    .findWhere({ shortName: shortName })
+    .examples
+    .list
+
+listPrivateFunctions = (data) ->
+  Lazy(data.privateMembers)
+    .pluck('name')
+    .toArray()
+
+getTypeDef = (data, typeName) ->
+  Lazy(data.types)
+    .findWhere({ name: typeName })
+
 describe 'Autodoc', ->
   describe '#parseComment', ->
     it 'does NOT wrap comment text in /* and */ before passing to doctrine', ->
@@ -94,36 +128,6 @@ describe 'Autodoc', ->
       )
 
   describe 'parse', ->
-    listNamespaces = (data) ->
-      Lazy(data.namespaces)
-        .pluck('namespace')
-        .toArray()
-
-    listMembersForNamespace = (data, namespace) ->
-      members = Lazy(data.namespaces)
-        .findWhere({ namespace: namespace })
-        .members
-
-      Lazy(members)
-        .pluck('shortName')
-        .toArray()
-
-    getMemberName = (data, shortName) ->
-      Lazy(data.docs)
-        .findWhere({ shortName: shortName })
-        .name
-
-    listExamplesForMember = (data, shortName) ->
-      Lazy(data.docs)
-        .findWhere({ shortName: shortName })
-        .examples
-        .list
-
-    listPrivateFunctions = (data) ->
-      Lazy(data.privateMembers)
-        .pluck('name')
-        .toArray()
-
     describe '"helloWorld.js" example', ->
       data = parseExampleFile('helloWorld.js')
 
@@ -185,3 +189,29 @@ describe 'Autodoc', ->
 
       it 'is able to find the private functions', ->
         listPrivateFunctions(data).should.eql ['baz']
+
+  describe 'on Autodoc', ->
+    data = parseFile('autodoc.js')
+
+    it 'can read @typedefs', ->
+      getTypeDef(data, 'TypeInfo').should.eql {
+        name: 'TypeInfo',
+        description: 'A custom type defined by a library.',
+        properties: [
+          {
+            name: 'name',
+            type: 'string',
+            description: ''
+          },
+          {
+            name: 'description',
+            type: 'string',
+            description: ''
+          },
+          {
+            name: 'properties',
+            type: 'Array.<PropertyInfo>',
+            description: ''
+          }
+        ]
+      }

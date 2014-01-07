@@ -418,6 +418,20 @@
         null;
     }
 
+    var typeDefs = Lazy(ast.comments)
+      .filter(function(comment) {
+        return (/@typedef\b/).test(comment.value);
+      })
+      .map(function(comment) {
+        var doc = autodoc.parseComment(comment);
+        if (typeof doc === 'undefined') {
+          return null;
+        }
+
+        return autodoc.createTypeInfo(doc);
+      })
+      .toArray();
+
     // TODO: Make this code a little more agnostic about the whole namespace
     // thing. I'm pretty sure there are plenty of libraries that don't use
     // this pattern at all.
@@ -428,7 +442,8 @@
       code: code,
       namespaces: namespaces,
       docs: functions,
-      privateMembers: privateMembers
+      privateMembers: privateMembers,
+      types: typeDefs
     };
   };
 
@@ -650,14 +665,15 @@
    * parameters of a function definition.
    *
    * @param {Object} doc The doclet for the function.
+   * @param {string=} tagName The name of the tag to find (default: 'param').
    * @returns {Array.<ParameterInfo>} An array of { name, type, description }
    *     objects.
    */
-  Autodoc.prototype.getParams = function(doc) {
+  Autodoc.prototype.getParams = function(doc, tagName) {
     var self = this;
 
     return Lazy(doc.tags)
-      .where({ title: 'param' })
+      .where({ title: tagName || 'param' })
       .map(function(tag) {
         return {
           name: tag.name,
@@ -691,6 +707,39 @@
     return {
       type: Autodoc.formatType(returnTag.type),
       description: this.parseMarkdown(returnTag.description || '')
+    };
+  };
+
+  /**
+   * A custom type defined by a library.
+   *
+   * @typedef {object} TypeInfo
+   * @property {string} name
+   * @property {string} description
+   * @property {Array.<PropertyInfo>} properties
+   */
+
+  /**
+   * @typedef {Object} PropertyInfo
+   * @property {string} name
+   * @property {string} type
+   * @property {string} description
+   */
+
+  /**
+   * Get a { name, properties } object representing a type defined w/ the
+   * @typedef tag.
+   */
+  Autodoc.prototype.createTypeInfo = function(doc) {
+    var description = doc.description,
+        name = Autodoc.getTagDescription(doc, 'typedef'),
+        properties = this.getParams(doc, 'property');
+
+    return {
+      identifier: name,
+      name: name,
+      description: description,
+      properties: properties
     };
   };
 

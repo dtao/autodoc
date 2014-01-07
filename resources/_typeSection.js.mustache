@@ -1,0 +1,25 @@
+<section class="typedef" id="{{identifier}}">
+    <h1>{{name}}</h1>
+
+    {{{description}}}
+
+    <div class="properties">
+        <h3>Properties</h3>
+
+        <table>
+            <tr>
+                <th>Name</th>
+                <th>Type</th>
+                <th>Description</th>
+            </tr>
+
+            {{#properties}}
+            <tr>
+                <td>{{name}}</td>
+                <td>{{type}}</td>
+                <td>{{description}}</td>
+            </tr>
+            {{/properties}}
+        </table>
+    </div>
+</section>
