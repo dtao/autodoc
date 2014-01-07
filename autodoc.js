@@ -38,6 +38,8 @@
   });
 
   /**
+   * An object responsible for parsing source code into an AST.
+   *
    * @typedef {Object} Parser
    * @property {function(string):*} parse
    */
@@ -49,11 +51,17 @@
    */
 
   /**
+   * An object responsible for rendering HTML templates. Autodoc currently
+   * assumes a decidedly Mustache-like engine. Maybe someday this will be more
+   * abstract, with adapters and whatnot.
+   *
    * @typedef {Object} TemplateEngine
    * @property {function(string, Object):string} render
    */
 
   /**
+   * All of the options Autodoc supports.
+   *
    * @typedef {Object} AutodocOptions
    * @property {Parser|function(string):*} codeParser
    * @property {Parser|function(string):*} commentParser
@@ -107,12 +115,16 @@
   Autodoc.options = {};
 
   /**
+   * An object describing a library, including its namespaces and custom types
+   * as well as private/internal members.
+   *
    * @typedef {Object} LibraryInfo
    * @property {string} name
    * @property {string} referenceName
    * @property {string} description
    * @property {string} code
    * @property {Array.<NamespaceInfo>} namespaces
+   * @property {Array.<TypeInfo>} types
    * @property {Array.<FunctionInfo>} privateMembers
    */
 
@@ -120,6 +132,7 @@
    * Creates a Autodoc instance with the specified options and uses it to
    * parse the given code.
    *
+   * @public
    * @param {string} code The JavaScript code to parse.
    * @param {AutodocOptions=} options
    * @returns {LibraryInfo}
@@ -132,6 +145,7 @@
    * Creates a Autodoc instance with the specified options and uses it to
    * generate HTML documentation from the given code.
    *
+   * @public
    * @param {LibraryInfo|string} source Either the already-parsed library data
    *     (from calling {@link #parse}), or the raw source code.
    * @param {AutodocOptions} options
@@ -428,6 +442,10 @@
           return null;
         }
 
+        if (!Lazy(doc.tags).any({ title: 'typedef' })) {
+          return null;
+        }
+
         return autodoc.createTypeInfo(doc);
       })
       .toArray();
@@ -720,6 +738,8 @@
    */
 
   /**
+   * A property of a type defined by a {@link TypeInfo} object.
+   *
    * @typedef {Object} PropertyInfo
    * @property {string} name
    * @property {string} type
@@ -736,14 +756,16 @@
         properties = this.getParams(doc, 'property');
 
     return {
-      identifier: name,
       name: name,
+      identifier: name,
       description: this.parseMarkdown(description),
       properties: properties
     };
   };
 
   /**
+   * High-level info about a library, namely its name and a brief description.
+   *
    * @typedef LibrarySummary
    * @property {string} name
    * @property {string} description
@@ -812,6 +834,9 @@
   };
 
   /**
+   * Represents a single code example illustrating how a function works,
+   * including an expectation as well as an actual (relative) source location.
+   *
    * @typedef {Object} ExampleInfo
    * @property {number} id
    * @property {number} lineNumber
@@ -822,6 +847,9 @@
    */
 
   /**
+   * A collection of {@link ExampleInfo} objects, with an optional block of
+   * setup code and some additional properties.
+   *
    * @typedef {Object} ExampleCollection
    * @property {string} code
    * @property {string} highlightedCode
@@ -859,6 +887,8 @@
   };
 
   /**
+   * Represents a single benchmark case.
+   *
    * @typedef {Object} BenchmarkCase
    * @property {number} caseId
    * @property {string} impl
@@ -867,6 +897,10 @@
    */
 
   /**
+   * Represents a performance benchmark, which should illustrate a single piece
+   * of functionality with one or more *cases* to compare different
+   * implementations.
+   *
    * @typedef {Object} BenchmarkInfo
    * @property {number} id
    * @property {string} name
@@ -874,6 +908,9 @@
    */
 
   /**
+   * A collection of {@link BenchmarkInfo} objects, each of which illustrates a
+   * single piece of functionality with one or more cases each.
+   *
    * @typedef {Object} BenchmarkCollection
    * @property {string} code
    * @property {string} highlightedCode
@@ -1040,6 +1077,9 @@
   };
 
   /**
+   * Contains various representations (e.g., short, full) of the *name* of a
+   * function.
+   *
    * @typedef {Object} NameInfo
    * @property {string} name
    * @property {string} shortName
@@ -1154,6 +1194,9 @@
   };
 
   /**
+   * Represents an abstract left/right pair, which can be used e.g. as the basis
+   * for an {@link ExampleInfo}.
+   *
    * @typedef PairInfo
    * @property {number} lineNumber
    * @property {string} left
@@ -1318,6 +1361,10 @@
   };
 
   /**
+   * Represents a bunch of information about a *namespace*, which is either a
+   * function or an object with multiple members, forming one of the larger
+   * pieces of a library.
+   *
    * @typedef {Object} NamespaceInfo
    * @property {string} namespace
    * @property {FunctionInfo} constructorMethod
@@ -1330,9 +1377,10 @@
 
   /**
    * Finds all of the functions in a library belonging to a certain namespace
-   * and creates a { namespace, constructorMethod, members, allMembers } object
-   * from each, with members sorted in a UI-friendly order.
+   * and creates a {@link NamespaceInfo} object from each, with members sorted
+   * in a UI-friendly order.
    *
+   * @public
    * @param {Object.<string, Array.<FunctionInfo>>} docs
    * @param {string} namespace
    * @returns {NamespaceInfo}
