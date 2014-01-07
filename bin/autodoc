@@ -159,6 +159,7 @@ global.exampleHandlers = defaults.exampleHandlers;
 
 var resourcesDir = path.join(__dirname, '../resources');
 options.templatePartials = _Lazy(readPartialsFromFolder(resourcesDir))
+  .extend(readPartialsFromFolder(path.join(resourcesDir, 'handlers')))
   .extend(readPartialsFromFolder(partialsDir))
   .toObject();
 
