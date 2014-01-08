@@ -1544,7 +1544,8 @@
    * @return {string} Just the source code for the function itself.
    */
   Autodoc.getFunctionSource = function(node, code) {
-    return String.prototype.substring.apply(code, node.range);
+    var substring = String.prototype.substring.apply(code, node.range);
+    return unindent(substring);
   };
 
   /**
@@ -1618,6 +1619,83 @@
 
     return [string.substring(0, seam), string.substring(seam + divider.length)];
   };
+
+  /**
+   * Unindents a multiline string based on the indentation level of the least-
+   * indented line.
+   *
+   * @private
+   * @param {string} string The string to unindent.
+   * @param {boolean} skipFirstLine Whether or not to skip the first line for
+   *     the purpose of determining proper indentation (defaults to `true`).
+   * @returns {string} A new string that has effectively been unindented.
+   *
+   * @examples
+   * unindent('foo\n  bar\n  baz');   // => 'foo\nbar\nbaz'
+   * unindent('foo\n  bar\n    baz'); // => 'foo\nbar\n  baz'
+   * unindent('foo\n\n  bar\n  baz'); // => 'foo\n\nbar\nbaz'
+   * unindent('foo\n\n  bar\n baz');  // => 'foo\n\n bar\nbaz'
+   */
+  function unindent(string, skipFirstLine) {
+    var lines     = string.split('\n'),
+        skipFirst = typeof skipFirstLine !== 'undefined' ? skipFirstLine : true,
+        start     = skipFirst ? 1 : 0;
+
+    var indentation, smallestIndentation = Infinity;
+    for (var i = start, len = lines.length; i < len; ++i) {
+      if (isBlank(lines[i])) {
+        continue;
+      }
+
+      indentation = getIndentation(lines[i]);
+      if (indentation < smallestIndentation) {
+        smallestIndentation = indentation;
+      }
+    }
+
+    var result = [lines[0]]
+      .concat(
+        lines
+          .slice(1)
+          .map(function(line) { return decreaseIndent(line, smallestIndentation); })
+      )
+      .join('\n');
+
+    return result;
+  }
+
+  /**
+   * Determines how much a line is indented.
+   *
+   * @private
+   * @param {string} line The line to look at.
+   * @returns {number} The number of spaces the line is indented.
+   *
+   * @examples
+   * getIndentation('');      // => 0
+   * getIndentation('  bar'); // => 2
+   */
+  function getIndentation(line) {
+    return line.match(/^(\s*)/)[1].length;
+  }
+
+  /**
+   * Decreases the indentation of a line.
+   *
+   * @private
+   * @param {string} line The line whose indentation you want to decrease.
+   * @param {number} amount The number of spaces the given line's indentation
+   *     should be decreased.
+   * @returns {string} A new string with less indentation than the given one.
+   *
+   * @examples
+   * decreaseIndent('  foo', 2);   // => 'foo'
+   * decreaseIndent('    foo', 2); // => '  foo'
+   * decreaseIndent('', 2);        // => ''
+   */
+  function decreaseIndent(line, amount) {
+    return line.substring(amount);
+  }
 
   /**
    * Determines if a string is empty or consists only of whitespace.
