@@ -143,7 +143,7 @@ If you have a comment at the top of your file with the `@name` tag, Autodoc will
 
 ### Specs
 
-Use the `@examples` tag to define specs above any function:
+Use the `@examples` (or just `@example`) tag to define specs above any function:
 
 ```javascript
 /**
@@ -181,6 +181,38 @@ Autodoc supports the following syntaxes for defining assertions:
 
     // Calling foo(callback) should call callback() twice asynchronously
     foo(callback) // calls callback 2 times asynchronously
+
+#### Example Helpers
+
+Any setup code you write before your first example will be included in the output. For instance:
+
+```javascript
+/**
+ * @private
+ * @examples
+ * var num = 5,
+ *     str = '5';
+ *
+ * isInteger(num)          // => true
+ * isInteger(str)          // => false
+ * isInteger(Number(str)); // => true
+ */
+function isInteger(x) {
+  return x === Math.floor(x);
+}
+```
+
+In some cases you may find that you have multiple functions that all share the same setup code. It can be tedious to rewrite it every time; so for shared setup code that you want to provide to all examples, include the `@exampleHelpers` tag in *any* of your comments and it will be made available:
+
+```javascript
+/**
+ * @exampleHelpers
+ * var num = 5,
+ *     str = '5';
+ */
+```
+
+Note that in the above example, what this means is that the variables `num` and `str` will be defined and visible (essentially global) to all your examples.
 
 #### Custom Handlers
 
