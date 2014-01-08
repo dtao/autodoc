@@ -3,12 +3,12 @@ Autodoc
 
 [![Build Status](https://travis-ci.org/dtao/autodoc.png)](https://travis-ci.org/dtao/autodoc)
 
-Autodoc helps you keep your JavaScript project nice and simple. You can write tests and benchmarks in your comments, run them from the command line and auto-generate documentation with those same tests executing right in the browser.
+Autodoc lets you write tests in comments just above your JavaScript functions, then run those tests from the command line and auto-generate documentation with the same tests embedded and executing right in the browser.
 
 Introduction
 ------------
 
-Here, let's play Show Don't Tell. We'll start with something simple: a function that checks whether a value is an integer. We'll define the function in a file called **numbers.js** and write out a bunch of example cases in a block comment:
+Here, we'll start with something simple: a function that checks whether a value is an integer. We'll define the function in a file called **numbers.js** and write out a bunch of example cases in a block comment:
 
 ```javascript
 /**
@@ -26,7 +26,7 @@ function isInteger(x) {
 }
 ```
 
-Notice the `@private` tag. This is necessary because we're doing nothing to expose this function (i.e., there's no `module.exports` for Node); so it lets Autodoc know: "Hey, this function is not exposed publicly but I want to test it anyway."
+Notice the `@private` tag. This is necessary because we're doing nothing to expose this function (i.e., there's no `module.exports` for Node); so it lets Autodoc know: "This function is not exposed publicly but I want to test it anyway."
 
 Now, without doing anything else, right away we can use Autodoc to test this function against our examples.
 
@@ -124,12 +124,12 @@ You can change which folder you want this stuff dumped to w/ the `-o` or `--outp
 
 To spice up your API docs with some custom JavaScript, add a file called **doc_helper.js** to the output folder. Autodoc will automatically detect it there and add a `<script>` tag referencing it to the resulting HTML. You can add other arbitrary JavaScript files by providing a comma-delimited list via the `--javascripts` option.
 
-You can create your own **docs.css** file, or modify the one Autodoc puts there, and Autodoc will not overwrite it. You can also specify your own template (currently only Mustache templates are supported, though that will change) using the `--template` option. This way you can give your docs a unique look. (Note that if you're using your own template, some other features are not guaranteed to work; e.g., Autodoc will not magically know where to add `<script>` tags linking to **doc_helper.js** or other custom JavaScript files. You'd need to put those into your custom template yourself.)
+You can also specify your own template (currently only Mustache templates are supported, though that will change) using the `--template` option. This way you can give your docs a unique look. (Note that if you're using your own template, some other features are not guaranteed to work; e.g., Autodoc will not magically know where to add `<script>` tags linking to **doc_helper.js** or other custom JavaScript files. You'd need to put those into your custom template yourself.)
 
 Other Options
 -------------
 
-To only generate documentation for functions with certain tags, you can specify those tags as a comma-separated list via the `--tags` option. By default, *if* you don't specify any tags, but your comments do include some functions with the `@public` tag, then Autodoc will assume you only want those public methods included in the API docs. Otherwise it will include everything in the docs. (Think this is a stupid idea? [Let me know!](https://github.com/dtao/autodoc/issues/new))
+To only generate documentation for functions with certain tags, you can specify those tags as a comma-separated list via the `--tags` option. By default, if you *don't* specify any tags, but your comments *do* include some functions with the `@public` tag, then Autodoc will assume you only want those public methods included in the API docs. Otherwise it will include everything in the docs. (Think this is a stupid idea? [Let me know!](https://github.com/dtao/autodoc/issues/new))
 
 If you just want to run specs for certain methods you can use the `--grep` option, which does just what you think.
 
@@ -173,6 +173,9 @@ Autodoc supports the following syntaxes for defining assertions:
     // Calling foo() should throw an exception
     foo() // throws
 
+    // Calling foo() should return NaN
+    foo() // NaN
+
     // Calling foo(callback) should in turn call callback() exactly once
     foo(callback) // calls callback 1 time
 
@@ -181,7 +184,7 @@ Autodoc supports the following syntaxes for defining assertions:
 
 #### Custom Handlers
 
-You can provide custom handlers if you need to do something a little more advanced. To do this, add a file called **handlers.js** to your output folder (whatever you specified with `-o`, or **autodoc** by default) and in it define an `exampleHandlers` array that looks like this:
+You can provide custom handlers if you need to do something a little more advanced. To do this, specify a path to custom handlers file with the `--handlers` option, and define an `exampleHandlers` array that looks like this:
 
 ```javascript
 this.exampleHandlers = [
@@ -197,9 +200,11 @@ this.exampleHandlers = [
 ];
 ```
 
-For every example in your comments, the expected output (the part to the right of `// =>`) will first be checked against all of your custom handlers (in order) to see if there's a match.
+For every example in your comments, the expected output (the part to the right of `// =>`) will first be checked against all of your custom handlers (in order) to see if there's a match. This means that if you can want you can override Autodoc's defaults.
 
-The `template` property should name a Mustache template file in your output folder following the naming convention "_[template name].js.mustache" (so the example above would require two files, "_template1.js.mustache" and "_template2.js.mustache"). The data passed to the template property will include the properties `{ actual, actualEscaped, expected, expectedEscaped, match }`.
+The `template` property of each matcher should name a Mustache template file following the naming convention "_[template name].js.mustache" (so the example above would require two files, "_template1.js.mustache" and "_template2.js.mustache"). You can specify where these templates are locate with the `--partials` option; otherwise, Autodoc will look in the output folder.
+
+The data passed to the `template` property will include the properties `{ actual, actualEscaped, expected, expectedEscaped, match }`.
 
 - `actual`: The literal string taken directly from the comment on the left of the `// =>`
 - `actualEscaped`: An escaped version of `actual` suitable for, e.g., putting inside a JavaScript string in your template
@@ -224,9 +229,11 @@ this.exampleHandlers = [
 ];
 ```
 
-In this case the output from your function will be passed into your template instead of `match`.
+In this case the output from your function (a `{ foo, bar }` object in the example above) will be passed into your template instead of `match`.
 
 ### Benchmarks
+
+This feature isn't really a focus right now, to be honest. At the moment I'm mainly concentrating on the test running and document generation. But anyway, the preliminary functionality is there.
 
 Use the `@benchmarks` tag to specify cases you want to profile for performance. The format is similar to `@examples`:
 
