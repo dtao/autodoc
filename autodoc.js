@@ -812,18 +812,24 @@
       })
       .first();
 
-    var libraryName = '',
+    var libraryNameTag,
+        libraryName = '',
         libraryDesc = '';
 
     if (docWithFileOverview) {
       libraryDesc = Lazy(docWithFileOverview.tags).findWhere({ title: 'fileOverview' }).description;
 
-      var libraryNameTag = Lazy(docWithFileOverview.tags).findWhere({ title: 'name' });
+      libraryNameTag = Lazy(docWithFileOverview.tags).findWhere({ title: 'name' });
       if (libraryNameTag) {
         libraryName = libraryNameTag.description;
       }
 
     } else if (docs.length > 0) {
+      libraryNameTag = Lazy(docs[0].tags).findWhere({ title: 'name' });
+      if (libraryNameTag) {
+        libraryName = libraryNameTag.description;
+      }
+
       libraryDesc = docs[0].description;
     }
 
