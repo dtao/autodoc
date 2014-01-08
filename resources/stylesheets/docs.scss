@@ -33,6 +33,18 @@ header {
   }
 }
 
+.search {
+  @extend .row;
+
+  fieldset {
+    @extend .col-lg-12;
+
+    input {
+      @extend .form-control;
+    }
+  }
+}
+
 .layout {
   @extend .row;
 

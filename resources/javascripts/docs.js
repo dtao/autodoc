@@ -62,6 +62,21 @@ window.addEventListener('load', function() {
     }, 1500);
   });
 
+  $(document).on('keyup', 'input[name="search"]', function() {
+    var query = $(this).val(),
+        sections = $('section.constructor,section.method,section.typedef');
+
+    // Show all sections for a blank query.
+    if (query.match(/^\s*$/)) {
+      sections.show();
+      return;
+    }
+
+    // Otherwise just show sections whose name matches the query.
+    sections.hide();
+    $('section[id^="' + query + '"],section[id^="type-' + query + '"]').show();
+  });
+
   $(document).on('click', '.reveal-source', function(e) {
     e.preventDefault();
 
