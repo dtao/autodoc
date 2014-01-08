@@ -6369,7 +6369,8 @@ nav {
       margin-left: -15px; }
 
 section.constructor:nth-of-type(n+2),
-section.method:nth-of-type(n+2) {
+section.method:nth-of-type(n+2),
+section.typedef:nth-of-type(n+2) {
   border-top: 1px solid #ddd;
   margin-top: 50px; }
 
