@@ -124,6 +124,7 @@
    * @property {string} description
    * @property {string} code
    * @property {Array.<NamespaceInfo>} namespaces
+   * @property {boolean} hasTypes
    * @property {Array.<TypeInfo>} types
    * @property {Array.<FunctionInfo>} privateMembers
    */
@@ -461,6 +462,7 @@
       namespaces: namespaces,
       docs: functions,
       privateMembers: privateMembers,
+      hasTypes: typeDefs.length > 0,
       types: typeDefs
     };
   };

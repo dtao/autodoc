@@ -63,20 +63,18 @@
                         {{/namespaces}}
                     </ul>
 
+                    {{#hasTypes}}
                     <h2>Types</h2>
                     <ul>
                         {{#types}}
                         <li><a href="#{{identifier}}">{{name}}</a></li>
                         {{/types}}
                     </ul>
+                    {{/hasTypes}}
                 </nav>
             </div>
 
             <article>
-                {{#types}}
-                    {{> typeSection}}
-                {{/types}}
-
                 {{#namespaces}}
                 {{#allMembers}}
                 {{^excludeFromDocs}}
@@ -188,6 +186,10 @@
                 {{/excludeFromDocs}}
                 {{/allMembers}}
                 {{/namespaces}}
+
+                {{#types}}
+                    {{> typeSection}}
+                {{/types}}
             </article>
         </div>
     </main>
