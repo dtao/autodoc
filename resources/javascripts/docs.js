@@ -6,7 +6,7 @@ window.addEventListener('load', function() {
 
     jasmineEnv.addReporter({
       reportSpecResults: function(spec) {
-        var editorId       = 'source-' + spec.suiteId,
+        var editorId       = 'examples-' + spec.suiteId,
             matchingEditor = document.getElementById(editorId);
 
         var style = spec.results().passed() ? 'passed' : 'failed';
