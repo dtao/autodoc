@@ -192,6 +192,11 @@ describe 'Autodoc', ->
           mapExamples[2].should.have.property('expected', '[1, 3]')
           mapExamples[3].should.have.property('actual', "[[], [1, 2], 'foo', { length: 'bar' }].map(function(obj) {\n  return obj.length;\n});")
 
+      # dangerous territory here, I know
+      it 'ignores superfluous "var" declarations', ->
+        cloneExamples = listExamplesForMember(data, 'clone')
+        cloneExamples.pop().should.have.property('actual', 'R.arrays.clone(arr2);')
+
     describe '"module.js" example', ->
       data = parseExampleFile('module.js')
 

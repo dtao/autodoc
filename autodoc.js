@@ -875,13 +875,22 @@
         highlightedCode: self.highlightCode(data.content),
         setup: self.compileSnippet(data.preamble),
         list: Lazy(data.pairs).map(function(pair) {
+          // Snip out any leading 'var x = ' before the actual expression.
+          // Why? Because this is going to get injected into a template, and
+          // we don't want to have 'var result = var x = '.
+          //
+          // To be fair, there's probably a better approach. I'll leave figuring
+          // that out as an exercise to my future self.
+          var actual   = pair.left.replace(/^\s*var\s*\w+\s*=\s*/, ''),
+              expected = pair.right;
+
           return {
             id: exampleIdCounter++,
             lineNumber: pair.lineNumber,
-            actual: self.compileSnippet(pair.left),
-            actualEscaped: Autodoc.escapeJsString(pair.left),
-            expected: pair.right,
-            expectedEscaped: Autodoc.escapeJsString(pair.right)
+            actual: self.compileSnippet(actual),
+            actualEscaped: Autodoc.escapeJsString(actual),
+            expected: expected,
+            expectedEscaped: Autodoc.escapeJsString(expected)
           };
         }).toArray()
       };

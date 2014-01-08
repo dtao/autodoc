@@ -34,6 +34,8 @@ var R = {
  * R.arrays.clone([1, 2, 3]) // => [1, 2, 3]
  * R.arrays.clone(null)      // throws
  *
+ * var arr3 = R.arrays.clone(arr2); // => ['foo']
+ *
  * @benchmarks
  * R.arrays.clone([1, 2, 3, 4, 5]) // redundant.js
  * [1, 2, 3, 4, 5].slice(0)        // native
