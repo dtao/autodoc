@@ -74,7 +74,19 @@ window.addEventListener('load', function() {
 
     // Otherwise just show sections whose name matches the query.
     sections.hide();
-    $('section[data-filter^="' + query + '"]').show();
+
+    var selectors = [
+      // Exact prefix match
+      'section[data-name^="' + query + '"]',
+
+      // Case-insensitive prefix match
+      'section[data-filter^="' + query.toLowerCase() + '"]',
+
+      // Case-insensitive infix match
+      'section[data-filter*="-' + query.toLowerCase() + '"]'
+    ];
+
+    $(selectors.join(',')).show();
   });
 
   $(document).on('click', '.reveal-source', function(e) {

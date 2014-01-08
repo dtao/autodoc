@@ -680,6 +680,7 @@
       name: nameInfo.name,
       shortName: nameInfo.shortName,
       longName: nameInfo.longName,
+      searchName: hyphenate(nameInfo.name),
       identifier: nameInfo.identifier,
       namespace: nameInfo.namespace,
       description: description,
@@ -795,6 +796,7 @@
     return {
       name: name,
       identifier: 'type-' + name,
+      searchName: hyphenate(name),
       description: this.parseMarkdown(description),
       properties: properties,
       tags: tags
@@ -1649,6 +1651,38 @@
    */
   function trim(string) {
     return string.replace(/^\s+/, '').replace(/\s+$/, '');
+  }
+
+  /**
+   * Converts a string like 'fooBar' to 'foo-bar'.
+   *
+   * @private
+   * @param {string} string The string to convert.
+   * @returns {string} The same string, but hyphenated rather than camelCased.
+   *
+   * @examples
+   * hyphenate('fooBarBaz');      // => 'foo-bar-baz'
+   * hyphenate('Foo123Bar');      // => 'foo123-bar'
+   * hyphenate('XMLHttpRequest'); // => 'xml-http-request'
+   */
+  function hyphenate(string) {
+    var matcher  = /[^A-Z]([A-Z])|([A-Z])[^A-Z]/g,
+        tokens   = [],
+        position = 0,
+        index, match;
+
+    while (match = matcher.exec(string)) {
+      index = typeof match[1] === 'string' ? match.index + 1 : match.index;
+      if (position === index) { continue; }
+      tokens.push(string.substring(position, index).toLowerCase());
+      position = index;
+    }
+    
+    if (position < string.length) {
+      tokens.push(string.substring(position).toLowerCase());
+    }
+    
+    return tokens.join('-');
   }
 
   /**
