@@ -107,7 +107,7 @@
     }
   }
 
-  Autodoc.VERSION = '0.5.4';
+  Autodoc.VERSION = '0.5.5';
 
   /**
    * Default Autodoc options. (See autodoc-node.js)
