@@ -309,7 +309,7 @@ function generateDocs() {
   copyFile(path.join(__dirname, '../resources/javascripts/utils.js'), path.join(outputDir, 'utils.js'), true);
   copyFile(path.join(__dirname, '../resources/javascripts/docs.js'), path.join(outputDir, 'docs.js'), true);
   copyFile(path.join(__dirname, '../resources/javascripts/defaults.js'), path.join(outputDir, 'defaults.js'), true);
-  _Lazy(filePaths).each(function(filePath) { copyFile(filePath, path.join(outputDir, path.basename(filePath))); });
+  _Lazy(filePaths).each(function(filePath) { copyFile(filePath, path.join(outputDir, path.basename(filePath)), true); });
 
   console.log('Docs written to ' + outputDir + '/');
 
