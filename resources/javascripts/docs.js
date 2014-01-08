@@ -63,7 +63,7 @@ window.addEventListener('load', function() {
   });
 
   $(document).on('keyup', 'input[name="search"]', function() {
-    var query = $(this).val(),
+    var query = $(this).val().toLowerCase(),
         sections = $('section.constructor,section.method,section.typedef');
 
     // Show all sections for a blank query.
@@ -76,14 +76,14 @@ window.addEventListener('load', function() {
     sections.hide();
 
     var selectors = [
-      // Exact prefix match
+      // Case-insensitive prefix match
       'section[data-name^="' + query + '"]',
 
-      // Case-insensitive prefix match
-      'section[data-filter^="' + query.toLowerCase() + '"]',
+      // Acronym prefix match
+      'section[data-acronym^="' + query + '"]',
 
-      // Case-insensitive infix match
-      'section[data-filter*="-' + query.toLowerCase() + '"]'
+      // "Infix" (really prefix-of-part) match
+      'section[data-filter*="-' + query + '"]'
     ];
 
     $(selectors.join(',')).show();

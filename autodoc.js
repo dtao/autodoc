@@ -680,7 +680,9 @@
       name: nameInfo.name,
       shortName: nameInfo.shortName,
       longName: nameInfo.longName,
-      searchName: hyphenate(nameInfo.name),
+      lowerCaseName: nameInfo.shortName.toLowerCase(),
+      searchName: hyphenate(nameInfo.shortName),
+      acronym: acronym(nameInfo.name),
       identifier: nameInfo.identifier,
       namespace: nameInfo.namespace,
       description: description,
@@ -796,7 +798,9 @@
     return {
       name: name,
       identifier: 'type-' + name,
+      lowerCaseName: name.toLowerCase(),
       searchName: hyphenate(name),
+      acronym: acronym(name),
       description: this.parseMarkdown(description),
       properties: properties,
       tags: tags
@@ -1654,6 +1658,40 @@
   }
 
   /**
+   * Splits apart a camelCased string.
+   *
+   * @private
+   * @param {string} string The string to split.
+   * @returns {Array.<string>} An array containing the parts of the string.
+   *
+   * @examples
+   * splitCamelCase('fooBarBaz');      // => ['foo', 'bar', 'baz']
+   * splitCamelCase('Foo123Bar');      // => ['foo123', 'bar']
+   * splitCamelCase('XMLHttpRequest'); // => ['xml', 'http', 'request']
+   */
+  function splitCamelCase(string) {
+    var matcher  = /[^A-Z]([A-Z])|([A-Z])[^A-Z]/g,
+        tokens   = [],
+        position = 0,
+        index, match;
+
+    string || (string = '');
+
+    while (match = matcher.exec(string)) {
+      index = typeof match[1] === 'string' ? match.index + 1 : match.index;
+      if (position === index) { continue; }
+      tokens.push(string.substring(position, index).toLowerCase());
+      position = index;
+    }
+    
+    if (position < string.length) {
+      tokens.push(string.substring(position).toLowerCase());
+    }
+
+    return tokens;
+  }
+
+  /**
    * Converts a string like 'fooBar' to 'foo-bar'.
    *
    * @private
@@ -1666,23 +1704,25 @@
    * hyphenate('XMLHttpRequest'); // => 'xml-http-request'
    */
   function hyphenate(string) {
-    var matcher  = /[^A-Z]([A-Z])|([A-Z])[^A-Z]/g,
-        tokens   = [],
-        position = 0,
-        index, match;
+    return splitCamelCase(string).join('-');
+  }
 
-    while (match = matcher.exec(string)) {
-      index = typeof match[1] === 'string' ? match.index + 1 : match.index;
-      if (position === index) { continue; }
-      tokens.push(string.substring(position, index).toLowerCase());
-      position = index;
-    }
-    
-    if (position < string.length) {
-      tokens.push(string.substring(position).toLowerCase());
-    }
-    
-    return tokens.join('-');
+  /**
+   * Converts a camelCased string to an acronym.
+   *
+   * @private
+   * @param {string} string The string to convert.
+   * @returns {string} An acronym (lower-case) comprising the first letter from
+   *     each part of the string.
+   *
+   * @examples
+   * acronym('fooBarBaz');      // => 'fbb'
+   * acronym('foo123Bar');      // => 'fb'
+   * acronym('XMLHttpRequest'); // => 'xhr'
+   */
+  function acronym(string) {
+    return splitCamelCase(string).map(
+      function(str) { return str.charAt(0); }).join('');
   }
 
   /**
