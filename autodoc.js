@@ -128,6 +128,7 @@
    * @property {boolean} hasTypes
    * @property {Array.<TypeInfo>} types
    * @property {Array.<FunctionInfo>} privateMembers
+   * @property string exampleHelpers
    */
 
   /**
@@ -454,6 +455,23 @@
         null;
     }
 
+    // See if there's a comment somewhere w/ the @exampleHelpers tag; if so,
+    // we'll supply that code to all examples.
+    var exampleHelpers = Lazy(ast.comments)
+      .filter(function(comment) {
+        return (/@exampleHelpers\b/).test(comment.value);
+      })
+      .map(function(comment) {
+        var doc = autodoc.parseComment(comment);
+        if (typeof doc === 'undefined') {
+          return null;
+        }
+
+        return Autodoc.getTagDescription(doc, 'exampleHelpers');
+      })
+      .compact()
+      .first() || '';
+
     // TODO: Make this code a little more agnostic about the whole namespace
     // thing. I'm pretty sure there are plenty of libraries that don't use
     // this pattern at all.
@@ -466,7 +484,8 @@
       docs: functions,
       privateMembers: privateMembers,
       hasTypes: !Lazy(typeDefs).all('excludeFromDocs'),
-      types: typeDefs
+      types: typeDefs,
+      exampleHelpers: exampleHelpers
     };
   };
 

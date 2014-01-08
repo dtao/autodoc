@@ -8,6 +8,13 @@
  */
 
 /**
+ * @exampleHelpers
+ * function isEven(x) { return x % 2 === 0; }
+ * function isPositive(x) { return x > 0; }
+ * function isTruthy(x) { return !!x; }
+ */
+
+/**
  * @namespace R
  */
 var R = {
@@ -79,6 +86,30 @@ R.arrays.map = function(array, fn) {
   var result = Array(array.length);
   for (var i = 0, len = array.length; i < len; ++i) {
     result[i] = fn(array[i]);
+  }
+  return result;
+};
+
+/**
+ * Filters the elements of an array into a new array. This duplicate the native functionality of
+ * calling `Array.prototype.filter(fn)`.
+ *
+ * @param {Array.<*>} array The array you want to filter.
+ * @param {function(*):*} fn The filtering function.
+ * @returns {Array.<*>} An array containing the results from filtering each element in the source
+ *     array to a new array.
+ *
+ * @example
+ * [1, 2, 3].filter(isEven);                                   // => [2]
+ * [-1, 3, 4].filter(isPositive);                              // => [3, 4]
+ * [true, false, 'foo', null, undefined, ''].filter(isTruthy); // => [true, 'foo']
+ */
+R.arrays.filter = function(array, fn) {
+  var result = [];
+  for (var i = 0, len = array.length; i < len; ++i) {
+    if (fn(array[i])) {
+      result.push(array[i]);
+    }
   }
   return result;
 };
