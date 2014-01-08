@@ -5,19 +5,18 @@ body {
 }
 
 main {
-  @extend .container;
+  &:extend(.container all);
 }
 
 header {
-  @extend .page-header;
+  &:extend(.page-header all);
 
-  p {
-    @extend .lead;
-  }
+  p { .lead; }
 }
 
 #spec-failures {
-  @extend .alert, .alert-danger;
+  &:extend(.alert all);
+  &:extend(.alert-danger all);
 
   &:empty {
     display: none;
@@ -34,26 +33,28 @@ header {
 }
 
 .search {
-  @extend .row;
+  &:extend(.row all);
 
   fieldset {
-    @extend .col-lg-12;
+    .col-lg-12;
 
     input {
-      @extend .form-control;
+      .form-control;
     }
   }
 }
 
 .layout {
-  @extend .row;
+  &:extend(.row all);
 
   .index {
-    @extend .col-lg-3, .col-md-3;
+    &:extend(.col-lg-3 all);
+    &:extend(.col-md-3 all);
   }
 
   article {
-    @extend .col-lg-9, .col-md-9;
+    &:extend(.col-lg-9 all);
+    &:extend(.col-md-9 all);
   }
 }
 
@@ -61,7 +62,7 @@ nav {
   border-right: 1px solid black;
 
   ul {
-    @extend .nav;
+    &:extend(.nav all);
 
     li.nav-header {
       font-weight: bold;
@@ -82,10 +83,12 @@ section.typedef:nth-of-type(n+2) {
 }
 
 table {
-  @extend .table, .table-striped, .table-hover;
+  &:extend(.table all);
+  &:extend(.table-striped all);
+  &:extend(.table-hover all);
 
   tr.failed {
-    @extend tr.danger;
+    &:extend(tr.danger);
   }
 
   th, td {
@@ -113,7 +116,8 @@ table {
   position: relative;
 
   button {
-    @extend .btn, .btn-primary;
+    .btn;
+    .btn-primary;
   }
 
   table {

@@ -8,6 +8,7 @@ var fs   = require('fs'),
 // just mean Autodoc, clearly).
 var _Autodoc   = require(path.join(__dirname, '../autodoc-node')),
     _Lazy      = require('lazy.js'),
+    _less      = require('less'),
     _commander = require('commander'),
     _resolve   = require('resolve');
 
@@ -282,7 +283,21 @@ function generateDocs() {
     }
   }
 
-  copyFile(path.join(__dirname, '../resources/stylesheets/docs.css'), path.join(outputDir, 'docs.css'));
+  var parser = new _less.Parser({
+    paths: [path.join(__dirname, '../resources/stylesheets')],
+    filename: 'docs.less'
+  });
+
+  parser.parse(readFile(path.join(__dirname, '../resources/stylesheets/docs.less')), function(err, tree) {
+    if (err) {
+      console.log(err);
+      return;
+    }
+
+    var css = tree.toCSS();
+    writeFile(path.join(outputDir, 'docs.css'), css);
+  });
+
   copyFile(path.join(__dirname, '../resources/stylesheets/examples.css'), path.join(outputDir, 'examples.css'), true);
   copyFile(path.join(__dirname, '../resources/stylesheets/highlight.css'), path.join(outputDir, 'highlight.css'), true);
   copyFile(path.join(__dirname, '../resources/images/gears.gif'), path.join(outputDir, 'gears.gif'), true);
