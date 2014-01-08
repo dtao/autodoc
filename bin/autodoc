@@ -286,6 +286,18 @@ function generateDocs() {
     }
   }
 
+  function copyResource(relativePath, force) {
+    if (arguments.length < 2) {
+      force = true;
+    }
+
+    copyFile(
+      path.join(__dirname, '../resources', relativePath),
+      path.join(outputDir, path.basename(relativePath)),
+      force
+    );
+  }
+
   var parser = new _less.Parser({
     paths: [path.dirname(_bootscrap.path(theme))],
     filename: 'docs.less'
@@ -303,13 +315,16 @@ function generateDocs() {
     writeFile(path.join(outputDir, 'docs.css'), css);
   });
 
-  copyFile(path.join(__dirname, '../resources/stylesheets/examples.css'), path.join(outputDir, 'examples.css'), true);
-  copyFile(path.join(__dirname, '../resources/stylesheets/highlight.css'), path.join(outputDir, 'highlight.css'), true);
-  copyFile(path.join(__dirname, '../resources/images/gears.gif'), path.join(outputDir, 'gears.gif'), true);
-  copyFile(path.join(__dirname, '../resources/javascripts/utils.js'), path.join(outputDir, 'utils.js'), true);
-  copyFile(path.join(__dirname, '../resources/javascripts/docs.js'), path.join(outputDir, 'docs.js'), true);
-  copyFile(path.join(__dirname, '../resources/javascripts/defaults.js'), path.join(outputDir, 'defaults.js'), true);
-  _Lazy(filePaths).each(function(filePath) { copyFile(filePath, path.join(outputDir, path.basename(filePath)), true); });
+  copyResource('stylesheets/examples.css');
+  copyResource('stylesheets/highlight.css');
+  copyResource('images/gears.gif');
+  copyResource('javascripts/utils.js');
+  copyResource('javascripts/docs.js');
+  copyResource('javascripts/defaults.js');
+
+  _Lazy(filePaths).each(function(filePath) {
+    copyFile(filePath, path.join(outputDir, path.basename(filePath)), true);
+  });
 
   console.log('Docs written to ' + outputDir + '/');
 
