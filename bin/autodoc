@@ -7,6 +7,7 @@ var fs   = require('fs'),
 // collisions when actually testing any of these libraries (by which I really
 // just mean Autodoc, clearly).
 var _Autodoc   = require(path.join(__dirname, '../autodoc-node')),
+    _bootscrap = require('bootscrap'),
     _Lazy      = require('lazy.js'),
     _less      = require('less'),
     _commander = require('commander'),
@@ -105,6 +106,7 @@ _commander
   .option('--grep <pattern>', 'only run tests/benchmarks for methods whose names match the given pattern')
   .option('--variable <name>', 'provide a name for the variable traditionally used by the library (e.g., jQuery, $, _) -- used for tests and benchmarks')
   .option('--globals <list>', 'provide a list of global references (e.g. _:underscore,$:jQuery) your tests and/or benchmarks require', argToGlobals)
+  .option('--theme <theme>', 'specify a theme, if you want (default: flatly)')
   .option('--verbose', 'produce verbose output when running tests (has no effect otherwise)')
   .parse(process.argv);
 
@@ -122,7 +124,8 @@ var filePaths       = argToList(process.argv.pop()),
     equalityPath    = path.join(outputDir, 'assertEquality.js'),
     equalityExists  = fileExists(equalityPath),
     docHelperPath   = path.join(outputDir, 'doc_helper.js'),
-    docHelperExists = fileExists(docHelperPath);
+    docHelperExists = fileExists(docHelperPath),
+    theme           = _commander.theme || 'flatly';
 
 var options         = _Autodoc.options;
 options.namespaces  = _commander.namespaces;
@@ -284,11 +287,13 @@ function generateDocs() {
   }
 
   var parser = new _less.Parser({
-    paths: [path.join(__dirname, '../resources/stylesheets')],
+    paths: [path.dirname(_bootscrap.path(theme))],
     filename: 'docs.less'
   });
 
-  parser.parse(readFile(path.join(__dirname, '../resources/stylesheets/docs.less')), function(err, tree) {
+  var less = readFile(path.join(__dirname, '../resources/stylesheets/docs.less')).replace('{{theme}}', theme);
+
+  parser.parse(less, function(err, tree) {
     if (err) {
       console.log(err);
       return;
