@@ -353,6 +353,26 @@
       .compact()
       .toArray();
 
+    // Also identify all of the comments that define custom types w/ the
+    // @typedef tag.
+    var typeDefs = Lazy(ast.comments)
+      .filter(function(comment) {
+        return (/@typedef\b/).test(comment.value);
+      })
+      .map(function(comment) {
+        var doc = autodoc.parseComment(comment);
+        if (typeof doc === 'undefined') {
+          return null;
+        }
+
+        if (!Lazy(doc.tags).any({ title: 'typedef' })) {
+          return null;
+        }
+
+        return autodoc.createTypeInfo(doc);
+      })
+      .toArray();
+
     // If no tags have been explicitly provided, but we find any occurrences of
     // the @public tag, we'll use that as a hint that only those methods tagged
     // @public should be included. Otherwise include everything.
@@ -362,16 +382,16 @@
       }
     }
 
-    // Only include documentation for functions with the specified tag(s), if
-    // provided.
+    // Only include documentation for functions/types with the specified tag(s),
+    // if provided.
     if (this.tags.length > 0) {
-      Lazy(functions).each(function(fn) {
+      Lazy(functions).concat(typeDefs).each(function(functionOrType) {
         var hasTag = Lazy(autodoc.tags).any(function(tag) {
-          return Lazy(fn.tags).contains(tag);
+          return Lazy(functionOrType.tags).contains(tag);
         });
 
         if (!hasTag) {
-          fn.excludeFromDocs = true;
+          functionOrType.excludeFromDocs = true;
         }
       });
     }
@@ -433,24 +453,6 @@
         null;
     }
 
-    var typeDefs = Lazy(ast.comments)
-      .filter(function(comment) {
-        return (/@typedef\b/).test(comment.value);
-      })
-      .map(function(comment) {
-        var doc = autodoc.parseComment(comment);
-        if (typeof doc === 'undefined') {
-          return null;
-        }
-
-        if (!Lazy(doc.tags).any({ title: 'typedef' })) {
-          return null;
-        }
-
-        return autodoc.createTypeInfo(doc);
-      })
-      .toArray();
-
     // TODO: Make this code a little more agnostic about the whole namespace
     // thing. I'm pretty sure there are plenty of libraries that don't use
     // this pattern at all.
@@ -462,7 +464,7 @@
       namespaces: namespaces,
       docs: functions,
       privateMembers: privateMembers,
-      hasTypes: typeDefs.length > 0,
+      hasTypes: !Lazy(typeDefs).all('excludeFromDocs'),
       types: typeDefs
     };
   };
@@ -744,6 +746,7 @@
    * @property {string} name
    * @property {string} description
    * @property {Array.<PropertyInfo>} properties
+   * @property {Array.<string>} tags
    */
 
   /**
@@ -761,14 +764,16 @@
    */
   Autodoc.prototype.createTypeInfo = function(doc) {
     var description = doc.description,
-        name = Autodoc.getTagDescription(doc, 'typedef'),
-        properties = this.getParams(doc, 'property');
+        name        = Autodoc.getTagDescription(doc, 'typedef'),
+        properties  = this.getParams(doc, 'property'),
+        tags        = Lazy(doc.tags).pluck('title').toArray();
 
     return {
       name: name,
-      identifier: name,
+      identifier: 'type-' + name,
       description: this.parseMarkdown(description),
-      properties: properties
+      properties: properties,
+      tags: tags
     };
   };
 

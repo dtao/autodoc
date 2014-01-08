@@ -74,7 +74,9 @@
                     <h2>Types</h2>
                     <ul>
                         {{#types}}
+                        {{^excludeFromDocs}}
                         <li><a href="#{{identifier}}">{{name}}</a></li>
+                        {{/excludeFromDocs}}
                         {{/types}}
                     </ul>
                     {{/hasTypes}}
@@ -195,7 +197,9 @@
                 {{/namespaces}}
 
                 {{#types}}
+                {{^excludeFromDocs}}
                     {{> typeSection}}
+                {{/excludeFromDocs}}
                 {{/types}}
             </article>
         </div>
