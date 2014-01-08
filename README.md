@@ -2,6 +2,7 @@ Autodoc
 =======
 
 [![Build Status](https://travis-ci.org/dtao/autodoc.png)](https://travis-ci.org/dtao/autodoc)
+[![NPM version](https://badge.fury.io/js/autodoc.png)](http://badge.fury.io/js/autodoc)
 
 Autodoc lets you write tests in comments just above your JavaScript functions, then run those tests from the command line and auto-generate documentation with the same tests embedded and executing right in the browser.
 
