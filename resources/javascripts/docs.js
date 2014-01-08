@@ -74,7 +74,7 @@ window.addEventListener('load', function() {
 
     // Otherwise just show sections whose name matches the query.
     sections.hide();
-    $('section[id^="' + query + '"],section[id^="type-' + query + '"]').show();
+    $('section[data-filter^="' + query + '"]').show();
   });
 
   $(document).on('click', '.reveal-source', function(e) {
