@@ -356,7 +356,7 @@
       .toArray();
 
     // Also identify all of the comments that define custom types w/ the
-    // @typedef tag.
+    // `@typedef` tag.
     var typeDefs = Lazy(ast.comments)
       .filter(function(comment) {
         return (/@typedef\b/).test(comment.value);
@@ -373,6 +373,7 @@
 
         return autodoc.createTypeInfo(doc);
       })
+      .compact()
       .toArray();
 
     // If no tags have been explicitly provided, but we find any occurrences of
@@ -787,13 +788,17 @@
 
   /**
    * Get a { name, properties } object representing a type defined w/ the
-   * @typedef tag.
+   * `@typedef` tag.
    */
   Autodoc.prototype.createTypeInfo = function(doc) {
     var description = doc.description,
         name        = Autodoc.getTagDescription(doc, 'typedef'),
         properties  = this.getParams(doc, 'property'),
         tags        = Lazy(doc.tags).pluck('title').toArray();
+
+    if (!name) {
+      console.log('No good! ' + JSON.stringify(doc));
+    }
 
     return {
       name: name,
@@ -810,7 +815,7 @@
   /**
    * High-level info about a library, namely its name and a brief description.
    *
-   * @typedef LibrarySummary
+   * @typedef {Object} LibrarySummary
    * @property {string} name
    * @property {string} description
    */
@@ -1261,7 +1266,7 @@
    * Represents an abstract left/right pair, which can be used e.g. as the basis
    * for an {@link ExampleInfo}.
    *
-   * @typedef PairInfo
+   * @typedef {Object} PairInfo
    * @property {number} lineNumber
    * @property {string} left
    * @property {string} right
