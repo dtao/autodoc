@@ -47,6 +47,41 @@ R.arrays.clone = function(array) {
 };
 
 /**
+ * Maps the elements of an array onto a new array. This duplicate the native functionality of
+ * calling `Array.prototype.map(fn)`.
+ *
+ * @param {Array.<*>} array The array you want to map.
+ * @param {function(*):*} fn The mapping function.
+ * @returns {Array.<*>} An array containing the results from mapping each element in the source
+ *     array to a new array.
+ *
+ * @example
+ * [1, 2, 3].map(function(x) {
+ *   return x * -1;
+ * });
+ * // => [-1, -2, -3]
+ *
+ * // This comment should not be included
+ * ['foo', 'bar'].map(function(str) {
+ *   return str.toUpperCase();
+ * });
+ * // => ['FOO', 'BAR']
+ *
+ * [1.5, 3.14].map(Math.floor); // => [1, 3]
+ * [[], [1, 2], 'foo', { length: 'bar' }].map(function(obj) {
+ *   return obj.length;
+ * });
+ * // => [0, 2, 3, 'bar']
+ */
+R.arrays.map = function(array, fn) {
+  var result = Array(array.length);
+  for (var i = 0, len = array.length; i < len; ++i) {
+    result[i] = fn(array[i]);
+  }
+  return result;
+};
+
+/**
  * Inserts an element into an array. This duplicates the native functionality of `Array.prototype.splice`.
  *
  * @param {Array.<*>} array The array you want to insert an element into.

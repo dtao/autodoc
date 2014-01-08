@@ -174,9 +174,23 @@ describe 'Autodoc', ->
         keysExamples[0].should.have.property('actual', 'R.objects.keys({ foo: 1, bar: 2 })')
         keysExamples[0].should.have.property('expected', "['foo', 'bar']")
 
-      it 'supports multiline expectations', ->
+      describe 'multiline expressions', ->
         insertExamples = listExamplesForMember(data, 'insert')
-        insertExamples[1].should.have.property('expected', "[{\n  foo: 'bar'\n}]")
+        mapExamples = listExamplesForMember(data, 'map')
+
+        it 'supports multiline expectations', ->
+          insertExamples[1].should.have.property('expected', "[{\n  foo: 'bar'\n}]")
+
+        it 'supports multiline expressions', ->
+          mapExamples[0].should.have.property('actual', '[1, 2, 3].map(function(x) {\n  return x * -1;\n});')
+
+        it 'does not include comments in multiline expressions', ->
+          mapExamples[1].should.have.property('actual', "['foo', 'bar'].map(function(str) {\n  return str.toUpperCase();\n});")
+
+        it 'does not swallow previous assertions when scanning multiline expressions', ->
+          mapExamples[2].should.have.property('actual', '[1.5, 3.14].map(Math.floor);')
+          mapExamples[2].should.have.property('expected', '[1, 3]')
+          mapExamples[3].should.have.property('actual', "[[], [1, 2], 'foo', { length: 'bar' }].map(function(obj) {\n  return obj.length;\n});")
 
     describe '"module.js" example', ->
       data = parseExampleFile('module.js')

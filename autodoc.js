@@ -1226,7 +1226,8 @@
         commentLines = comment.split('\n'),
         initialLines = [],
         pairs        = [],
-        currentPair  = null;
+        currentPair  = null,
+        previousPair = null;
 
     Lazy(commentLines)
       .each(function(line, i) {
@@ -1243,23 +1244,45 @@
           initialLines.push(line);
 
         } else if (pair) {
+          pair.lineNumber = i;
+
           // Join pairs that actually take up two lines, like:
           // actual();
           // => expectation
           if (!pair.left) {
-            pair.left = (pairs.length > 0 ? commentLines[i - 1] : initialLines.pop()) || '';
+            // Allow actual value to be a multiline expression. As long as we
+            // don't swallow up any previous assertions, we'll walk backwards
+            // until encountering a blank line.
+            pair.left = [];
+            for (var line = i - 1; line >= 0 && (!previousPair || line > previousPair.lineNumber); --line) {
+              if (isBlank(commentLines[line])) {
+                break;
+              }
+              if (looksLikeComment(commentLines[line])) {
+                continue;
+              }
+
+              pair.left.unshift(pairs.length === 0 ? initialLines.pop() : commentLines[line]);
+            }
+
+            pair.left = pair.left.join('\n');
           }
 
-          pair.lineNumber = i;
           pairs.push(pair);
 
+          if (currentPair) {
+            previousPair = currentPair;
+          }
           currentPair = pair;
 
         } else {
           // Allow one final unindented line at the end of a multiline
           // expectation.
-          if (currentPair && currentPair.isMultiline) {
-            currentPair.right += '\n' + line;
+          if (currentPair) {
+            if (currentPair.isMultiline) {
+              currentPair.right += '\n' + line;
+            }
+            previousPair = currentPair;
           }
           currentPair = null;
         }
@@ -1595,6 +1618,44 @@
 
     return [string.substring(0, seam), string.substring(seam + divider.length)];
   };
+
+  /**
+   * Determines if a string is empty or consists only of whitespace.
+   *
+   * @private
+   * @param {string} string The string to check for blankness.
+   * @returns {boolean} Whether or not the string is blank.
+   *
+   * @examples
+   * isBlank('');             // => true
+   * isBlank('foo');          // => false
+   * isBlank('   ');          // => true
+   * isBlank(' \n');          // => true
+   * isBlank(' \t');          // => true
+   * isBlank(' \r');          // => true
+   * isBlank('foo\n  \nbar'); // => false
+   */
+  function isBlank(string) {
+    return (/^\s*$/).test(string);
+  }
+
+  /**
+   * Determines if a string looks like a JavaScript comment.
+   *
+   * @private
+   * @param {string} string The string to check.
+   * @returns {boolean} Whether or not the string looks like a JavaScript comment.
+   *
+   * @examples
+   * looksLikeComment('');             // => false
+   * looksLikeComment('foo');          // => false
+   * looksLikeComment('// foo');       // => true
+   * looksLikeComment('  // foo');     // => true
+   * looksLikeComment('foo // bar');   // => false
+   */
+  function looksLikeComment(string) {
+    return (/^\s*\/\//).test(string);
+  }
 
   /**
    * Takes either a `{ parse }` object or an actual function and wraps it as a
