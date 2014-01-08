@@ -119,6 +119,7 @@
    * as well as private/internal members.
    *
    * @typedef {Object} LibraryInfo
+   * @public
    * @property {string} name
    * @property {string} referenceName
    * @property {string} description
@@ -604,6 +605,7 @@
   };
 
   /**
+   * @public
    * @typedef {Object} FunctionInfo
    * @property {string} name
    * @property {string} description
@@ -684,6 +686,7 @@
 
   /**
    * @typedef {Object} ParameterInfo
+   * @public
    * @property {string} name
    * @property {string} type
    * @property {string} description
@@ -743,6 +746,7 @@
    * A custom type defined by a library.
    *
    * @typedef {object} TypeInfo
+   * @public
    * @property {string} name
    * @property {string} description
    * @property {Array.<PropertyInfo>} properties
@@ -753,6 +757,7 @@
    * A property of a type defined by a {@link TypeInfo} object.
    *
    * @typedef {Object} PropertyInfo
+   * @public
    * @property {string} name
    * @property {string} type
    * @property {string} description
@@ -852,6 +857,7 @@
    * including an expectation as well as an actual (relative) source location.
    *
    * @typedef {Object} ExampleInfo
+   * @public
    * @property {number} id
    * @property {number} lineNumber
    * @property {string} actual
@@ -865,6 +871,7 @@
    * setup code and some additional properties.
    *
    * @typedef {Object} ExampleCollection
+   * @public
    * @property {string} code
    * @property {string} highlightedCode
    * @property {string} setup
@@ -913,6 +920,7 @@
    * Represents a single benchmark case.
    *
    * @typedef {Object} BenchmarkCase
+   * @public
    * @property {number} caseId
    * @property {string} impl
    * @property {string} name
@@ -925,6 +933,7 @@
    * implementations.
    *
    * @typedef {Object} BenchmarkInfo
+   * @public
    * @property {number} id
    * @property {string} name
    * @property {Array.<BenchmarkCase>} cases
@@ -935,6 +944,7 @@
    * single piece of functionality with one or more cases each.
    *
    * @typedef {Object} BenchmarkCollection
+   * @public
    * @property {string} code
    * @property {string} highlightedCode
    * @property {string} setup
@@ -1433,6 +1443,7 @@
    * pieces of a library.
    *
    * @typedef {Object} NamespaceInfo
+   * @public
    * @property {string} namespace
    * @property {FunctionInfo} constructorMethod
    * @property {Array.<FunctionInfo>} members
