@@ -217,9 +217,9 @@ describe 'Autodoc', ->
     data = parseFile('autodoc.js')
 
     it 'can read @typedefs', ->
-      getTypeDef(data, 'TypeInfo').should.eql {
+      getTypeDef(data, 'TypeInfo').should.include {
         name: 'TypeInfo',
-        identifier: 'TypeInfo',
+        identifier: 'type-TypeInfo',
         description: '<p>A custom type defined by a library.</p>\n',
         properties: [
           {
@@ -235,6 +235,11 @@ describe 'Autodoc', ->
           {
             name: 'properties',
             type: 'Array.<PropertyInfo>',
+            description: ''
+          },
+          {
+            name: 'tags',
+            type: 'Array.<string>',
             description: ''
           }
         ]
