@@ -648,6 +648,11 @@
         benchmarks  = this.getBenchmarks(doc),
         tags        = Lazy(doc.tags).pluck('title').toArray();
 
+    // Do you guys know what I'm talking about? I don't. -Mitch Hedberg
+    if (nameInfo.name !== nameInfo.shortName) {
+      source = nameInfo.namespace + '.' + nameInfo.shortName + ' = ' + source;
+    }
+
     return {
       name: nameInfo.name,
       shortName: nameInfo.shortName,
