@@ -21,8 +21,6 @@ getASTFromSource = (source) ->
     loc: true
     range: true
 
-  Autodoc.assignParents(ast)
-
   [ast, source]
 
 getASTFromFile = (fileName) ->
@@ -74,37 +72,6 @@ describe 'Autodoc', ->
       parser = { parse: sinon.spy() }
       new Autodoc({ commentParser: parser }).parseComment({ value: '/*foo*/' })
       sinon.assert.calledWith(parser.parse, 'foo', { unwrap: true })
-
-  describe 'getIdentifierName', ->
-    parse = (code) ->
-      ast = esprima.parse(code)
-      Autodoc.assignParents(ast)
-      ast.body[0]
-
-    it 'gets the name of a function declaration', ->
-      node = parse('function foo() {}')
-      Autodoc.getIdentifierName(node).should.eql('foo')
-
-    it 'gets the name of a variable assigned a function expression', ->
-      node = parse('var bar = function() {}')
-      Autodoc.getIdentifierName(node.declarations[0]).should.eql('bar')
-
-    it 'gets the name of an object member assigned a function expression', ->
-      node = parse('foo.bar = function() {}')
-      Autodoc.getIdentifierName(node).should.eql('foo.bar')
-
-    it 'does not infer a name from a call expression on an anonymous function', ->
-      [ast, source] = getASTFromSource('(function() {}).call()')
-
-      node = ast.body[0] # ExpressionStatement
-        .expression      # CallExpression
-        .callee          # MemberExpression
-
-      should(Autodoc.getIdentifierName(node)).eql(null)
-
-    it 'replaces ".prototype." with "#"', ->
-      node = parse('Foo.prototype.bar = function() {}')
-      Autodoc.getIdentifierName(node).should.eql('Foo#bar')
 
   describe 'getFunctionSource', ->
     it 'provides the raw source code for a function', ->

@@ -6,36 +6,16 @@
  */
 (function(context) {
 
-  var Lazy = context.Lazy;
+  var Lazy      = context.Lazy,
+      Spiderman = context.Spiderman;
 
-  // Auto-require Lazy if it isn't already defined and we're in Node.
+  // Auto-require Lazy & Spiderman if they aren't already defined and we're in Node.
   if (typeof Lazy === 'undefined' && typeof require === 'function') {
     Lazy = require('lazy.js');
   }
-
-  // Define a custom type of sequence that recursively walks the nodes of an
-  // AST.
-  Lazy.Sequence.define('nodes', {
-    each: function(fn) {
-      var self = this;
-
-      self.parent.each(function(node) {
-        if (!node) {
-          return;
-        }
-
-        if (fn(node) === false) {
-          return false;
-        }
-
-        var children = Autodoc.getNodeChildren(node);
-
-        if (children.length > 0) {
-          return Lazy(children).nodes().each(fn);
-        }
-      });
-    }
-  });
+  if (typeof Spiderman === 'undefined' && typeof require === 'function') {
+    Spiderman = require('spiderman');
+  }
 
   /**
    * An object responsible for parsing source code into an AST.
@@ -159,138 +139,6 @@
   };
 
   /**
-   * Visits every node in an AST and assigns each a `parent` property, which
-   * references the parent node in the structure of the AST.
-   *
-   * @param {Object} node The node in the AST to traverse.
-   */
-  Autodoc.assignParents = function(node) {
-    var children = Autodoc.getNodeChildren(node);
-
-    Lazy(children).compact().each(function(child) {
-      child.parent = node;
-      Autodoc.assignParents(child);
-    });
-  };
-
-  /**
-   * Returns an array of all the nodes directly underneath the current node in
-   * an AST.
-   *
-   * @param {Object} node
-   * @returns {Array.<*>} The node's direct children.
-   */
-  Autodoc.getNodeChildren = function(node) {
-    switch (node.type) {
-      case 'Program':
-      case 'BlockStatement':
-        return node.body;
-
-      case 'FunctionDeclaration':
-      case 'FunctionExpression':
-        return [node.body];
-
-      case 'IfStatement':
-        return [node.consequent, node.alternate];
-
-      case 'ForStatement':
-      case 'ForInStatement':
-      case 'WhileStatement':
-      case 'DoWhileStatement':
-      case 'LabeledStatement':
-      case 'WithStatement':
-        return [node.body];
-
-      case 'SwitchStatement':
-        return node.cases;
-
-      case 'SwitchCase':
-        return node.consequent;
-
-      case 'ExpressionStatement':
-        return [node.expression];
-
-      case 'TryStatement':
-        return [node.block];
-
-      case 'AssignmentExpression':
-        return [node.right];
-
-      case 'CallExpression':
-        return [node.callee].concat(node.arguments);
-
-      case 'ConditionalExpression':
-        return [node.consequent, node.alternate];
-
-      case 'ObjectExpression':
-        return node.properties;
-
-      case 'ArrayExpression':
-        return node.elements;
-
-      case 'MemberExpression':
-        return node.object.type === 'FunctionExpression' ? [node.object] : [];
-
-      case 'NewExpression':
-        return [node.callee];
-
-      case 'UnaryExpression':
-        return [node.argument];
-
-      case 'BinaryExpression':
-        return [node.left, node.right];
-
-      case 'LogicalExpression':
-        return [node.left, node.right];
-
-      case 'SequenceExpression':
-        return node.expressions;
-
-      case 'Property':
-        return [node.key, node.value];
-
-      case 'VariableDeclaration':
-        return node.declarations;
-
-      case 'VariableDeclarator':
-        return [node.init];
-
-      // The basic idea here is that unless a node could POSSIBLY include
-      // (potentially deep down somewhere) a function declaration/expression,
-      // we'll treat it as having no children.
-      case 'Literal':
-      case 'Identifier':
-      case 'UpdateExpression':
-      case 'ThisExpression':
-      case 'EmptyStatement':
-      case 'ContinueStatement':
-      case 'BreakStatement':
-      case 'ReturnStatement':
-      case 'ThrowStatement':
-        return [];
-
-      default:
-        throw 'Unknown node type "' + node.type + '"\n' +
-          'Data: ' + Autodoc.formatNode(node) + '\n\n' +
-          'Report this to https://github.com/dtao/autodoc/issues';
-    }
-  };
-
-  /**
-   * Provides a useful string representation of a node.
-   *
-   * @param {Object} node
-   * @returns {string}
-   */
-  Autodoc.formatNode = function(node) {
-    var keys = Lazy(node).map(function(value, key) {
-      return (value && value.type) ? (key + ':' + value.type) : key;
-    });
-
-    return node.type + ' (' + keys.join(', ') + ')';
-  };
-
-  /**
    * Parses an arbitrary blob of JavaScript code and returns an object
    * containing all of the data necessary to generate a project website with
    * docs, specs, and performance benchmarks.
@@ -315,9 +163,6 @@
       range: true
     });
 
-    // Give each node a reference to its parent (useful).
-    Autodoc.assignParents(ast);
-
     // This is kind of stupid... for now, I'm just assuming the library will
     // have a @fileOverview tag and @name tag in the header comments.
     var librarySummary = autodoc.getLibrarySummary(ast.comments);
@@ -325,11 +170,11 @@
     // Extract all of the functions from the AST, and map them to their location
     // in the code (this is so that we can associate each function with its
     // accompanying doc comments, if any).
-    var functionsByLine = Lazy(ast.body).nodes()
+    var functionsByLine = Lazy(Spiderman(ast).descendents())
       .filter(function(node) {
         return node.type === 'FunctionDeclaration' || node.type === 'FunctionExpression';
       })
-      .groupBy(function(node) { return node.loc.start.line; })
+      .groupBy(function(node) { return node.unwrap().loc.start.line; })
       .map(function(list, line) { return [line, list[0]]; })
       .toObject();
 
@@ -350,7 +195,7 @@
           return null;
         }
 
-        return autodoc.createFunctionInfo(fn, doc, Autodoc.getFunctionSource(fn, code));
+        return autodoc.createFunctionInfo(fn, doc, Autodoc.getFunctionSource(fn.unwrap(), code));
       })
       .compact()
       .toArray();
@@ -436,7 +281,7 @@
     // ...then we'll assume 'Foo' is the "reference name" of the library; i.e.,
     // the name conventionally used to refer to it within other libraries or
     // applications (like _ for Underscore, $ for jQuery, and so on).
-    var nameFromModuleExports = Lazy(ast.body).nodes()
+    var nameFromModuleExports = Lazy(Spiderman(ast).descendents())
       .map(Autodoc.getModuleExportsIdentifier)
       .compact()
       .first();
@@ -658,7 +503,7 @@
    * @returns {FunctionInfo}
    */
   Autodoc.prototype.createFunctionInfo = function(fn, doc, source) {
-    var nameInfo    = Autodoc.parseName(Autodoc.getIdentifierName(fn) || '', doc),
+    var nameInfo    = Autodoc.parseName(fn.inferName() || '', doc),
         description = this.parseMarkdown(doc.description),
         params      = this.getParams(doc),
         returns     = this.getReturns(doc),
@@ -1071,81 +916,6 @@
   };
 
   /**
-   * Gets the name of whatever identifier is associated with this node (if any).
-   *
-   * @param {Object} object
-   * @return {Object}
-   */
-  Autodoc.getIdentifierName = function(node, alreadyVisited) {
-    if (!node) {
-      return null;
-    }
-
-    // Little one-off array-based set implementation. Because... I just felt
-    // like doing it this way.
-    alreadyVisited = alreadyVisited || (function() {
-      var nodes = [];
-
-      return {
-        include: function(node) {
-          nodes.push(node);
-        },
-
-        includes: function(node) {
-          for (var i = 0; i < nodes.length; ++i) {
-            if (nodes[i] === node) {
-              return true;
-            }
-          }
-          return false;
-        }
-      };
-    }());
-
-    if (alreadyVisited.includes(node)) {
-      return null;
-    }
-    alreadyVisited.include(node);
-
-    switch (node.type) {
-      case 'Identifier':
-        return node.name;
-
-      case 'FunctionDeclaration':
-        return Autodoc.getIdentifierName(node.id, alreadyVisited);
-
-      case 'AssignmentExpression':
-        return Autodoc.getIdentifierName(node.left, alreadyVisited);
-
-      case 'MemberExpression':
-        if (node.parent && node.parent.type !== 'AssignmentExpression') {
-          return null;
-        }
-
-        return (
-          Autodoc.getIdentifierName(node.object, alreadyVisited) + '.' +
-          (node.computed ? node.property.value : Autodoc.getIdentifierName(node.property, alreadyVisited))
-        ).replace(/\.prototype\./, '#');
-
-      case 'Property':
-        return Autodoc.getIdentifierName(node.parent, alreadyVisited) + '.' +
-          Autodoc.getIdentifierName(node.key, alreadyVisited);
-
-      case 'FunctionExpression':
-        return Autodoc.getIdentifierName(node.parent, alreadyVisited);
-
-      case 'VariableDeclarator':
-        return Autodoc.getIdentifierName(node.id, alreadyVisited);
-
-      case 'ExpressionStatement':
-        return Autodoc.getIdentifierName(node.expression, alreadyVisited);
-
-      default:
-        return Autodoc.getIdentifierName(node.parent, alreadyVisited);
-    }
-  };
-
-  /**
    * Contains various representations (e.g., short, full) of the *name* of a
    * function.
    *
@@ -1167,42 +937,31 @@
    * @returns {NameInfo}
    *
    * @examples
-   * Autodoc.parseName('Foo#bar').name           // => 'Foo#bar'
-   * Autodoc.parseName('Foo#bar').shortName      // => 'bar'
-   * Autodoc.parseName('Foo.Bar#baz').namespace  // => 'Foo.Bar'
-   * Autodoc.parseName('Foo#bar').identifier     // => 'Foo-bar'
-   * Autodoc.parseName('Foo.Bar#baz').identifier // => 'Foo-Bar-baz'
-   * Autodoc.parseName('Foo').name               // => 'Foo'
-   * Autodoc.parseName('Foo').identifier         // => 'Foo'
-   * Autodoc.parseName('Foo').namespace          // => null
+   * Autodoc.parseName('Foo.prototype.bar').name           // => 'Foo#bar'
+   * Autodoc.parseName('Foo.prototype.bar').shortName      // => 'bar'
+   * Autodoc.parseName('Foo.Bar.prototype.baz').namespace  // => 'Foo.Bar'
+   * Autodoc.parseName('Foo.prototype.bar').identifier     // => 'Foo-bar'
+   * Autodoc.parseName('Foo.Bar.prototype.baz').identifier // => 'Foo-Bar-baz'
+   * Autodoc.parseName('Foo').name                         // => 'Foo'
+   * Autodoc.parseName('Foo').identifier                   // => 'Foo'
+   * Autodoc.parseName('Foo').namespace                    // => null
    */
   Autodoc.parseName = function(name, fn) {
-    var parts = name.split(/[\.#]/),
+    var parts = name.split('.'),
 
         // e.g., the short name for 'Lib.utils.func' should be 'func'
         shortName = parts.pop(),
 
         // keep the long name too, for e.g. regurgitating it back in a template
         // (this is what we do w/ elevating private members)
-        // YES, I realize this is just reversing what already happened in
-        // getIdentifierName. I haven't really thought that hard about the right
-        // approach there. (I wrote the rest of this code a little while ago --
-        // by which I mean like just a few days, but that might as well be
-        // forever -- and so I don't really remember what assumptions I had in
-        // my head at the time. SO, I will do this stupid thing for now and
-        // leave this obscenely long comment here to shame myself into one day
-        // circling back and fixing it. Or, nobody will ever notice this and
-        // I'll totally get away with it.
-        //
-        // You know what? If you're reading this, create an issue:
-        // https://github.com/dtao/autodoc/issues/new
-        //
-        // How's that?
-        longName  = name.replace(/#/, '.prototype.'),
+        longName = name,
 
-        // a name like 'foo#bar#baz' wouldn't make sense; so we can safely join
-        // w/ '.' to recreate the namespace
-        namespace = parts.join('.');
+        // we'll say Foo.bar and Foo.prototype.bar both belong to the 'Foo'
+        // namespace
+        namespace = Lazy(parts).without('prototype').join('.');
+
+    // As a convention we'll reformat 'Class.prototype.method' as 'Class#method'
+    name = name.replace(/\.prototype\./, '#');
 
     if (fn) {
       // Actually, if this function is tagged @global, then it doesn't belong to
@@ -1580,6 +1339,8 @@
    *     then the name of that identifier. Otherwise `null`.
    */
   Autodoc.getModuleExportsIdentifier = function(node) {
+    node = node.unwrap();
+
     if (node.type !== 'AssignmentExpression') {
       return null;
     }
