@@ -428,7 +428,8 @@
     }
 
     var templateEngine   = this.templateEngine,
-        templatePartials = this.templatePartials;
+        templatePartials = this.templatePartials,
+        codeParser       = this.codeParser;
 
     this.eachExample(libraryInfo, function(example) {
       // Look at all of our examples. Those that are matched by some handler, we
@@ -440,6 +441,7 @@
 
         if (match) {
           if (typeof handler.test === 'function') {
+            // TODO: Get rid of this. I don't like this logic at all.
             // Mark this example as being handled
             example.hasCustomHandler = true;
             example.handlerIndex = i;
@@ -464,6 +466,24 @@
 
           // Exit early -- we found our handler!
           return false;
+        }
+
+        // In case there's no custom handler defined for this example, let's
+        // ensure that it's at least valid JavaScript. If not, that's a good
+        // indicator there SHOULD be a custom handler defined for it!
+        try {
+          codeParser.parse('var expected = ' + example.expected);
+
+        } catch (e) {
+          console.error("There's no custom handler defined for '" +
+            example.expected + "', and it isn't valid JavaScript.");
+          console.error("You can define a custom handler like this:");
+
+          var exampleHandler = stringify({
+            pattern: new RegExp(example.expected),
+            template: "some template"
+          });
+          console.error(exampleHandler + '\n');
         }
       });
     });
@@ -1626,6 +1646,27 @@
    */
   function looksLikeComment(string) {
     return (/^\s*\/\//).test(string);
+  }
+
+  /**
+   * Basically JSON.stringify but with added support for RegExp objects.
+   *
+   * @private
+   * @param {Object} object The object to stringify.
+   * @returns {string} A JSON string representing the object.
+   *
+   * @examples
+   * stringify({ foo: 'foo', bar: /bar/ });
+   * // => '{\n  "foo": "foo",\n  "bar": /bar/\n}'
+   */
+  function stringify(object) {
+    var json = JSON.stringify(object, function(key, value) {
+      return value instanceof RegExp ?
+        ('/' + value.source + '/') :
+        value;
+    }, 2);
+
+    return json.replace(/"\/(.*)\/"/g, '/$1/');
   }
 
   /**
