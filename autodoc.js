@@ -486,6 +486,8 @@
             template: "some template"
           });
           console.error(exampleHandler + '\n');
+
+          console.error('See the README for more details.\n');
         }
       }
     });
