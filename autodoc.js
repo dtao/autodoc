@@ -641,10 +641,6 @@
         properties  = this.getParams(doc, 'property'),
         tags        = Lazy(doc.tags).pluck('title').toArray();
 
-    if (!name) {
-      console.log('No good! ' + JSON.stringify(doc));
-    }
-
     return {
       name: name,
       identifier: 'type-' + name,
