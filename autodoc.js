@@ -435,7 +435,7 @@
       // Look at all of our examples. Those that are matched by some handler, we
       // will leave to be verified by handler.test, which will obviously need to
       // be available in the output HTML (bin/autodoc ensures this).
-      Lazy(exampleHandlers).each(function(handler, i) {
+      var noMatchingHandler = Lazy(exampleHandlers).each(function(handler, i) {
         var match = example.expected.match(handler.pattern),
             data;
 
@@ -467,7 +467,9 @@
           // Exit early -- we found our handler!
           return false;
         }
+      });
 
+      if (noMatchingHandler) {
         // In case there's no custom handler defined for this example, let's
         // ensure that it's at least valid JavaScript. If not, that's a good
         // indicator there SHOULD be a custom handler defined for it!
@@ -480,12 +482,12 @@
           console.error("You can define a custom handler like this:");
 
           var exampleHandler = stringify({
-            pattern: new RegExp(example.expected),
+            pattern: new RegExp('^' + example.expected + '$'),
             template: "some template"
           });
           console.error(exampleHandler + '\n');
         }
-      });
+      }
     });
   };
 
