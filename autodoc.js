@@ -313,8 +313,9 @@
           return null;
         }
 
-        return Autodoc.getTagDescription(doc, 'exampleHelpers');
+        return Autodoc.getTagDescriptions(doc, 'exampleHelpers');
       })
+      .flatten()
       .compact()
       .first() || '';
 
@@ -399,7 +400,7 @@
   Autodoc.prototype.eachExample = function(libraryInfo, callback) {
     Lazy(libraryInfo.docs)
       .each(function(doc) {
-        Lazy(doc.examples.list).each(function(example) {
+        Lazy(doc.examples).pluck('list').flatten().each(function(example) {
           callback(example, doc.name);
         });
       });
@@ -567,9 +568,9 @@
       signature: signature,
       highlightedSignature: insertSignatureLink(this.highlightCode(signature), nameInfo.identifier),
       examples: examples,
-      hasExamples: examples.list.length > 0,
+      hasExamples: examples.length > 0,
       benchmarks: benchmarks,
-      hasBenchmarks: benchmarks.list.length > 0,
+      hasBenchmarks: benchmarks.length > 0,
       tags: tags,
       source: source,
       highlightedSource: this.highlightCode(source)
@@ -661,9 +662,11 @@
    */
   Autodoc.prototype.createTypeInfo = function(doc) {
     var description = doc.description,
-        name        = Autodoc.getTagDescription(doc, 'typedef'),
+        names       = Autodoc.getTagDescriptions(doc, 'typedef')
         properties  = this.getParams(doc, 'property'),
         tags        = Lazy(doc.tags).pluck('title').toArray();
+
+    var name = names[0] || '';
 
     return {
       name: name,
@@ -994,7 +997,7 @@
       // tag for its explicit namespace. (We'll assume static members unless the
       // @instance tag is present.)
       } else if (Autodoc.hasTag(fn, 'memberOf')) {
-        namespace = Autodoc.getTagDescription(fn, 'memberOf');
+        namespace = Autodoc.getTagDescriptions(fn, 'memberOf')[0] || '';
         name = namespace + ((fn && Autodoc.hasTag(fn, 'instance')) ? '#' : '.') +
           shortName;
       }
@@ -1068,15 +1071,17 @@
    * @returns {Array.<*>} An array of whatever the callback returns.
    */
   Autodoc.parseCommentLines = function(doc, tagNames, callback) {
-    var comment      = Autodoc.getTagDescription(doc, tagNames),
-        commentLines = comment.split('\n'),
-        initialLines = [],
-        pairs        = [],
-        currentPair  = null,
-        previousPair = null;
+    var comments = Autodoc.getTagDescriptions(doc, tagNames);
 
-    Lazy(commentLines)
-      .each(function(line, i) {
+    var results = [];
+    Lazy(comments).each(function(comment) {
+      var commentLines = comment.split('\n'),
+          initialLines = [],
+          pairs        = [],
+          currentPair  = null,
+          previousPair = null;
+
+      Lazy(commentLines).each(function(line, i) {
         // Allow multiline expectations as long as subsequent lines are indented
         if ((/^\s+/).test(line) && currentPair) {
           currentPair.right += '\n' + line;
@@ -1134,36 +1139,34 @@
         }
       });
 
-    return callback({
-      content: comment,
-      preamble: initialLines.join('\n'),
-      pairs: pairs
+      results.push(callback({
+        content: comment,
+        preamble: initialLines.join('\n'),
+        pairs: pairs
+      }));
     });
+
+    return results;
   };
 
   /**
-   * Gets the text from a given comment tag.
+   * Gets the text descriptions from comment tags with the specified tag name(s).
    *
    * @param {Object} doc
    * @param {string|string[]} tagNames
-   * @returns {string}
+   * @returns {Array.<string>}
    */
-  Autodoc.getTagDescription = function(doc, tagNames) {
-    var tag;
-
+  Autodoc.getTagDescriptions = function(doc, tagNames) {
     if (!(tagNames instanceof Array)) {
       tagNames = [tagNames];
     }
 
-    for (var i = 0, len = tagNames.length; !tag && (i < len); ++i) {
-      tag = Lazy(doc.tags).findWhere({ title: tagNames[i] });
-    }
-
-    if (typeof tag === 'undefined') {
-      return '';
-    }
-
-    return tag.description;
+    return Lazy(doc.tags)
+      .filter(function(tag) {
+        return Lazy(tagNames).contains(tag.title);
+      })
+      .pluck('description')
+      .toArray();
   };
 
   /**

@@ -47,10 +47,14 @@ getMemberName = (data, shortName) ->
     .name
 
 listExamplesForMember = (data, shortName) ->
-  Lazy(data.docs)
+  examples = Lazy(data.docs)
     .findWhere({ shortName: shortName })
     .examples
-    .list
+
+  Lazy(examples)
+    .pluck('list')
+    .flatten()
+    .toArray()
 
 listPrivateFunctions = (data) ->
   Lazy(data.privateMembers)
@@ -140,6 +144,12 @@ describe 'Autodoc', ->
         keysExamples.length.should.eql 1
         keysExamples[0].should.have.property('actual', 'R.objects.keys({ foo: 1, bar: 2 })')
         keysExamples[0].should.have.property('expected', "['foo', 'bar']")
+
+      it 'gets examples from ALL @example/@examples tags', ->
+        parseExamples = listExamplesForMember(data, 'parse')
+        parseExamples.length.should.eql 13
+        parseExamples[12].should.have.property('actual', "R.numbers.parse('abc123def')")
+        parseExamples[12].should.have.property('expected', "NaN")
 
       describe 'multiline expressions', ->
         insertExamples = listExamplesForMember(data, 'insert')

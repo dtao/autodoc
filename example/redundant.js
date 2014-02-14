@@ -293,6 +293,9 @@ R.strings = strings;
  * R.numbers.parse('foo')       // NaN
  * R.numbers.parse('1.23.45')   // NaN
  *
+ * @example
+ * R.numbers.parse('abc123def') // NaN
+ *
  * @benchmarks
  * R.numbers.parse('123456789') // redundant.js
  * Number('123456789')          // native (Number)
