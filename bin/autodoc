@@ -1,7 +1,8 @@
 #!/usr/bin/env node
 
 var fs   = require('fs'),
-    path = require('path');
+    path = require('path'),
+    vm   = require('vm');
 
 // External dependencies -- adding weird prefixes here to prevent name
 // collisions when actually testing any of these libraries (by which I really
@@ -85,6 +86,44 @@ function inferLanguage(fileName) {
 
     default:
       return 'javascript';
+  }
+}
+
+function attempt(js) {
+  try {
+
+    vm.runInThisContext(js);
+
+  } catch (e) {
+    var errorLine = +(
+      _Lazy(e.stack).split('\n')
+        .skip(1)
+        .first()
+        .match(/:(\d+):\d+$/)[1]
+    );
+
+    var startingLine = Math.max(errorLine - 5, 0),
+        endingLine   = errorLine + 5;
+
+    var snippet = _Lazy(js).split('\n')
+      .skip(startingLine)
+      .take(endingLine - startingLine)
+      .map(function(line, i) {
+        var lineNumber = i + startingLine + 1;
+
+        line = lineNumber + ': ' + line;
+        if (lineNumber === errorLine) {
+          line = '\x1B[31m' + line + '\x1B[39m';
+        }
+
+        return line;
+      })
+      .join('\n');
+
+    console.error('Error on line ' + errorLine + ':');
+    console.error(snippet);
+
+    throw e;
   }
 }
 
@@ -243,7 +282,7 @@ function runTests() {
     console.log(examplesJs);
   }
 
-  eval(examplesJs);
+  attempt(examplesJs);
 
   return examplesJs;
 }
@@ -259,7 +298,7 @@ function runBenchmarks() {
     console.log(benchmarksJs);
   }
 
-  eval(benchmarksJs);
+  attempt(benchmarksJs);
 
   return benchmarksJs;
 }
