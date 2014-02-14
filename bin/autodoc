@@ -1,8 +1,7 @@
 #!/usr/bin/env node
 
 var fs   = require('fs'),
-    path = require('path'),
-    vm   = require('vm');
+    path = require('path');
 
 // External dependencies -- adding weird prefixes here to prevent name
 // collisions when actually testing any of these libraries (by which I really
@@ -92,7 +91,7 @@ function inferLanguage(fileName) {
 function attempt(js) {
   try {
 
-    vm.runInThisContext(js);
+    eval(js);
 
   } catch (e) {
     var errorMatch =

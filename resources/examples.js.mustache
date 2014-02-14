@@ -7,6 +7,8 @@ global['{{{variable}}}'] = require('{{{filePath}}}');
 var jasmine  = require('jasmine-node'),
     env      = jasmine.getEnv();
 
+// TODO: This template shouldn't rely on the _commander variable leaking in
+// from JS being eval'd in bin/autodoc!
 var reporterType = _commander.verbose ?
   jasmine.TerminalVerboseReporter :
   jasmine.TerminalReporter;
