@@ -45,6 +45,10 @@
     {
       pattern: /^\[\s*\.\.\.,?\s*(.*)\]$/,
       template: 'array_tail'
+    },
+    {
+      pattern: /\{([\s\S]*),?[\s\n]*\.\.\.[\s\n]*\}/,
+      template: 'object_proximity'
     }
   ]);
 

@@ -165,6 +165,34 @@ R.objects = {
       keys.push(key);
     }
     return keys;
+  },
+
+  /**
+   * Returns an object, or creates a new one. This duplicates the `Object`
+   * constructor.
+   *
+   * @param {Object} object An optional object to return
+   * @returns {Object} Either `object`, if not `null`, or a new empty object
+   *
+   * @example
+   * R.objects.getOrCreate({});
+   * // => {}
+   *
+   * R.objects.getOrCreate({ foo: 1, bar: 2, baz: 3 });
+   * // => { foo: 1, ... }
+   *
+   * R.objects.getOrCreate({
+   *   foo: [1, 2, 3],
+   *   bar: [4, 5, 6],
+   *   baz: [7, 8, 9]
+   * });
+   * // => {
+   *   foo: [1, 2, 3],
+   *   ...
+   * }
+   */
+  getOrCreate: function(object) {
+    return object || {};
   }
 };
 

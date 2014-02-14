@@ -1,0 +1,6 @@
+var actual = {{{actual}}};
+var expected = { {{{match.1}}} };
+
+for (var key in expected) {
+  expect(actual[key]).toEqual(expected[key]);
+}
