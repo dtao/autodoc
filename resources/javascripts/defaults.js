@@ -33,6 +33,18 @@
     {
       pattern: /^calls\s+(\w+)\s+(\d+)\s+times? asynchronously$/,
       template: 'calls_async'
+    },
+    {
+      pattern: /^=~ (.*)$/,
+      template: 'proximity'
+    },
+    {
+      pattern: /^\[(.*),?\s*\.\.\.\s*\]$/,
+      template: 'array_head'
+    },
+    {
+      pattern: /^\[\s*\.\.\.,?\s*(.*)\]$/,
+      template: 'array_tail'
     }
   ]);
 

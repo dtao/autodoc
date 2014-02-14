@@ -180,6 +180,9 @@ var strings = {
    * @examples
    * R.strings.split('1,2,3', ',')   // => ['1', '2', '3']
    * R.strings.split('hello', 'ell') // => ['h', 'o']
+   * R.strings.split('hello', '')    // => ['h', 'e', ...]
+   * R.strings.split('goodbye', '')  // => [..., 'b', 'y', 'e']
+   * R.strings.split('12345', '')    // =~ ['5', '4', '3', '2', '1']
    *
    * @benchmarks
    * R.strings.split('foo bar baz', ' ') // redundant.js
@@ -190,7 +193,14 @@ var strings = {
         parts = [],
         index = string.indexOf(delimiter);
 
-    while (index !== -1) {
+    if (delimiter === '') {
+      while (index < string.length) {
+        parts.push(string.charAt(index++));
+      }
+      return parts;
+    }
+
+    while (index !== -1 & index < string.length) {
       parts.push(string.substring(start, index));
       start = index + delimiter.length;
       index = string.indexOf(delimiter, start);
@@ -201,6 +211,34 @@ var strings = {
     }
 
     return parts;
+  },
+
+  /**
+   * Converts all of a string's characters to uppercase. This duplicates
+   * `String.prototype.toUpperCase`.
+   *
+   * @memberOf R.strings
+   * @param {string} string The string to upcase.
+   * @returns {string} The string w/ characters capitalized.
+   *
+   * @examples
+   * R.strings.toUpperCase('foo')   // => 'FOO'
+   * R.strings.toUpperCase(' foo ') // =~ /FOO/
+   */
+  toUpperCase: function(string) {
+    var chars = new Array(string.length);
+
+    var charCode;
+    for (var i = 0, len = chars.length; i < len; ++i) {
+      charCode = string.charCodeAt(i);
+      if (charCode > 96 && charCode < 123) {
+        charCode -= 32;
+      }
+
+      chars[i] = String.fromCharCode(charCode);
+    }
+
+    return chars.join('');
   }
 };
 

@@ -130,7 +130,7 @@ describe 'Autodoc', ->
         listNamespaces(data).should.include 'R.objects'
 
       it 'also respects the @memberOf tag for explicitly defining namespaces', ->
-        listMembersForNamespace(data, 'R.strings').should.eql ['split']
+        listMembersForNamespace(data, 'R.strings').should.eql ['split', 'toUpperCase']
 
       it 'respects the @memberOf tag for the purpose of naming functions', ->
         getMemberName(data, 'parse').should.eql 'R.numbers.parse'
