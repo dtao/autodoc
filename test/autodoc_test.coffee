@@ -109,10 +109,10 @@ describe 'Autodoc', ->
         data.description.should.match /^\s*<p>This is a description.<\/p>\s*$/
 
       it 'gets all namespaces', ->
-        listNamespaces(data).should.contain 'Foo'
-        listNamespaces(data).should.contain 'Foo.Bar'
-        listNamespaces(data).should.not.contain 'privateFunction'
-        listNamespaces(data).should.contain '[private]'
+        listNamespaces(data).should.include 'Foo'
+        listNamespaces(data).should.include 'Foo.Bar'
+        listNamespaces(data).should.not.include 'privateFunction'
+        listNamespaces(data).should.include '[private]'
 
       it 'groups functions by namespace', ->
         listMembersForNamespace(data, 'Foo').should.eql ['getName']

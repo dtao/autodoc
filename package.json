@@ -7,7 +7,7 @@
     "autodoc": "bin/autodoc"
   },
   "scripts": {
-    "test": "node bin/autodoc -t autodoc.js && node bin/autodoc -t example/redundant.js && mocha --compilers coffee:coffee-script"
+    "test": "node bin/autodoc -t autodoc.js && node bin/autodoc -t example/redundant.js && mocha --compilers coffee:coffee-script/register"
   },
   "repository": {
     "type": "git",
@@ -37,7 +37,7 @@
     "string-table": "0.1.5"
   },
   "devDependencies": {
-    "coffee-script": ">= 1.6.1",
+    "coffee-script": ">= 1.7.1",
     "mocha": "1.14.0",
     "sinon": ">= 1.7.3",
     "should": ">= 2.0.2",
