@@ -276,7 +276,6 @@ R.strings = strings;
  * Parses a string as a number. This duplicates `Number`, `parseInt`, and
  * `parseFixed`.
  *
- * @memberOf R.numbers
  * @param {string} string The string to parse.
  * @returns {number} The parsed number.
  *
