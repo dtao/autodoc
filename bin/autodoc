@@ -95,33 +95,35 @@ function attempt(js) {
     vm.runInThisContext(js);
 
   } catch (e) {
-    var errorLine = +(
+    var errorMatch =
       _Lazy(e.stack).split('\n')
         .skip(1)
         .first()
-        .match(/:(\d+):\d+$/)[1]
-    );
+        .match(/:(\d+):\d+$/);
 
-    var startingLine = Math.max(errorLine - 5, 0),
-        endingLine   = errorLine + 5;
+    if (errorMatch) {
+      var errorLine    = +errorMatch[1],
+          startingLine = Math.max(errorLine - 5, 0),
+          endingLine   = errorLine + 5;
 
-    var snippet = _Lazy(js).split('\n')
-      .skip(startingLine)
-      .take(endingLine - startingLine)
-      .map(function(line, i) {
-        var lineNumber = i + startingLine + 1;
+      var snippet = _Lazy(js).split('\n')
+        .skip(startingLine)
+        .take(endingLine - startingLine)
+        .map(function(line, i) {
+          var lineNumber = i + startingLine + 1;
 
-        line = lineNumber + ': ' + line;
-        if (lineNumber === errorLine) {
-          line = '\x1B[31m' + line + '\x1B[39m';
-        }
+          line = lineNumber + ': ' + line;
+          if (lineNumber === errorLine) {
+            line = '\x1B[31m' + line + '\x1B[39m';
+          }
 
-        return line;
-      })
-      .join('\n');
+          return line;
+        })
+        .join('\n');
 
-    console.error('Error on line ' + errorLine + ':');
-    console.error(snippet);
+      console.error('Error on line ' + errorLine + ':');
+      console.error(snippet);
+    }
 
     throw e;
   }
