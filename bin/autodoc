@@ -98,7 +98,7 @@ function attempt(js) {
       _Lazy(e.stack).split('\n')
         .skip(1)
         .first()
-        .match(/:(\d+):\d+$/);
+        .match(/:(\d+):\d+\)?$/);
 
     if (errorMatch) {
       var errorLine    = +errorMatch[1],
