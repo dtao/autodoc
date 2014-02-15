@@ -804,7 +804,7 @@
           //
           // To be fair, there's probably a better approach. I'll leave figuring
           // that out as an exercise to my future self.
-          var actual   = pair.left.replace(/^\s*var\s*\w+\s*=\s*/, ''),
+          var actual   = removeVar(pair.left),
               expected = pair.right;
 
           return {
@@ -1674,6 +1674,24 @@
     }, 2);
 
     return json.replace(/"\/(.*)\/"/g, '/$1/');
+  }
+
+  /**
+   * Yes, removes the leading 'var' from a line. Leave me alone.
+   *
+   * @private
+   * @param {string} string With leading var.
+   * @returns {string} Without leading var.
+   *
+   * @examples
+   * removeVar('var foo = 5');  // => '5'
+   * removeVar('foo = "var x"') // => 'foo = "var x"'
+   * removeVar('var _foo = 8'); // => '8'
+   * removeVar('var $foo = 8'); // => '8'
+   * removeVar('var a, b = 5'); // => 'var a, b = 5'
+   */
+  function removeVar(string) {
+    return string.replace(/^\s*var\s*[\w\$]+\s*=\s*/, '');
   }
 
   /**
