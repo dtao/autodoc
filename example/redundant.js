@@ -398,13 +398,6 @@ function PrivateWithMembers() {}
  */
 PrivateWithMembers.prototype.foo = function foo() {};
 
-/**
- * A private function with no examples.
- *
- * @private
- */
-function privateWithoutExample() {}
-
 if (typeof module === 'object' && module && module.exports) {
   module.exports = R;
 }

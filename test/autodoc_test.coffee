@@ -169,9 +169,6 @@ describe 'Autodoc', ->
         listMethodsOfPrivateFunction(data, 'PrivateWithMembers')
           .should.include 'PrivateWithMembers.prototype.foo'
 
-      xit 'excludes private methods with no examples', ->
-        listPrivateFunctions(data).should.not.include 'privateWithoutExample'
-
       describe 'multiline expressions', ->
         insertExamples = listExamplesForMember(data, 'insert')
         mapExamples = listExamplesForMember(data, 'map')
