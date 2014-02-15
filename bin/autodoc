@@ -35,12 +35,20 @@ function argToGlobals(arg) {
   var refs = argToObject(arg);
   return _Lazy(refs)
     .map(function(library, variable) {
-      return {
-        variable: variable,
-        library: _resolve.sync(library, { basedir: process.cwd() })
-      };
+      return getVariable(
+        variable,
+        _resolve.sync(library, { basedir: process.cwd() })
+      );
     })
     .toArray();
+}
+
+function getVariable(variable, location) {
+  return {
+    variable: variable,
+    legalVariableName: /^[a-z_]\w*$/i.test(variable),
+    location: location
+  };
 }
 
 function fileExists(filePath) {
@@ -218,10 +226,7 @@ if (handlersExists) {
 
 options.exampleHandlers = global.exampleHandlers;
 options.extraOptions = _Lazy(_commander.templateData || {})
-  .extend({
-    globals: _commander.globals || [],
-    filePath: _Autodoc.escapeJsString(path.join(process.cwd(), filePath))
-  })
+  .extend({ globals: _commander.globals || [] })
   .toObject();
 
 if (equalityExists) {
@@ -261,8 +266,10 @@ var libraryInfo = _Lazy(filePaths)
     return mergedInfo;
   });
 
-options.extraOptions.variable = _commander.variable ||
-  libraryInfo.referenceName || '__lib__';
+options.extraOptions.variable = getVariable(
+  _commander.variable || libraryInfo.referenceName || '__lib__',
+  _Autodoc.escapeJsString(path.join(process.cwd(), filePath))
+);
 
 // Update all JavaScript options to look like { language, src } instead of just
 // strings. (This is specifically for CoffeeScript suppot.)

@@ -1,0 +1,6 @@
+{{#legalVariableName}}
+var {{{variable}}} = global['{{{variable}}}'] = require('{{{location}}}');
+{{/legalVariableName}}
+{{^legalVariableName}}
+global['{{{variable}}}'] = require('{{{location}}}');
+{{/legalVariableName}}
