@@ -1870,6 +1870,54 @@
     ]);
   }
 
+  /**
+   * Very simple word-to-number converter.
+   *
+   * @private
+   * @examples
+   * getCount('one');   // => 1
+   * getCount('once');  // => 1
+   * getCount('twice'); // => 2
+   */
+  function getCount(word) {
+    switch (word.toLowerCase()) {
+      case 'one':
+      case 'once':
+        return 1;
+
+      case 'two':
+      case 'twice':
+        return 2;
+
+      case 'three':
+      case 'thrice':
+        return 3;
+
+      case 'four':
+        return 4;
+
+      case 'five':
+        return 5;
+
+      case 'six':
+        return 6;
+
+      case 'seven':
+        return 7;
+
+      case 'eight':
+        return 8;
+
+      case 'nine':
+        return 9;
+
+      case 'ten':
+        return 10;
+    }
+
+    return word;
+  }
+
   if (typeof module !== 'undefined' && module.exports) {
     module.exports = Autodoc;
 
