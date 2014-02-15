@@ -355,7 +355,6 @@ function generateDocs() {
   copyResource('images/gears.gif');
   copyResource('javascripts/utils.js');
   copyResource('javascripts/docs.js');
-  copyResource('javascripts/defaults.js');
 
   _Lazy(filePaths).each(function(filePath) {
     copyFile(filePath, path.join(outputDir, path.basename(filePath)), true);

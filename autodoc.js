@@ -76,7 +76,7 @@
     this.tags             = options.tags || [];
     this.grep             = options.grep;
     this.javascripts      = options.javascripts || [];
-    this.exampleHandlers  = options.exampleHandlers || [];
+    this.exampleHandlers  = exampleHandlers(options.exampleHandlers);
     this.template         = options.template;
     this.templateEngine   = options.templateEngine;
     this.templatePartials = options.templatePartials;
@@ -1756,6 +1756,118 @@
    */
   function insertSignatureLink(html, identifier) {
     return html.replace('/*...*/', '<a class="reveal-source" href="#source-' + identifier + '">/*...*/</a>');
+  }
+
+  /**
+   * The default handlers defined for examples.
+   */
+  function exampleHandlers(customHandlers) {
+    return (customHandlers || []).concat([
+      {
+        pattern: /^(\w[\w\.\(\)\[\]'"]*)\s*===?\s*(.*)$/,
+        template: 'equality',
+        data: function(match) {
+          return {
+            left: match[1],
+            right: match[2]
+          };
+        }
+      },
+      {
+        pattern: /^(\w[\w\.\(\)\[\]'"]*)\s*!==?\s*(.*)$/,
+        template: 'inequality',
+        data: function(match) {
+          return {
+            left: match[1],
+            right: match[2]
+          };
+        }
+      },
+      {
+        pattern: /^instanceof (.*)$/,
+        template: 'instanceof',
+        data: function(match) {
+          return { type: match[1] };
+        }
+      },
+      {
+        pattern: /^NaN$/,
+        template: 'nan'
+      },
+      {
+        pattern: /^throws$/,
+        template: 'throws'
+      },
+      {
+        pattern: /^calls\s+(\w+)\s+(\d+)(?:\s+times?)?$/,
+        template: 'calls',
+        data: function(match) {
+          return {
+            callback: match[1],
+            count: getCount(match[2])
+          };
+        }
+      },
+      {
+        pattern: /^calls\s+(\w+)\s+(\d+)\s+times? asynchronously$/,
+        template: 'calls_async',
+        data: function(match) {
+          return {
+            callback: match[1],
+            count: getCount(match[2])
+          };
+        }
+      },
+      {
+        pattern: /^=~\s+\/(.*)\/$/,
+        template: 'string_proximity',
+        data: function(match) {
+          return { pattern: match[1] };
+        }
+      },
+      {
+        pattern: /^=~\s+\[(.*),?\s*\.\.\.\s*\]$/,
+        template: 'array_inclusion',
+        data: function(match) {
+          return { elements: match[1] };
+        }
+      },
+      {
+        pattern: /^one of (.*)$/,
+        template: 'array_membership',
+        data: function(match) {
+          return { values: match[1] };
+        }
+      },
+      {
+        pattern: /^=~\s+\[(.*)\]$/,
+        template: 'array_proximity',
+        data: function(match) {
+          return { elements: match[1] };
+        }
+      },
+      {
+        pattern: /^\[(.*),?\s*\.\.\.\s*\]$/,
+        template: 'array_head',
+        data: function(match) {
+          return { head: match[1] };
+        }
+      },
+      {
+        pattern: /^\[\s*\.\.\.,?\s*(.*)\]$/,
+        template: 'array_tail',
+        data: function(match) {
+          return { tail: match[1] };
+        }
+      },
+      {
+        pattern: /\{([\s\S]*),?[\s\n]*\.\.\.[\s\n]*\}/,
+        template: 'object_proximity',
+        data: function(match) {
+          return { properties: match[1] };
+        }
+      }
+    ]);
   }
 
   if (typeof module !== 'undefined' && module.exports) {

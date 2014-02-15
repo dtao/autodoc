@@ -6,7 +6,6 @@ Autodoc.options.commentParser   = require('doctrine');
 Autodoc.options.markdownParser  = require('marked');
 Autodoc.options.templateEngine  = require('mustache');
 Autodoc.options.highlighter     = require('codemirror-highlight');
-Autodoc.options.exampleHandlers = require('./resources/javascripts/defaults.js').exampleHandlers;
 
 Autodoc.options.compiler = {
   'javascript': {
