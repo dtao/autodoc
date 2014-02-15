@@ -33,7 +33,7 @@
     "marked": "0.2.10",
     "mustache": "0.7.2",
     "resolve": "0.6.1",
-    "spiderman": "0.1.4",
+    "spiderman": "0.1.5",
     "string-table": "0.1.5"
   },
   "devDependencies": {
