@@ -417,6 +417,11 @@ function PrivateWithMembers() {}
  */
 PrivateWithMembers.prototype.foo = function foo() {};
 
+/**
+ * @typedef {{ foo: number, bar: string }}
+ */
+var ClosureStyleTypeDef;
+
 if (typeof module === 'object' && module && module.exports) {
   module.exports = R;
 }
