@@ -1332,6 +1332,7 @@
     // Private members can be elevated to some visible scope when running tests.
     var privateMembers = Lazy(allMembers)
       .filter('isPrivate')
+      .filter('hasExamples') // no need to include private members w/o examples
       .sortBy('name')
       .toArray();
 

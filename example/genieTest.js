@@ -21,6 +21,8 @@
 
   /**
    * @private
+   * @example
+   * baz(); // => undefined
    */
   function baz() {
 

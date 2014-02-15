@@ -151,6 +151,12 @@ describe 'Autodoc', ->
         parseExamples[12].should.have.property('actual', "R.numbers.parse('abc123def')")
         parseExamples[12].should.have.property('expected', "NaN")
 
+      it 'includes private methods with examples', ->
+        listPrivateFunctions(data).should.include 'privateWithExample'
+
+      it 'excludes private methods with no examples', ->
+        listPrivateFunctions(data).should.not.include 'privateWithoutExample'
+
       describe 'multiline expressions', ->
         insertExamples = listExamplesForMember(data, 'insert')
         mapExamples = listExamplesForMember(data, 'map')

@@ -363,6 +363,22 @@ R.numbers['parse'] = function(string) {
   return whole + decimal;
 };
 
+/**
+ * A private function with an example.
+ *
+ * @private
+ * @example
+ * privateWithExample(); // => undefined
+ */
+function privateWithExample() {}
+
+/**
+ * A private function with no examples.
+ *
+ * @private
+ */
+function privateWithoutExample() {}
+
 if (typeof module === 'object' && module && module.exports) {
   module.exports = R;
 }
