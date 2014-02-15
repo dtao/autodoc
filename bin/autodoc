@@ -75,7 +75,7 @@ function readPartialsFromFolder(folder) {
 
   return _Lazy(fs.readdirSync(folder))
     .map(function(fileName) {
-      return fileName.match(/^_(.*\.js\.mustache)/);
+      return fileName.match(/^(.*)\.js\.mustache/);
     })
     .compact()
     .map(function(match) {
@@ -270,7 +270,7 @@ for (var i = 0; i < options.javascripts.length; ++i) {
 }
 
 function runTests() {
-  var templatePath = path.join(__dirname, '../resources/examples.js.mustache');
+  var templatePath = path.join(__dirname, '../resources/run_tests.js.mustache');
 
   options.template = readFile(templatePath);
 
@@ -286,7 +286,7 @@ function runTests() {
 }
 
 function runBenchmarks() {
-  var templatePath = path.join(__dirname, '../resources/benchmarks.js.mustache');
+  var templatePath = path.join(__dirname, '../resources/run_benchmarks.js.mustache');
 
   options.template = readFile(templatePath);
 

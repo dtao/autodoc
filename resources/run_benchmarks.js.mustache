@@ -1,0 +1,92 @@
+{{#globals}}
+global.{{variable}} = require('{{{library}}}');
+{{/globals}}
+
+global['{{{variable}}}'] = require('{{{filePath}}}');
+
+var path      = require('path'),
+    utils     = require(path.join(__dirname, '../resources/javascripts/utils')),
+    Benchmark = require('benchmark'),
+    ST        = require('string-table');
+
+var suite      = new Benchmark.Suite(),
+    benchmarks = {},
+    results    = [];
+
+{{#privateMembers}}
+var {{shortName}} = {{{source}}};
+{{#methods}}
+{{longName}} = {{{source}}};
+{{/methods}}
+{{/privateMembers}}
+
+{{#docs}}
+{{> benchmarks }}
+{{/docs}}
+
+(function() {
+  for (var b in benchmarks) {
+    (function(benchmarkList) {
+      for (var i = 0; i < benchmarkList.length; ++i) {
+        suite.add(benchmarkList[i]);
+      }
+    }(benchmarks[b]));
+  }
+}());
+
+function getBenchmarkLabel(benchmark) {
+  return benchmark.functionName + ' - ' + benchmark.name;
+}
+
+var maxFunctionNameLength = 0,
+    maxNameLength         = 0;
+
+suite.forEach(function(benchmark) {
+  maxFunctionNameLength = Math.max(maxFunctionNameLength, benchmark.functionName.length);
+  maxNameLength         = Math.max(maxNameLength, benchmark.name.length);
+});
+
+var benchmarkCycles = 0;
+Benchmark.options.onCycle = function(e) {
+  var benchmark = e.target;
+
+  process.stdout.clearLine();
+  process.stdout.cursorTo(0);
+  process.stdout.write(
+    utils.padRight(benchmark.functionName, maxFunctionNameLength) + ' - ' +
+    utils.padRight(benchmark.name, maxNameLength) + ' x ' + benchmarkCycles++
+  );
+};
+
+suite.on('cycle', function(e) {
+  var benchmark = e.target;
+
+  process.stdout.write('\t- ' + utils.formatNumber(benchmark.hz) + ' ops/second\n');
+
+  results.push({
+    'function': benchmark.functionName,
+    'benchmark': benchmark.name,
+    'ops/second': benchmark.hz
+  });
+
+  benchmarkCycles = 0;
+});
+
+suite.on('complete', function() {
+  var table = ST.create(results, {
+    capitalizeHeaders: true,
+    formatters: {
+      'ops/second': function(value) {
+        return {
+          value: utils.formatNumber(value),
+          format: { alignment: 'right' }
+        }
+      }
+    }
+  });
+
+  console.log('\nResults:');
+  console.log('\n' + table + '\n');
+});
+
+suite.run({ async: true });

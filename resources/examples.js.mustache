@@ -1,43 +1,35 @@
-{{#globals}}
-{{> global}}
-{{/globals}}
-
-{{#variable}}
-{{> global}}
-{{/variable}}
-
-var jasmine  = require('jasmine-node'),
-    env      = jasmine.getEnv();
-
-// TODO: This template shouldn't rely on the _commander variable leaking in
-// from JS being eval'd in bin/autodoc!
-var reporterType = _commander.verbose ?
-  jasmine.TerminalVerboseReporter :
-  jasmine.TerminalReporter;
-
-env.addReporter(new reporterType({
-  print: process.stdout.write.bind(process.stdout),
-  color: true,
-  includeStackTrace: true
-}));
-
-{{{exampleHelpers}}}
-
-{{#privateMembers}}
-var {{shortName}} = {{{source}}};
-{{#methods}}
-{{longName}} = {{{source}}};
-{{/methods}}
-{{/privateMembers}}
-
-{{#namespaces}}
 {{#hasExamples}}
-describe('{{namespace}}', function() {
-  {{#allMembers}}
-    {{> examples}}
-  {{/allMembers}}
+describe('{{shortName}}', function() {
+  {{#examples}}
+  {{{setup}}}
+  {{#list}}
+  (function() {
+    var spec = it('{{{actualEscaped}}} => {{{expectedEscaped}}}', function() {
+      {{#hasCustomHandler}}
+      var handler = exampleHandlers[{{handlerIndex}}];
+      var result  = {{{actual}}};
+      var match   = '{{{expectedEscaped}}}'.match(handler.pattern);
+      handler.test(match, result);
+      {{/hasCustomHandler}}
+      {{#exampleSource}}
+      {{{exampleSource}}}
+      {{/exampleSource}}
+      {{^hasCustomHandler}}
+      {{^exampleSource}}
+      var result   = {{{actual}}};
+      var expected = {{{expected}}};
+      expect(result).toEqual(expected);
+      {{/exampleSource}}
+      {{/hasCustomHandler}}
+    });
+
+    spec.suiteId    = '{{identifier}}';
+    spec.exampleId  = '{{identifier}}-{{id}}';
+    spec.actual     = '{{{actualEscaped}}}';
+    spec.expected   = '{{{expectedEscaped}}}';
+    spec.lineNumber = {{lineNumber}};
+  }());
+  {{/list}}
+  {{/examples}}
 });
 {{/hasExamples}}
-{{/namespaces}}
-
-env.execute();

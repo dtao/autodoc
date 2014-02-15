@@ -235,7 +235,7 @@ this.exampleHandlers = [
 
 For every example in your comments, the expected output (the part to the right of `// =>`) will first be checked against all of your custom handlers (in order) to see if there's a match. This means that if you can want you can override Autodoc's defaults.
 
-The `template` property of each matcher should name a Mustache template file following the naming convention "_[template name].js.mustache" (so the example above would require two files, "_template1.js.mustache" and "_template2.js.mustache"). You can specify where these templates are locate with the `--partials` option; otherwise, Autodoc will look in the output folder.
+The `template` property of each matcher should name a Mustache template file following the naming convention **template_name.js.mustache** (so the example above would require two files, template1.js.mustache and template2.js.mustache). You can specify where these templates are locate with the `--partials` option; otherwise, Autodoc will look in the output folder as well as output/handlers.
 
 The data passed to the `template` property will include the properties `{ actual, actualEscaped, expected, expectedEscaped, match }`.
 
