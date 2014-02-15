@@ -443,13 +443,7 @@
             data;
 
         if (match) {
-          if (typeof handler.test === 'function') {
-            // TODO: Get rid of this. I don't like this logic at all.
-            // Mark this example as being handled
-            example.hasCustomHandler = true;
-            example.handlerIndex = i;
-
-          } else if (typeof handler.template === 'string') {
+          if (typeof handler.template === 'string') {
             if (!(handler.template in templatePartials)) {
               throw 'Template "' + handler.template + '" not defined.';
             }

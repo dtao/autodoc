@@ -18,7 +18,7 @@ describe('{{shortName}}', function() {
       {{^exampleSource}}
       var result   = {{{actual}}};
       var expected = {{{expected}}};
-      assertEquality(expected, result);
+      expect(result).toEqual(expected);
       {{/exampleSource}}
       {{/hasCustomHandler}}
     });

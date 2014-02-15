@@ -172,8 +172,6 @@ var filePaths       = argToList(process.argv.pop()),
     handlersPath    = _commander.handlers || path.join(outputDir, 'handlers.js'),
     partialsDir     = _commander.partials || outputDir,
     handlersExists  = fileExists(handlersPath),
-    equalityPath    = path.join(outputDir, 'assertEquality.js'),
-    equalityExists  = fileExists(equalityPath),
     docHelperPath   = path.join(outputDir, 'doc_helper.js'),
     docHelperExists = fileExists(docHelperPath),
     theme           = _commander.theme || 'flatly';
@@ -209,7 +207,6 @@ if (!_Lazy(options.javascripts).contains(libraryFileName)) {
 
 var defaults = require(path.join(__dirname, '../resources/javascripts/defaults.js'));
 
-global.assertEquality  = defaults.assertEquality;
 global.exampleHandlers = defaults.exampleHandlers;
 
 var resourcesDir = path.join(__dirname, '../resources');
@@ -228,16 +225,6 @@ options.exampleHandlers = global.exampleHandlers;
 options.extraOptions = _Lazy(_commander.templateData || {})
   .extend({ globals: _commander.globals || [] })
   .toObject();
-
-if (equalityExists) {
-  // Same as w/ helpers
-  options.javascripts.push('assertEquality.js');
-
-  // We attach assertEquality to the global context because it's only used
-  // within the tests themselves, not within Autodoc (so no need to add it to
-  // options).
-  global.assertEquality = require(path.join(process.cwd(), equalityPath)).assertEquality || global.assertEquality;
-}
 
 if (docHelperExists) {
   options.javascripts.push('doc_helper.js');

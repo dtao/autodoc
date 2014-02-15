@@ -60,11 +60,4 @@
     }
   ]);
 
-  // A client library may have defined a custom assertEquality method, e.g.
-  // in doc_helper.js; so we'll only use this default implementation if
-  // necessary.
-  this.assertEquality = context.assertEquality || function(expected, actual) {
-    expect(actual).toEqual(expected);
-  };
-
 }.call(this, typeof global !== 'undefined' ? global : this));
