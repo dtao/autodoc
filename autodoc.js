@@ -460,7 +460,7 @@
             example.exampleSource = templateEngine.render(
               templatePartials[handler.template],
               Lazy(example).extend(data).toObject()
-            );
+            ) || '// pending';
 
           } else {
             throw 'Custom example handlers must provide either a "test" function ' +
