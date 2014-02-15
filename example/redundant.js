@@ -145,6 +145,19 @@ R.arrays.insert = function(array, index, element) {
   return array;
 };
 
+/**
+ * Gets a random element from an array. This doesn't duplicate anything, actually.
+ *
+ * @param {Array.<*>} array The array to get a random element from.
+ * @returns {*} A random element from the array.
+ *
+ * @example
+ * R.arrays.random([1, 2, 3]); // => one of [1, 2, 3]
+ */
+R.arrays.random = function(array) {
+  return array[Math.floor(Math.random(array.length))];
+};
+
 R.objects = {
   /**
    * Gets the keys of an object. This duplicates the native `Object.keys` method.

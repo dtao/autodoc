@@ -164,6 +164,9 @@ Autodoc supports the following syntaxes for defining assertions:
     // ...equal to 'bar' (works for any legal expression)
     foo() // => 'bar'
 
+    // ...either 1, 2, or 3
+    foo() // => one of [1, 2, 3]
+
     // ...an array starting with [1, 2, 3]
     foo() // => [1, 2, 3, ...]
 

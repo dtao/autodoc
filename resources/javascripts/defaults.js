@@ -43,6 +43,10 @@
       template: 'array_inclusion'
     },
     {
+      pattern: /^one of (.*)$/,
+      template: 'array_membership'
+    },
+    {
       pattern: /^=~\s+\[(.*)\]$/,
       template: 'array_proximity'
     },
