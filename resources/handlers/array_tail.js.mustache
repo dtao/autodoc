@@ -1,4 +1,5 @@
 var actual = {{{actual}}};
-var tail   = [{{{match.1}}}];
+var tail   = [{{{tail}}}];
 
-expect(actual.slice(actual.length - tail.length)).toEqual(tail);
+expect(actual.slice(actual.length - tail.length)).toEqual(tail,
+  'Expected {{{actualEscaped}}} to end with {{{tail}}}.');

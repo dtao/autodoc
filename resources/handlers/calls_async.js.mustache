@@ -1,14 +1,15 @@
-var {{{match.1}}} = jasmine.createSpy();
+var {{{callback}}} = jasmine.createSpy();
 
 runs(function() {
   {{{actual}}}
-  expect({{{match.1}}}).not.toHaveBeenCalled();
+  expect({{{callback}}}).not.toHaveBeenCalled();
 });
 
 waitsFor(function() {
-  return {{{match.1}}}.calls.length === {{{match.2}}};
+  return {{{callback}}}.calls.length === {{{count}}};
 });
 
 runs(function() {
-  expect({{{match.1}}}.calls.length).toEqual({{{match.2}}}, 'Expected {{{actualEscaped}}} to call {{{match.1}}} {{{match.2}}} time(s) asynchronously.');
+  expect({{{callback}}}.calls.length).toEqual({{{count}}},
+    'Expected {{{actualEscaped}}} to call {{{callback}}} {{{count}}} time(s) asynchronously.');
 });

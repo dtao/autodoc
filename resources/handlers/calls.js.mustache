@@ -1,3 +1,4 @@
-var {{{match.1}}} = jasmine.createSpy();
-{{{actual}}}
-expect({{{match.1}}}.calls.length).toEqual({{{match.2}}}, 'Expected {{{actualEscaped}}} to call {{{match.1}}} {{{match.2}}} time(s).');
+var {{{callback}}} = jasmine.createSpy();
+{{{actual}}};
+expect({{{callback}}}.calls.length).toEqual({{{count}}},
+  'Expected {{{actualEscaped}}} to call {{{callback}}} {{{count}}} time(s).');
