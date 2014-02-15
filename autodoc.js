@@ -470,8 +470,7 @@
             ) || '// pending';
 
           } else {
-            throw 'Custom example handlers must provide either a "test" function ' +
-              'or a "template" name.';
+            throw 'Custom example handlers must provide a template name.';
           }
 
           // Exit early -- we found our handler!
@@ -815,7 +814,7 @@
     var self = this,
         exampleIdCounter = 1;
 
-    return Autodoc.parseCommentLines(doc, ['examples', 'example'], function(data) {
+    return this.parseCommentLines(doc, ['examples', 'example'], function(data) {
       return {
         code: data.content,
         highlightedCode: self.highlightCode(data.content),
@@ -889,7 +888,7 @@
         benchmarkCaseIdCounter = 1,
         benchmarkIdCounter     = 1;
 
-    return Autodoc.parseCommentLines(doc, 'benchmarks', function(data) {
+    return this.parseCommentLines(doc, 'benchmarks', function(data) {
       var benchmarks = Lazy(data.pairs)
         .map(function(pair) {
           var parts = divide(pair.right, ' - ');
@@ -1093,10 +1092,11 @@
    * @param {DataCallback} callback
    * @returns {Array.<*>} An array of whatever the callback returns.
    */
-  Autodoc.parseCommentLines = function(doc, tagNames, callback) {
-    var comments = Autodoc.getTagDescriptions(doc, tagNames);
+  Autodoc.prototype.parseCommentLines = function(doc, tagNames, callback) {
+    var self     = this,
+        comments = Autodoc.getTagDescriptions(doc, tagNames),
+        results  = [];
 
-    var results = [];
     Lazy(comments).each(function(comment) {
       var commentLines = comment.split('\n'),
           initialLines = [],
@@ -1112,7 +1112,7 @@
           return;
         }
 
-        var pair = Autodoc.parsePair(line);
+        var pair = self.parsePair(line);
 
         if (!pair && pairs.length === 0) {
           initialLines.push(line);
@@ -1202,24 +1202,34 @@
    * @returns {PairInfo|null}
    *
    * @examples
-   * Autodoc.parsePair('foo(bar)//=>5')      // => { left: 'foo(bar)', right: '5' }
-   * Autodoc.parsePair(' bar(baz) //=> 10 ') // => { left: 'bar(baz)', right: '10' }
-   * Autodoc.parsePair('foo // => bar')      // => { left: 'foo', right: 'bar' }
-   * Autodoc.parsePair('foo // bar')         // => { left: 'foo', right: 'bar' }
-   * Autodoc.parsePair('// => 5')            // => { left: '', right: '5' }
-   * Autodoc.parsePair('// bar')             // => null
-   * Autodoc.parsePair('foo //')             // => null
+   * var autodoc = new Autodoc({
+   *   exampleHandlers: [
+   *     { pattern: /^custom pattern$/ }
+   *   ]
+   * });
+   *
+   * autodoc.parsePair('foo(bar)//=>5')      // => { left: 'foo(bar)', right: '5' }
+   * autodoc.parsePair(' bar(baz) //=> 10 ') // => { left: 'bar(baz)', right: '10' }
+   * autodoc.parsePair('foo // => bar')      // => { left: 'foo', right: 'bar' }
+   * autodoc.parsePair('foo // bar')         // => { left: 'foo', right: 'bar' }
+   * autodoc.parsePair('// => 5')            // => { left: '', right: '5' }
+   * autodoc.parsePair('// bar')             // => null
+   * autodoc.parsePair('// custom pattern')  // => { left: '', right: 'custom pattern' }
+   * autodoc.parsePair('foo //')             // => null
    */
-  Autodoc.parsePair = function(line) {
+  Autodoc.prototype.parsePair = function(line) {
     var parts = line.match(/^\s*(.*)\s*\/\/\s*(=>)?\s*([^\s].*)$/);
 
     if (!parts) {
       return null;
     }
 
-    // The => is only optional for single-line pairs.
+    // The => is only optional for single-line pairs, unless there's a custom
+    // handler that matches the right-hand side.
     if (!parts[1] && !parts[2]) {
-      return null;
+      if (!Lazy(this.exampleHandlers).any(function(handler) {
+        return handler.pattern.test(parts[3]);
+      })) return null;
     }
 
     return {

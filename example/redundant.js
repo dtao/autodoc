@@ -56,6 +56,25 @@ R.arrays.clone = function(array) {
 };
 
 /**
+ * Creates an array with the specified capacity. This duplicates the `Array`
+ * constructor.
+ *
+ * @param {number} capacity
+ * @returns {Array.<*>}
+ *
+ * @examples
+ * R.arrays.allocate(10);
+ * // =~ [undefined, ...]
+ */
+R.arrays.allocate = function(capacity) {
+  var arr = [];
+  while (arr.length < capacity) {
+    arr.push(undefined);
+  }
+  return arr;
+};
+
+/**
  * Maps the elements of an array onto a new array. This duplicate the native functionality of
  * calling `Array.prototype.map(fn)`.
  *

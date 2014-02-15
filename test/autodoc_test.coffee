@@ -187,6 +187,12 @@ describe 'Autodoc', ->
           mapExamples[2].should.have.property('expected', '[1, 3]')
           mapExamples[3].should.have.property('actual', "[[], [1, 2], 'foo', { length: 'bar' }].map(function(obj) {\n  return obj.length;\n});")
 
+        it 'supports all matchers (not just =>) on new lines', ->
+          allocateExamples = listExamplesForMember(data, 'allocate')
+          allocateExamples.length.should.eql 1
+          allocateExamples[0].should.have.property('actual', 'R.arrays.allocate(10);')
+          allocateExamples[0].should.have.property('expected', "=~ [undefined, ...]")
+
       # dangerous territory here, I know
       it 'ignores superfluous "var" declarations', ->
         cloneExamples = listExamplesForMember(data, 'clone')

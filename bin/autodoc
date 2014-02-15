@@ -205,9 +205,7 @@ if (!_Lazy(options.javascripts).contains(libraryFileName)) {
   }
 }
 
-var defaults = require(path.join(__dirname, '../resources/javascripts/defaults.js'));
-
-global.exampleHandlers = defaults.exampleHandlers;
+global.exampleHandlers = _Autodoc.options.exampleHandlers;
 
 var resourcesDir = path.join(__dirname, '../resources');
 options.templatePartials = _Lazy(readPartialsFromFolder(resourcesDir))
