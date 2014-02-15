@@ -35,8 +35,16 @@
       template: 'calls_async'
     },
     {
-      pattern: /^=~ (.*)$/,
-      template: 'proximity'
+      pattern: /^=~\s+\/(.*)\/$/,
+      template: 'string_proximity'
+    },
+    {
+      pattern: /^=~\s+\[(.*),?\s*\.\.\.\s*\]$/,
+      template: 'array_inclusion'
+    },
+    {
+      pattern: /^=~\s+\[(.*)\]$/,
+      template: 'array_proximity'
     },
     {
       pattern: /^\[(.*),?\s*\.\.\.\s*\]$/,
