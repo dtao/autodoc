@@ -159,10 +159,30 @@ Use the `@examples` (or just `@example`) tag to define specs above any function:
 
 Autodoc supports the following syntaxes for defining assertions:
 
-    // The result of calling foo() should be 'bar'
+    // The result of calling foo() should be...
+
+    // ...equal to 'bar' (works for any legal expression)
     foo() // => 'bar'
 
-    // The result of calling foo() should be an instance of Foo
+    // ...an array starting with [1, 2, 3]
+    foo() // => [1, 2, 3, ...]
+
+    // ...an array ending with ['x', 'y', 'z']
+    foo() // => [..., 'x', 'y', 'z']
+
+    // ... an array with the elements 'foo' and 'bar' (any order)
+    foo() // =~ ['foo', 'bar']
+
+    // ... an array containing 'foo' and 'bar' and possibly other elements
+    foo() // =~ ['foo', 'bar', ...]
+
+    // ...an object with the properties { foo: 1, bar: 2 } and possibly others
+    foo() // => { foo: 1, bar: 2, ... }
+
+    // ...a string matching the regular expression /foo/
+    foo() // =~ /foo/
+
+    // ...an instance of Foo
     foo() // instanceof Foo
 
     // After calling foo(), x should equal 5
@@ -173,9 +193,6 @@ Autodoc supports the following syntaxes for defining assertions:
 
     // Calling foo() should throw an exception
     foo() // throws
-
-    // Calling foo() should return NaN
-    foo() // NaN
 
     // Calling foo(callback) should in turn call callback() exactly once
     foo(callback) // calls callback 1 time
