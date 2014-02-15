@@ -266,9 +266,12 @@
     var privateMembers = Lazy(namespaces)
       .map('privateMembers')
       .flatten()
+      .reject(function(member) {
+        return !member.shortName;
+      })
       .toArray();
 
-    Lazy(privateMembers).each(function(member) {
+    Lazy(privateMembers).each(function(member, i) {
       member.methods = Lazy(functions)
         .where({ namespace: member.shortName })
         .toArray();
@@ -1326,7 +1329,6 @@
     // Private members can be elevated to some visible scope when running tests.
     var privateMembers = Lazy(allMembers)
       .filter('isPrivate')
-      .filter('hasExamples') // no need to include private members w/o examples
       .sortBy('name')
       .toArray();
 
