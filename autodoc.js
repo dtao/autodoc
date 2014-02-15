@@ -450,7 +450,7 @@
             example.handlerIndex = i;
 
           } else if (typeof handler.template === 'string') {
-            if (!templatePartials[handler.template]) {
+            if (!(handler.template in templatePartials)) {
               throw 'Template "' + handler.template + '" not defined.';
             }
 
