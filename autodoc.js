@@ -451,8 +451,18 @@
               throw 'Template "' + handler.template + '" not defined.';
             }
 
-            data = typeof handler.data === 'function' ?
-              handler.data(match) : { match: match };
+            data = { match: match };
+
+            if (typeof handler.data === 'function') {
+              data = handler.data(match);
+
+              // Yes, this could potentially override a property like
+              // 'whateverEscaped'... I don't care about that right now. Easy to
+              // fix later.
+              Lazy(Object.keys(data)).each(function(key) {
+                data[key + 'Escaped'] = Autodoc.escapeJsString(data[key]);
+              });
+            }
 
             example.exampleSource = templateEngine.render(
               templatePartials[handler.template],
