@@ -438,7 +438,7 @@
       // Look at all of our examples. Those that are matched by some handler, we
       // will leave to be verified by handler.test, which will obviously need to
       // be available in the output HTML (bin/autodoc ensures this).
-      var noMatchingHandler = Lazy(exampleHandlers).each(function(handler, i) {
+      var matchingHandler = Lazy(exampleHandlers).any(function(handler, i) {
         var match = example.expected.match(handler.pattern),
             data;
 
@@ -468,11 +468,11 @@
           }
 
           // Exit early -- we found our handler!
-          return false;
+          return true;
         }
       });
 
-      if (noMatchingHandler) {
+      if (!matchingHandler) {
         // In case there's no custom handler defined for this example, let's
         // ensure that it's at least valid JavaScript. If not, that's a good
         // indicator there SHOULD be a custom handler defined for it!
