@@ -432,6 +432,8 @@
         templatePartials = this.templatePartials,
         codeParser       = this.codeParser;
 
+    var brokenExamples = [];
+
     this.eachExample(libraryInfo, function(example) {
       // Look at all of our examples. Those that are matched by some handler, we
       // will leave to be verified by handler.test, which will obviously need to
@@ -478,20 +480,34 @@
           codeParser.parse('var expected = ' + example.expected);
 
         } catch (e) {
-          console.error("There's no custom handler defined for '" +
-            example.expected + "', and it isn't valid JavaScript.");
-          console.error("You can define a custom handler like this:");
-
-          var exampleHandler = stringify({
-            pattern: new RegExp('^' + example.expected + '$'),
-            template: "some template"
-          });
-          console.error(exampleHandler + '\n');
-
-          console.error('See the README for more details.\n');
+          brokenExamples.push(example);
         }
       }
     });
+
+    if (brokenExamples.length > 0) {
+      console.error("The following examples don't match any custom handlers, " +
+        "and they aren't valid JavaScript:\n");
+      
+      Lazy(brokenExamples).each(function(example) {
+        console.error(firstLine(example.expected));
+      });
+
+      console.error("\nYou can define custom handlers in a 'handlers.js' file " +
+        "(or specify with the --handlers option), like this:\n");
+
+      console.error([
+        'this.exampleHandlers = [',
+        '  {',
+        '    pattern: /pattern to match/',
+        '    template: "name of template"',
+        '  }',
+        '  ...',
+        '];'
+      ].join('\n'));
+
+      console.error('\nSee the README for more details.\n');
+    }
   };
 
   /**
@@ -1656,24 +1672,25 @@
   }
 
   /**
-   * Basically JSON.stringify but with added support for RegExp objects.
+   * Takes the first line of a string and, if there's more, appends '...' to
+   * indicate as much.
    *
    * @private
-   * @param {Object} object The object to stringify.
-   * @returns {string} A JSON string representing the object.
+   * @param {string} string The string whose first line you want to get.
+   * @returns {string} The first line of the string.
    *
    * @examples
-   * stringify({ foo: 'foo', bar: /bar/ });
-   * // => '{\n  "foo": "foo",\n  "bar": /bar/\n}'
+   * firstLine('foo');      // => 'foo'
+   * firstLine('foo\nbar'); // => 'foo (...)'
    */
-  function stringify(object) {
-    var json = JSON.stringify(object, function(key, value) {
-      return value instanceof RegExp ?
-        ('/' + value.source + '/') :
-        value;
-    }, 2);
+  function firstLine(string) {
+    var lineBreak = string.indexOf('\n');
 
-    return json.replace(/"\/(.*)\/"/g, '/$1/');
+    if (lineBreak === -1) {
+      return string;
+    }
+
+    return string.substring(0, lineBreak) + ' (...)';
   }
 
   /**
