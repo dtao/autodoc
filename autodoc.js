@@ -488,9 +488,9 @@
     if (brokenExamples.length > 0) {
       console.error("The following examples don't match any custom handlers, " +
         "and they aren't valid JavaScript:\n");
-      
+
       Lazy(brokenExamples).each(function(example) {
-        console.error(firstLine(example.expected));
+        console.error('\x1B[33m' + firstLine(example.expected) + '\x1B[39m');
       });
 
       console.error("\nYou can define custom handlers in a 'handlers.js' file " +
