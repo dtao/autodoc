@@ -61,6 +61,14 @@ listPrivateFunctions = (data) ->
     .pluck('name')
     .toArray()
 
+listMethodsOfPrivateFunction = (data, shortName) ->
+  privateFunction = Lazy(data.privateMembers)
+    .findWhere({ shortName: shortName })
+
+  Lazy(privateFunction.methods)
+    .pluck('longName')
+    .toArray()
+
 getTypeDef = (data, typeName) ->
   Lazy(data.types)
     .findWhere({ name: typeName })
@@ -154,7 +162,14 @@ describe 'Autodoc', ->
       it 'includes private methods with examples', ->
         listPrivateFunctions(data).should.include 'privateWithExample'
 
-      it 'excludes private methods with no examples', ->
+      it 'includes private constructors with members', ->
+        listPrivateFunctions(data).should.include 'PrivateWithMembers'
+
+      it 'includes members of private methods', ->
+        listMethodsOfPrivateFunction(data, 'PrivateWithMembers')
+          .should.include 'PrivateWithMembers.prototype.foo'
+
+      xit 'excludes private methods with no examples', ->
         listPrivateFunctions(data).should.not.include 'privateWithoutExample'
 
       describe 'multiline expressions', ->

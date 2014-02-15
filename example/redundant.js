@@ -386,6 +386,19 @@ R.numbers['parse'] = function(string) {
 function privateWithExample() {}
 
 /**
+ * A private constructor function with members.
+ *
+ * @private
+ * @constructor
+ */
+function PrivateWithMembers() {}
+
+/**
+ * A member of a private class.
+ */
+PrivateWithMembers.prototype.foo = function foo() {};
+
+/**
  * A private function with no examples.
  *
  * @private
