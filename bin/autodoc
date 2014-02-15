@@ -8,6 +8,7 @@ var fs   = require('fs'),
 // just mean Autodoc, clearly).
 var _Autodoc   = require(path.join(__dirname, '../autodoc-node')),
     _bootscrap = require('bootscrap'),
+    _esprima   = require('esprima'),
     _Lazy      = require('lazy.js'),
     _less      = require('less'),
     _commander = require('commander'),
@@ -91,41 +92,41 @@ function inferLanguage(fileName) {
 function attempt(js) {
   try {
 
-    eval(js);
+    // Parse the JS before eval-ing it, so that we can report intelligently on
+    // syntax errors.
+    _esprima.parse(js);
 
   } catch (e) {
-    // var errorMatch =
-    //   _Lazy(e.stack).split('\n')
-    //     .skip(1)
-    //     .first()
-    //     .match(/:(\d+):\d+\)?$/);
+    var errorMatch = (e.message || String(e)).match(/Error: Line (\d+)/);
 
-    // if (errorMatch) {
-    //   var errorLine    = +errorMatch[1],
-    //       startingLine = Math.max(errorLine - 5, 0),
-    //       endingLine   = errorLine + 5;
+    if (errorMatch) {
+      var errorLine    = +errorMatch[1],
+          startingLine = Math.max(errorLine - 5, 0),
+          endingLine   = errorLine + 5;
 
-    //   var snippet = _Lazy(js).split('\n')
-    //     .skip(startingLine)
-    //     .take(endingLine - startingLine)
-    //     .map(function(line, i) {
-    //       var lineNumber = i + startingLine + 1;
+      var snippet = _Lazy(js).split('\n')
+        .skip(startingLine)
+        .take(endingLine - startingLine)
+        .map(function(line, i) {
+          var lineNumber = i + startingLine + 1;
 
-    //       line = lineNumber + ': ' + line;
-    //       if (lineNumber === errorLine) {
-    //         line = '\x1B[31m' + line + '\x1B[39m';
-    //       }
+          line = lineNumber + ': ' + line;
+          if (lineNumber === errorLine) {
+            line = '\x1B[31m' + line + '\x1B[39m';
+          }
 
-    //       return line;
-    //     })
-    //     .join('\n');
+          return line;
+        })
+        .join('\n');
 
-    //   console.error('Error on line ' + errorLine + ':');
-    //   console.error(snippet);
-    // }
+      console.error('Error on line ' + errorLine + ':');
+      console.error(snippet);
+    }
 
     throw e;
   }
+
+  eval(js);
 }
 
 _commander
