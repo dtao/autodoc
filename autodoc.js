@@ -81,6 +81,7 @@
     this.templateEngine   = options.templateEngine;
     this.templatePartials = options.templatePartials;
     this.extraOptions     = options.extraOptions || {};
+    this.errors           = [];
 
     if (this.highlighter) {
       this.highlighter.loadMode(this.language);
@@ -387,6 +388,14 @@
     var templateData = Lazy(libraryInfo)
       .extend(this.extraOptions)
       .toObject();
+
+    if (this.errors.length > 0) {
+      console.error('Autodoc encountered the following errors:\n');
+
+      Lazy(this.errors).each(function(error) {
+        console.error('\x1B[33m' + error + '\x1B[39m');
+      });
+    }
 
     // Finally pass our awesomely-finessed data to the template engine,
     // e.g., Mustache.
@@ -762,8 +771,8 @@
   /**
    * Parses a comment.
    *
-   * @param {string} comment The comment to parse.
-   * @returns {Object}
+   * @param {Object} comment The comment to parse.
+   * @returns {Object?}
    */
   Autodoc.prototype.parseComment = function(comment) {
     var value = comment.value;
@@ -775,7 +784,14 @@
     // strings instead of introducing them. Seems to fix the issue.
     value = value.replace(/^\s*\/\*|\*\/\s*$/g, '');
 
-    return this.commentParser.parse(value, { unwrap: true });
+    try {
+      return this.commentParser.parse(value, { unwrap: true, lineNumbers: true });
+
+    } catch (e) {
+      this.errors.push('Error parsing comment on line ' + comment.loc.start.line +
+        ': ' + String(e.message || e));
+      return null;
+    }
   };
 
   /**
@@ -926,17 +942,23 @@
   Autodoc.prototype.highlightCode = function(code) {
     var highlighter = this.highlighter;
 
-    var highlightedCode = (highlighter && typeof highlighter.highlight === 'function') ?
-      highlighter.highlight(code, { mode: this.language }) :
-      code;
+    try {
+      var highlightedCode = (highlighter && typeof highlighter.highlight === 'function') ?
+        highlighter.highlight(code, { mode: this.language }) :
+        code;
 
-    // Wrap each line in a <span> including the line number.
-    return Lazy(highlightedCode)
-      .split('\n')
-      .map(function(line, i) {
-        return '<span class="line" data-line-no="' + i + '">' + line + '</span>';
-      })
-      .join('\n');
+      // Wrap each line in a <span> including the line number.
+      return Lazy(highlightedCode)
+        .split('\n')
+        .map(function(line, i) {
+          return '<span class="line" data-line-no="' + i + '">' + line + '</span>';
+        })
+        .join('\n');
+
+    } catch (e) {
+      this.errors.push('Error doing syntax highlighting: ' + String(e.message || e));
+      return '<code>' + code + '</code>';
+    }
   };
 
   /**
