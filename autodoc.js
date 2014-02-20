@@ -7,8 +7,7 @@
 (function(context) {
 
   var Lazy      = context.Lazy,
-      Spiderman = context.Spiderman,
-      ST        = context.stringTable;
+      Spiderman = context.Spiderman;
 
   // Auto-require dependencies if they aren't already defined and we're in Node.
   if (typeof Lazy === 'undefined' && typeof require === 'function') {
@@ -16,9 +15,6 @@
   }
   if (typeof Spiderman === 'undefined' && typeof require === 'function') {
     Spiderman = require('spiderman');
-  }
-  if (typeof ST === 'undefined' && typeof require === 'function') {
-    ST = require('string-table');
   }
 
   /**
@@ -405,12 +401,6 @@
     var templateData = Lazy(libraryInfo)
       .extend(this.extraOptions)
       .toObject();
-
-    if (this.errors.length > 0) {
-      console.error('Autodoc encountered the following errors:\n');
-      console.error(ST.create(this.errors));
-      this.errors.length = 0;
-    }
 
     // Finally pass our awesomely-finessed data to the template engine,
     // e.g., Mustache.
