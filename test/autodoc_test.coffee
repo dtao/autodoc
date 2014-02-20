@@ -78,12 +78,12 @@ describe 'Autodoc', ->
     it 'does NOT wrap comment text in /* and */ before passing to doctrine', ->
       parser = { parse: sinon.spy() }
       new Autodoc({ commentParser: parser }).parseComment({ value: 'foo' })
-      sinon.assert.calledWith(parser.parse, 'foo', { unwrap: true })
+      sinon.assert.calledWith(parser.parse, 'foo', { unwrap: true, lineNumbers: true })
 
     it 'strips out surrounding /* and */ before parsing comments', ->
       parser = { parse: sinon.spy() }
       new Autodoc({ commentParser: parser }).parseComment({ value: '/*foo*/' })
-      sinon.assert.calledWith(parser.parse, 'foo', { unwrap: true })
+      sinon.assert.calledWith(parser.parse, 'foo', { unwrap: true, lineNumbers: true })
 
   describe 'getFunctionSource', ->
     it 'provides the raw source code for a function', ->

@@ -21,6 +21,24 @@ env.addReporter(new reporterType({
   includeStackTrace: true
 }));
 
+var failingLines = [];
+env.addReporter({
+  reportSpecResults: function(spec) {
+    if (!spec.results().passed()) {
+      failingLines.push(spec.absoluteLine);
+    }
+  },
+
+  reportRunnerResults: function() {
+    if (failingLines.length > 0) {
+      console.error('Failures occurred on the following Autodoc-generated tests:');
+      for (var i = 0, len = failingLines.length; i < len; ++i) {
+        console.error('Line ' + failingLines[i]);
+      }
+    }
+  }
+});
+
 {{{exampleHelpers}}}
 
 {{#privateMembers}}

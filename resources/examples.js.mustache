@@ -23,11 +23,12 @@ describe('{{shortName}}', function() {
       {{/hasCustomHandler}}
     });
 
-    spec.suiteId    = '{{identifier}}';
-    spec.exampleId  = '{{identifier}}-{{id}}';
-    spec.actual     = '{{{actualEscaped}}}';
-    spec.expected   = '{{{expectedEscaped}}}';
-    spec.lineNumber = {{lineNumber}};
+    spec.suiteId      = '{{identifier}}';
+    spec.exampleId    = '{{identifier}}-{{id}}';
+    spec.actual       = '{{{actualEscaped}}}';
+    spec.expected     = '{{{expectedEscaped}}}';
+    spec.lineNumber   = {{relativeLine}};
+    spec.absoluteLine = {{absoluteLine}};
   }());
   {{/list}}
   {{/examples}}

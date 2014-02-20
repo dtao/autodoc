@@ -7,14 +7,18 @@
 (function(context) {
 
   var Lazy      = context.Lazy,
-      Spiderman = context.Spiderman;
+      Spiderman = context.Spiderman,
+      ST        = context.stringTable;
 
-  // Auto-require Lazy & Spiderman if they aren't already defined and we're in Node.
+  // Auto-require dependencies if they aren't already defined and we're in Node.
   if (typeof Lazy === 'undefined' && typeof require === 'function') {
     Lazy = require('lazy.js');
   }
   if (typeof Spiderman === 'undefined' && typeof require === 'function') {
     Spiderman = require('spiderman');
+  }
+  if (typeof ST === 'undefined' && typeof require === 'function') {
+    ST = require('string-table');
   }
 
   /**
@@ -192,11 +196,14 @@
         // Attempt to parse the comment. If it can't be parsed, or it appears to
         // be basically empty, then skip it.
         var doc = autodoc.parseComment(comment);
-        if (typeof doc === 'undefined') {
+        if (!doc) {
           return null;
         }
 
-        return autodoc.createFunctionInfo(fn, doc, Autodoc.getFunctionSource(fn.unwrap(), code));
+        // This will be useful later.
+        comment.lines = comment.value.split('\n');
+
+        return autodoc.createFunctionInfo(fn, doc, comment, Autodoc.getFunctionSource(fn.unwrap(), code));
       })
       .compact()
       .toArray();
@@ -323,6 +330,12 @@
       .compact()
       .first() || '';
 
+    if (this.errors.length > 0) {
+      console.error('Autodoc encountered the following errors:\n');
+      console.error(ST.create(this.errors));
+      this.errors.length = 0;
+    }
+
     // TODO: Make this code a little more agnostic about the whole namespace
     // thing. I'm pretty sure there are plenty of libraries that don't use
     // this pattern at all.
@@ -391,10 +404,8 @@
 
     if (this.errors.length > 0) {
       console.error('Autodoc encountered the following errors:\n');
-
-      Lazy(this.errors).each(function(error) {
-        console.error('\x1B[33m' + error + '\x1B[39m');
-      });
+      console.error(ST.create(this.errors));
+      this.errors.length = 0;
     }
 
     // Finally pass our awesomely-finessed data to the template engine,
@@ -492,6 +503,7 @@
         // ensure that it's at least valid JavaScript. If not, that's a good
         // indicator there SHOULD be a custom handler defined for it!
         try {
+          codeParser.parse('var actual = ' + example.actual);
           codeParser.parse('var expected = ' + example.expected);
 
         } catch (e) {
@@ -501,11 +513,12 @@
     });
 
     if (brokenExamples.length > 0) {
-      console.error("The following examples don't match any custom handlers, " +
+      console.error("\nThe following examples don't match any custom handlers, " +
         "and they aren't valid JavaScript:\n");
 
       Lazy(brokenExamples).each(function(example) {
-        console.error('\x1B[33m' + firstLine(example.expected) + '\x1B[39m');
+        console.error('\x1B[33m' + firstLine(example.actual) + '\x1B[39m');
+        console.error('\x1B[33m  => ' + firstLine(example.expected) + '\x1B[39m');
       });
 
       console.error("\nYou can define custom handlers in a 'handlers.js' file " +
@@ -555,10 +568,11 @@
    *
    * @param {Object} fn
    * @param {Object} doc
+   * @param {Object} comment
    * @param {string} source
    * @returns {FunctionInfo}
    */
-  Autodoc.prototype.createFunctionInfo = function(fn, doc, source) {
+  Autodoc.prototype.createFunctionInfo = function(fn, doc, comment, source) {
     var nameInfo    = Autodoc.parseName(fn.inferName() || '', doc),
         description = this.parseMarkdown(doc.description),
         params      = this.getParams(doc),
@@ -569,8 +583,8 @@
         isGlobal    = fn.parent.type === 'Program',
         isPrivate   = Autodoc.hasTag(doc, 'private'),
         signature   = Autodoc.getSignature(nameInfo, params),
-        examples    = this.getExamples(doc),
-        benchmarks  = this.getBenchmarks(doc),
+        examples    = this.getExamples(doc, comment),
+        benchmarks  = this.getBenchmarks(doc, comment),
         tags        = Lazy(doc.tags).pluck('title').toArray();
 
     // Do you guys know what I'm talking about? I don't. -Mitch Hedberg
@@ -788,8 +802,12 @@
       return this.commentParser.parse(value, { unwrap: true, lineNumbers: true });
 
     } catch (e) {
-      this.errors.push('Error parsing comment on line ' + comment.loc.start.line +
-        ': ' + String(e.message || e));
+      this.errors.push({
+        stage: 'parsing comment',
+        line: comment.loc.start.line,
+        message: String(e.message || e)
+      });
+
       return null;
     }
   };
@@ -801,7 +819,8 @@
    * @typedef {Object} ExampleInfo
    * @public
    * @property {number} id
-   * @property {number} lineNumber
+   * @property {number} relativeLine
+   * @property {number} absoluteLine
    * @property {string} actual
    * @property {string} actualEscaped
    * @property {string} expected
@@ -826,11 +845,11 @@
    * @param {Object} doc
    * @returns {ExampleCollection}
    */
-  Autodoc.prototype.getExamples = function(doc) {
+  Autodoc.prototype.getExamples = function(doc, comment) {
     var self = this,
         exampleIdCounter = 1;
 
-    return this.parseCommentLines(doc, ['examples', 'example'], function(data) {
+    return this.parseCommentLines(doc, comment.lines, ['examples', 'example'], function(data) {
       return {
         code: data.content,
         highlightedCode: self.highlightCode(data.content),
@@ -847,7 +866,8 @@
 
           return {
             id: exampleIdCounter++,
-            lineNumber: pair.lineNumber,
+            relativeLine: pair.lineNumber,
+            absoluteLine: comment.loc.start.line + data.lineNumber + pair.adjustedLineNumber,
             actual: self.compileSnippet(actual),
             actualEscaped: Autodoc.escapeJsString(actual),
             expected: expected,
@@ -897,14 +917,15 @@
    * Produces a { setup, benchmarks } object providing some benchmarks for a function.
    *
    * @param {Object} doc
+   * @param {Object} comment
    * @returns {BenchmarkCollection}
    */
-  Autodoc.prototype.getBenchmarks = function(doc) {
+  Autodoc.prototype.getBenchmarks = function(doc, comment) {
     var self = this,
         benchmarkCaseIdCounter = 1,
         benchmarkIdCounter     = 1;
 
-    return this.parseCommentLines(doc, 'benchmarks', function(data) {
+    return this.parseCommentLines(doc, comment.lines, 'benchmarks', function(data) {
       var benchmarks = Lazy(data.pairs)
         .map(function(pair) {
           var parts = divide(pair.right, ' - ');
@@ -956,7 +977,12 @@
         .join('\n');
 
     } catch (e) {
-      this.errors.push('Error doing syntax highlighting: ' + String(e.message || e));
+      this.errors.push({
+        stage: 'syntax highlighting',
+        line: '',
+        message: String(e.message || e)
+      });
+
       return '<code>' + code + '</code>';
     }
   };
@@ -1110,17 +1136,19 @@
    * on each left/right pair. (Does that make any sense? Whatever.)
    *
    * @param {Object} doc
+   * @param {string[]} source
    * @param {string|string[]} tagNames
    * @param {DataCallback} callback
    * @returns {Array.<*>} An array of whatever the callback returns.
    */
-  Autodoc.prototype.parseCommentLines = function(doc, tagNames, callback) {
+  Autodoc.prototype.parseCommentLines = function(doc, source, tagNames, callback) {
     var self     = this,
-        comments = Autodoc.getTagDescriptions(doc, tagNames),
+        comments = Autodoc.getTags(doc, tagNames),
         results  = [];
 
     Lazy(comments).each(function(comment) {
-      var commentLines = comment.split('\n'),
+      var baseLine     = comment.lineNumber,
+          commentLines = comment.description.split('\n'),
           initialLines = [],
           pairs        = [],
           currentPair  = null,
@@ -1164,6 +1192,11 @@
             pair.left = pair.left.join('\n');
           }
 
+          // Now that we've actually done that, "correct" the line number.
+          pair.adjustedLineNumber = findAdjustedIndex(source, baseLine, function(line) {
+            return startsWith(line.replace(/^\s*\*\s*/, ''), pair.left);
+          });
+
           pairs.push(pair);
 
           if (currentPair) {
@@ -1185,13 +1218,33 @@
       });
 
       results.push(callback({
-        content: comment,
+        content: comment.description,
         preamble: initialLines.join('\n'),
+        lineNumber: baseLine,
         pairs: pairs
       }));
     });
 
     return results;
+  };
+
+  /**
+   * Gets the tags with the specified tag name(s).
+   *
+   * @param {Object} doc
+   * @param {string|string[]} tagNames
+   * @returns {Array.<Object>}
+   */
+  Autodoc.getTags = function(doc, tagNames) {
+    if (!(tagNames instanceof Array)) {
+      tagNames = [tagNames];
+    }
+
+    return Lazy(doc.tags)
+      .filter(function(tag) {
+        return Lazy(tagNames).contains(tag.title);
+      })
+      .toArray();
   };
 
   /**
@@ -1202,14 +1255,7 @@
    * @returns {Array.<string>}
    */
   Autodoc.getTagDescriptions = function(doc, tagNames) {
-    if (!(tagNames instanceof Array)) {
-      tagNames = [tagNames];
-    }
-
-    return Lazy(doc.tags)
-      .filter(function(tag) {
-        return Lazy(tagNames).contains(tag.title);
-      })
+    return Lazy(Autodoc.getTags(doc, tagNames))
       .pluck('description')
       .toArray();
   };
@@ -1748,6 +1794,71 @@
    */
   function removeVar(string) {
     return string.replace(/^\s*var\s*[\w\$]+\s*=\s*/, '');
+  }
+
+  /**
+   * Finds the first index in an array where the given predicate is matched,
+   * starting from a specified starting index.
+   *
+   * @private
+   * @param {Array.<*>} array The array to search.
+   * @param {number} startIndex The index to start the search from.
+   * @param {function(*):boolean} predicate The predicate to call on each
+   *     element to find a match.
+   * @returns {number} The index of the first found match, or -1.
+   *
+   * @examples
+   * function isEven(x) { return x % 2 === 0; }
+   *
+   * findIndex([1, 2, 3], 0, isEven);    // => 1
+   * findIndex([1, 2, 3], 2, isEven);    // => -1
+   * findIndex([1, 2, 3, 4], 2, isEven); // => 3
+   */
+  function findIndex(array, startIndex, predicate) {
+    startIndex || (startIndex = 0);
+
+    for (var i = startIndex, len = array.length; i < len; ++i) {
+      if (predicate(array[i])) {
+        return i;
+      }
+    }
+
+    return -1;
+  }
+
+  /**
+   * Just like findIndex, but then returns the result relative to the starting
+   * index.
+   *
+   * @private
+   * function isTwo(x) { return x === 2; }
+   *
+   * findAdjustedIndex([1, 2, 1, 1, 1, 2], 2, isTwo); // => 3
+   */
+  function findAdjustedIndex(array, startIndex, predicate) {
+    var index = findIndex(array, startIndex, predicate);
+    if (index >= 0) {
+      return index - startIndex;
+    }
+    return index;
+  }
+
+  /**
+   * Checks if a string starts with a given prefix.
+   *
+   * @private
+   * @param {string} string
+   * @param {string} prefix
+   * @returns {boolean}
+   *
+   * @examples
+   * startsWith('foo', 'f');    // => true
+   * startsWith('foo', 'foo');  // => true
+   * startsWith('foo', 'fool'); // => false
+   * startsWith('foo', 'oo');   // => false
+   */
+  function startsWith(string, prefix) {
+    return string.lastIndexOf(prefix, 0) === 0;
   }
 
   /**
