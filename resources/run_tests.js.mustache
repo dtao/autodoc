@@ -4,10 +4,41 @@
 
 {{#variable}}
 {{> global}}
-{{/variable}}
 
-var jasmine  = require('jasmine-node'),
+var fs       = require('fs'),
+    source   = fs.readFileSync('{{{location}}}', 'utf8'),{{/variable}}
+    lines    = source.split('\n'),
+    jasmine  = require('jasmine-node'),
     env      = jasmine.getEnv();
+
+// TODO: Roughly this same code is duplicated in bin/autodoc. Put it somewhere
+// shared.
+function displayLine(lineNumber) {
+  var startingLine = Math.max(lineNumber - 5, 0);
+  var endingLine   = lineNumber + 5;
+
+  // Display surrounding lines, for context
+  var linesBefore  = lines.slice(startingLine, lineNumber);
+  var linesAfter   = lines.slice(lineNumber + 1, lineNumber + 5);
+
+  linesBefore.forEach(function(line, i) {
+    line = (startingLine + i) + ': ' + line;
+
+    // Add a blank line between displayed lines for readability
+    if (i === 0) {
+      line = '\n' + line;
+    }
+
+    console.error(line);
+  });
+
+  // Highlight the offending line to make it obvious
+  console.error('\x1B[31m' + lineNumber + ': ' + lines[lineNumber] + '\x1B[39m');
+
+  linesAfter.forEach(function(line, i) {
+    console.error((lineNumber + 1 + i) + ': ' + line);
+  });
+}
 
 // TODO: This template shouldn't rely on the _commander variable leaking in
 // from JS being eval'd in bin/autodoc!
@@ -31,9 +62,11 @@ env.addReporter({
 
   reportRunnerResults: function() {
     if (failingLines.length > 0) {
-      console.error('Failures occurred on the following Autodoc-generated tests:');
+      console.error('Failures occurred on the following Autodoc-generated tests');
+      console.error('==========================================================');
+
       for (var i = 0, len = failingLines.length; i < len; ++i) {
-        console.error('Line ' + failingLines[i]);
+        displayLine(failingLines[i]);
       }
     }
   }
