@@ -100,11 +100,19 @@
   Autodoc.options = {};
 
   /**
+   * Represents an error encountered by Autodoc.
+   *
+   * @public @typedef {Object} ErrorInfo
+   * @property {string} stage
+   * @property {string} message
+   * @property {number} line
+   */
+
+  /**
    * An object describing a library, including its namespaces and custom types
    * as well as private/internal members.
    *
-   * @typedef {Object} LibraryInfo
-   * @public
+   * @public @typedef {Object} LibraryInfo
    * @property {string} name
    * @property {string} referenceName
    * @property {string} description
@@ -113,7 +121,8 @@
    * @property {boolean} hasTypes
    * @property {Array.<TypeInfo>} types
    * @property {Array.<FunctionInfo>} privateMembers
-   * @property string exampleHelpers
+   * @property {string} exampleHelpers
+   * @property {Array.<ErrorInfo>} errors
    */
 
   /**
@@ -330,12 +339,6 @@
       .compact()
       .first() || '';
 
-    if (this.errors.length > 0) {
-      console.error('Autodoc encountered the following errors:\n');
-      console.error(ST.create(this.errors));
-      this.errors.length = 0;
-    }
-
     // TODO: Make this code a little more agnostic about the whole namespace
     // thing. I'm pretty sure there are plenty of libraries that don't use
     // this pattern at all.
@@ -349,7 +352,8 @@
       privateMembers: privateMembers,
       hasTypes: !Lazy(typeDefs).all('excludeFromDocs'),
       types: typeDefs,
-      exampleHelpers: exampleHelpers
+      exampleHelpers: exampleHelpers,
+      errors: this.errors
     };
   };
 
