@@ -871,7 +871,7 @@
           return {
             id: exampleIdCounter++,
             relativeLine: pair.lineNumber,
-            absoluteLine: comment.loc.start.line + data.lineNumber + pair.adjustedLineNumber,
+            absoluteLine: comment.loc.start.line + data.lineNumber + pair.lineNumber,
             actual: self.compileSnippet(actual),
             actualEscaped: Autodoc.escapeJsString(actual),
             expected: expected,
@@ -1195,11 +1195,6 @@
 
             pair.left = pair.left.join('\n');
           }
-
-          // Now that we've actually done that, "correct" the line number.
-          pair.adjustedLineNumber = findAdjustedIndex(source, baseLine, function(line) {
-            return startsWith(line.replace(/^\s*\*\s*/, ''), pair.left);
-          });
 
           pairs.push(pair);
 
@@ -1798,53 +1793,6 @@
    */
   function removeVar(string) {
     return string.replace(/^\s*var\s*[\w\$]+\s*=\s*/, '');
-  }
-
-  /**
-   * Finds the first index in an array where the given predicate is matched,
-   * starting from a specified starting index.
-   *
-   * @private
-   * @param {Array.<*>} array The array to search.
-   * @param {number} startIndex The index to start the search from.
-   * @param {function(*):boolean} predicate The predicate to call on each
-   *     element to find a match.
-   * @returns {number} The index of the first found match, or -1.
-   *
-   * @examples
-   * function isEven(x) { return x % 2 === 0; }
-   *
-   * findIndex([1, 2, 3], 0, isEven);    // => 1
-   * findIndex([1, 2, 3], 2, isEven);    // => -1
-   * findIndex([1, 2, 3, 4], 2, isEven); // => 3
-   */
-  function findIndex(array, startIndex, predicate) {
-    startIndex || (startIndex = 0);
-
-    for (var i = startIndex, len = array.length; i < len; ++i) {
-      if (predicate(array[i])) {
-        return i;
-      }
-    }
-
-    return -1;
-  }
-
-  /**
-   * Just like findIndex, but then returns the result relative to the starting
-   * index.
-   *
-   * @private
-   * function isTwo(x) { return x === 2; }
-   *
-   * findAdjustedIndex([1, 2, 1, 1, 1, 2], 2, isTwo); // => 3
-   */
-  function findAdjustedIndex(array, startIndex, predicate) {
-    var index = findIndex(array, startIndex, predicate);
-    if (index >= 0) {
-      return index - startIndex;
-    }
-    return index;
   }
 
   /**
