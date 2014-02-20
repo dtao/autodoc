@@ -205,8 +205,6 @@ if (!_Lazy(options.javascripts).contains(libraryFileName)) {
   }
 }
 
-global.exampleHandlers = _Autodoc.options.exampleHandlers;
-
 var resourcesDir = path.join(__dirname, '../resources');
 options.templatePartials = _Lazy(readPartialsFromFolder(resourcesDir))
   .extend(readPartialsFromFolder(path.join(resourcesDir, 'handlers')))
@@ -215,11 +213,9 @@ options.templatePartials = _Lazy(readPartialsFromFolder(resourcesDir))
 
 if (handlersExists) {
   // Also require it locally.
-  global.exampleHandlers = require(path.join(process.cwd(), handlersPath)).exampleHandlers
-    .concat(global.exampleHandlers);
+  options.exampleHandlers = require(path.join(process.cwd(), handlersPath)).exampleHandlers;
 }
 
-options.exampleHandlers = global.exampleHandlers;
 options.extraOptions = _Lazy(_commander.templateData || {})
   .extend({ globals: _commander.globals || [] })
   .toObject();
