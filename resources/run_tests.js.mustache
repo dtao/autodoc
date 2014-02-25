@@ -11,6 +11,50 @@ var fs       = require('fs'),
     jasmine  = require('jasmine-node'),
     env      = jasmine.getEnv();
 
+function print(string) {
+  process.stderr.write(string);
+}
+
+function green(string) {
+  return '\x1B[32m' + string + '\x1B[39m';
+}
+
+function red(string) {
+  return '\x1B[31m' + string + '\x1B[39m';
+}
+
+function grey(string) {
+  return '\x1B[90m' + string + '\x1B[39m';
+}
+
+function indent(string, indentation) {
+  var padding = '';
+  while (padding.length < indentation) { padding += ' '; }
+  return padding + string;
+}
+
+function displayDescription(description, index) {
+  var indentation = 4 + String(index).length;
+
+  var lines = description.split('\n');
+  var indented = [];
+  lines.forEach(function(line, i) {
+    // Don't indent the first line.
+    if (i > 0) { line = indent(line, indentation); }
+    console.error(grey(line));
+  });
+}
+
+function displayFailingSpec(spec, index) {
+  process.stderr.write('  ' + index + ') ');
+  displayDescription(spec.description, index);
+
+  // Autodoc generates 1 item per spec
+  var item = spec.results().getItems()[0];
+  console.error('\n    ' + red(item.message) + '\n');
+  displayLine(spec.absoluteLine);
+}
+
 // TODO: Roughly this same code is duplicated in bin/autodoc. Put it somewhere
 // shared.
 function displayLine(lineNumber) {
@@ -23,52 +67,57 @@ function displayLine(lineNumber) {
 
   linesBefore.forEach(function(line, i) {
     line = (startingLine + i) + ': ' + line;
-
-    // Add a blank line between displayed lines for readability
-    if (i === 0) {
-      line = '\n' + line;
-    }
-
-    console.error(line);
+    console.error('    ' + line);
   });
 
   // Highlight the offending line to make it obvious
-  console.error('\x1B[31m' + lineNumber + ': ' + lines[lineNumber] + '\x1B[39m');
+  console.error('    ' + red(lineNumber + ': ' + lines[lineNumber]));
 
   linesAfter.forEach(function(line, i) {
-    console.error((lineNumber + 1 + i) + ': ' + line);
+    console.error('    ' + (lineNumber + 1 + i) + ': ' + line);
   });
+
+  console.error('\n');
 }
 
-// TODO: This template shouldn't rely on the _commander variable leaking in
-// from JS being eval'd in bin/autodoc!
-var reporterType = _commander.verbose ?
-  jasmine.TerminalVerboseReporter :
-  jasmine.TerminalReporter;
+var totalSpecs   = 0,
+    failingSpecs = [];
 
-env.addReporter(new reporterType({
-  print: process.stdout.write.bind(process.stdout),
-  color: true,
-  includeStackTrace: true
-}));
-
-var failingLines = [];
 env.addReporter({
   reportSpecResults: function(spec) {
-    if (!spec.results().passed()) {
-      failingLines.push(spec.absoluteLine);
+    if (spec.results().passed()) {
+      print(green('.'));
+    } else {
+      print(red('F'));
+      failingSpecs.push(spec);
     }
+
+    ++totalSpecs;
+  },
+
+  reportSuiteResults: function(suite) {
   },
 
   reportRunnerResults: function() {
-    if (failingLines.length > 0) {
-      console.error('Failures occurred on the following Autodoc-generated tests');
-      console.error('==========================================================');
+    if (_commander.verbose && failingSpecs.length > 0) {
+      console.error('\n');
 
-      for (var i = 0, len = failingLines.length; i < len; ++i) {
-        displayLine(failingLines[i]);
+      for (var i = 0, len = failingSpecs.length; i < len; ++i) {
+        displayFailingSpec(failingSpecs[i], i + 1);
       }
     }
+
+    var runningTime  = Date.now() - startTime,
+        failureCount = failingSpecs.length,
+        successCount = totalSpecs - failureCount;
+
+    if (!_commander.verbose) {
+      console.log('\n');
+    }
+
+    console.log('  Ran ' + totalSpecs + ' specs in ' + runningTime + 'ms.');
+    console.log('  ' + green(successCount + ' passed') + ', ' +
+      (failureCount > 0 ? red(failureCount + ' failed') : '0 failed') + '\n');
   }
 });
 
@@ -91,4 +140,5 @@ describe('{{namespace}}', function() {
 {{/hasExamples}}
 {{/namespaces}}
 
+var startTime = Date.now();
 env.execute();
