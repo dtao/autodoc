@@ -27,31 +27,11 @@ function grey(string) {
   return '\x1B[90m' + string + '\x1B[39m';
 }
 
-function indent(string, indentation) {
-  var padding = '';
-  while (padding.length < indentation) { padding += ' '; }
-  return padding + string;
-}
-
-function displayDescription(description, index) {
-  var indentation = 4 + String(index).length;
-
-  var lines = description.split('\n');
-  var indented = [];
-  lines.forEach(function(line, i) {
-    // Don't indent the first line.
-    if (i > 0) { line = indent(line, indentation); }
-    console.error(grey(line));
-  });
-}
-
 function displayFailingSpec(spec, index) {
-  process.stderr.write('  ' + index + ') ');
-  displayDescription(spec.description, index);
-
   // Autodoc generates 1 item per spec
   var item = spec.results().getItems()[0];
-  console.error('\n    ' + red(item.message) + '\n');
+
+  console.error('  ' + index + ') ' + red(item.message) + '\n');
   displayLine(spec.absoluteLine);
 }
 
@@ -67,14 +47,15 @@ function displayLine(lineNumber) {
 
   linesBefore.forEach(function(line, i) {
     line = (startingLine + i) + ': ' + line;
-    console.error('    ' + line);
+    console.error('    ' + grey(line));
   });
 
   // Highlight the offending line to make it obvious
   console.error('    ' + red(lineNumber + ': ' + lines[lineNumber]));
 
   linesAfter.forEach(function(line, i) {
-    console.error('    ' + (lineNumber + 1 + i) + ': ' + line);
+    line = (lineNumber + 1 + i) + ': ' + line;
+    console.error('    ' + grey(line));
   });
 
   console.error('\n');
