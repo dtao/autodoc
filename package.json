@@ -1,6 +1,6 @@
 {
   "name": "autodoc",
-  "version": "0.5.6",
+  "version": "0.6.0",
   "description": "Doc generation on steroids",
   "main": "autodoc-node.js",
   "bin": {
