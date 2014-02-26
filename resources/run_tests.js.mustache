@@ -67,6 +67,10 @@ var totalSpecs   = 0,
 
 env.addReporter({
   reportSpecResults: function(spec) {
+    if (totalSpecs === 0) {
+      print('\n');
+    }
+
     if (spec.results().passed()) {
       print(green('.'));
     } else {
@@ -81,7 +85,7 @@ env.addReporter({
   },
 
   reportRunnerResults: function() {
-    if (_commander.verbose && failingSpecs.length > 0) {
+    if (failingSpecs.length > 0) {
       console.error('\n');
 
       for (var i = 0, len = failingSpecs.length; i < len; ++i) {
@@ -92,10 +96,6 @@ env.addReporter({
     var runningTime  = Date.now() - startTime,
         failureCount = failingSpecs.length,
         successCount = totalSpecs - failureCount;
-
-    if (!_commander.verbose) {
-      console.log('\n');
-    }
 
     console.log('  Ran ' + totalSpecs + ' specs in ' + runningTime + 'ms.');
     console.log('  ' + green(successCount + ' passed') + ', ' +
