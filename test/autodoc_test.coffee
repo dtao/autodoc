@@ -194,9 +194,9 @@ describe 'Autodoc', ->
           allocateExamples[0].should.have.property('expected', "=~ [undefined, ...]")
 
       # dangerous territory here, I know
-      it 'ignores superfluous "var" declarations', ->
+      it 'captures "var" declarations', ->
         cloneExamples = listExamplesForMember(data, 'clone')
-        cloneExamples.pop().should.have.property('actual', 'R.arrays.clone(arr2);')
+        cloneExamples.pop().should.have.property('statement', 'var arr3 = R.arrays.clone(arr2);')
 
     describe '"module.js" example', ->
       data = parseExampleFile('module.js')
