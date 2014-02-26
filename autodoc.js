@@ -497,11 +497,16 @@
         // ensure that it's at least valid JavaScript. If not, that's a good
         // indicator there SHOULD be a custom handler defined for it!
         try {
-          codeParser.parse('var actual = ' + example.actual);
-          codeParser.parse('var expected = ' + example.expected);
+          codeParser.parse(
+            'var actual = ' + example.actual + '\n' +
+            'var expected = ' + example.expected
+          );
 
         } catch (e) {
-          brokenExamples.push(example);
+          brokenExamples.push({
+            example: example,
+            error: e
+          });
         }
       }
     });
@@ -510,9 +515,14 @@
       console.error("\nThe following examples don't match any custom handlers, " +
         "and they aren't valid JavaScript:\n");
 
-      Lazy(brokenExamples).each(function(example) {
-        console.error('\x1B[33m' + firstLine(example.actual) + '\x1B[39m');
-        console.error('\x1B[33m  => ' + firstLine(example.expected) + '\x1B[39m');
+      Lazy(brokenExamples).each(function(data) {
+        var example = data.example,
+            error = data.error;
+
+        console.error('\x1B[33m');
+        console.error(withLineNumbers(example.actual + '\n' + example.expected));
+        console.error('\x1B[39m');
+        console.error('\x1B[31m' + error + '\x1B[39m');
       });
 
       console.error("\nYou can define custom handlers in a 'handlers.js' file " +
@@ -1765,6 +1775,23 @@
     }
 
     return string.substring(0, lineBreak) + ' (...)';
+  }
+
+  /**
+   * Prepends each line in a block of text w/ line numbers, from a given
+   * starting offset.
+   */
+  function withLineNumbers(text, offset) {
+    if (typeof offset !== 'number') { offset = 1; }
+
+    var lines = text;
+    if (typeof lines === 'string') {
+      lines = lines.split('\n');
+    }
+
+    return lines.map(function(line, i) {
+      return (i + offset) + ': ' + line;
+    }).join('\n');
   }
 
   /**
