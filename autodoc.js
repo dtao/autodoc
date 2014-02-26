@@ -498,7 +498,7 @@
         // indicator there SHOULD be a custom handler defined for it!
         try {
           codeParser.parse(
-            'var actual = ' + example.actual + '\n' +
+            example.statement + '\n' +
             'var expected = ' + example.expected
           );
 
@@ -870,8 +870,10 @@
           //
           // To be fair, there's probably a better approach. I'll leave figuring
           // that out as an exercise to my future self.
-          var actual   = removeVar(pair.left),
-              expected = pair.right;
+          var actual    = pair.left,
+              expected  = pair.right,
+              variable  = extractVar(pair.left) || 'actual',
+              statement = 'var ' + variable + ' = ' + removeVar(actual);
 
           return {
             id: exampleIdCounter++,
@@ -880,7 +882,9 @@
             actual: self.compileSnippet(actual),
             actualEscaped: Autodoc.escapeJsString(actual),
             expected: expected,
-            expectedEscaped: Autodoc.escapeJsString(expected)
+            expectedEscaped: Autodoc.escapeJsString(expected),
+            variable: variable,
+            statement: statement
           };
         }).toArray()
       };
@@ -1823,6 +1827,26 @@
    */
   function removeVar(string) {
     return string.replace(/^\s*var\s*[\w\$]+\s*=\s*/, '');
+  }
+
+  /**
+   * Extracts the variable name declared with 'var' from a line, if present.
+   * TODO: Parse the line instead of doing this regex crap.
+   *
+   * @private
+   * @param {string} string With leading var.
+   * @returns {?string} Variable name, or null.
+   *
+   * @examples
+   * extractVar('var foo = 5');  // => 'foo'
+   * extractVar('foo = "var x"') // => null
+   * extractVar('var _foo = 8'); // => '_foo'
+   * extractVar('var $foo = 8'); // => '$foo'
+   * extractVar('var a, b = 5'); // => null
+   */
+  function extractVar(string) {
+    var name = string.match(/^\s*var\s*([\w\$]+)\s*=\s*/);
+    return name ? name[1] : null;
   }
 
   /**

@@ -10,9 +10,9 @@ describe('{{shortName}}', function() {
       {{{exampleSource}}}
       {{/exampleSource}}
       {{^exampleSource}}
-      var result   = {{{actual}}};
+      {{{statement}}};
       var expected = {{{expected}}};
-      expect(result).toEqual(expected);
+      expect({{variable}}).toEqual(expected);
       {{/exampleSource}}
     });
 
