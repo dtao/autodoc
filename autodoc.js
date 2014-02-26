@@ -512,17 +512,20 @@
     });
 
     if (brokenExamples.length > 0) {
-      console.error("\nThe following examples don't match any custom handlers, " +
-        "and they aren't valid JavaScript:\n");
+      console.error("\n\x1B[33mThe following examples don't match any custom handlers, " +
+        "and they aren't valid JavaScript:'\x1B[39m\n");
 
       Lazy(brokenExamples).each(function(data) {
         var example = data.example,
             error = data.error;
 
-        console.error('\x1B[33m');
-        console.error(withLineNumbers(example.actual + '\n' + example.expected));
-        console.error('\x1B[39m');
+        var offendingLine = error.lineNumber;
+
+        console.error(withLineNumbers(example.actual + '\n' + example.expected, offendingLine));
         console.error('\x1B[31m' + error + '\x1B[39m');
+
+        // Mark the example as broken so we don't run it.
+        example.broken = true;
       });
 
       console.error("\nYou can define custom handlers in a 'handlers.js' file " +
@@ -538,7 +541,9 @@
         '];'
       ].join('\n'));
 
-      console.error('\nSee the README for more details.\n');
+      console.error('\nSee the README at ' +
+        '\x1B[36mhttps://github.com/dtao/autodoc/blob/master/README.md\x1B[39m ' +
+        'for more details.\n');
     }
   };
 
@@ -1778,11 +1783,13 @@
   }
 
   /**
-   * Prepends each line in a block of text w/ line numbers, from a given
-   * starting offset.
+   * Prepends each line in a block of text w/ line numbers, optionally
+   * highlighting a specific line.
    */
-  function withLineNumbers(text, offset) {
-    if (typeof offset !== 'number') { offset = 1; }
+  function withLineNumbers(text, offendingLine) {
+    if (typeof offendingLine !== 'number') {
+      offendingLine = NaN;
+    }
 
     var lines = text;
     if (typeof lines === 'string') {
@@ -1790,7 +1797,13 @@
     }
 
     return lines.map(function(line, i) {
-      return (i + offset) + ': ' + line;
+      line = (i + 1) + ': ' + line;
+      if (i === (offendingLine - 1)) {
+        line = '\x1B[31m' + line + '\x1B[39m';
+      } else {
+        line = '\x1B[90m' + line + '\x1B[39m';
+      }
+      return line;
     }).join('\n');
   }
 

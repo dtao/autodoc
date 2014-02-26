@@ -3,24 +3,17 @@ describe('{{shortName}}', function() {
   {{#examples}}
   {{{setup}}}
   {{#list}}
+  {{^broken}}
   (function() {
     var spec = it('{{{actualEscaped}}} => {{{expectedEscaped}}}', function() {
-      {{#hasCustomHandler}}
-      var handler = exampleHandlers[{{handlerIndex}}];
-      var result  = {{{actual}}};
-      var match   = '{{{expectedEscaped}}}'.match(handler.pattern);
-      handler.test(match, result);
-      {{/hasCustomHandler}}
       {{#exampleSource}}
       {{{exampleSource}}}
       {{/exampleSource}}
-      {{^hasCustomHandler}}
       {{^exampleSource}}
       var result   = {{{actual}}};
       var expected = {{{expected}}};
       expect(result).toEqual(expected);
       {{/exampleSource}}
-      {{/hasCustomHandler}}
     });
 
     spec.suiteId      = '{{identifier}}';
@@ -30,6 +23,7 @@ describe('{{shortName}}', function() {
     spec.lineNumber   = {{relativeLine}};
     spec.absoluteLine = {{absoluteLine}};
   }());
+  {{/broken}}
   {{/list}}
   {{/examples}}
 });
