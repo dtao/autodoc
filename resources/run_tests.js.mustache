@@ -6,10 +6,11 @@
 {{> global}}
 
 var fs       = require('fs'),
-    source   = fs.readFileSync('{{{location}}}', 'utf8'),{{/variable}}
+    source   = fs.readFileSync('{{{location}}}', 'utf8'),
     lines    = source.split('\n'),
     jasmine  = require('jasmine-node'),
     env      = jasmine.getEnv();
+{{/variable}}
 
 function print(string) {
   process.stderr.write(string);
