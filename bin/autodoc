@@ -130,10 +130,11 @@ function attempt(js) {
       console.error('Error on line ' + errorLine + ':');
       console.error(snippet);
 
-      throw 'Autodoc generated invalid JavaScript; see stderr output above!';
+      e = '\nAutodoc generated invalid JavaScript; see stderr output above!\n';
     }
 
-    throw e;
+    console.error(e.toString());
+    process.exit(1);
   }
 
   eval(js);
