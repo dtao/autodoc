@@ -97,6 +97,10 @@ env.addReporter({
         failureCount = failingSpecs.length,
         successCount = totalSpecs - failureCount;
 
+    if (failingSpecs.length === 0) {
+      console.log('\n');
+    }
+
     console.log('  Ran ' + totalSpecs + ' specs in ' + runningTime + 'ms.');
     console.log('  ' + green(successCount + ' passed') + ', ' +
       (failureCount > 0 ? red(failureCount + ' failed') : '0 failed') + '\n');
