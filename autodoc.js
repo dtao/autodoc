@@ -513,7 +513,7 @@
 
     if (brokenExamples.length > 0) {
       console.error("\n\x1B[33mThe following examples don't match any custom handlers, " +
-        "and they aren't valid JavaScript:'\x1B[39m\n");
+        "and they aren't valid JavaScript:\x1B[39m\n");
 
       Lazy(brokenExamples).each(function(data) {
         var example = data.example,
