@@ -521,7 +521,12 @@
 
         var offendingLine = error.lineNumber;
 
-        console.error(withLineNumbers(example.actual + '\n' + example.expected, offendingLine));
+        console.error(withLineNumbers(example.actual + '\n' + example.expected,
+          example.absoluteLine, offendingLine));
+
+        error = String(error).replace(/Line (\d+)/, function(match, number) {
+          return 'Line ' + (Number(number) + example.absoluteLine - 1);
+        });
         console.error('\x1B[31m' + error + '\x1B[39m');
 
         // Mark the example as broken so we don't run it.
@@ -1790,7 +1795,7 @@
    * Prepends each line in a block of text w/ line numbers, optionally
    * highlighting a specific line.
    */
-  function withLineNumbers(text, offendingLine) {
+  function withLineNumbers(text, offset, offendingLine) {
     if (typeof offendingLine !== 'number') {
       offendingLine = NaN;
     }
@@ -1801,7 +1806,7 @@
     }
 
     return lines.map(function(line, i) {
-      line = (i + 1) + ': ' + line;
+      line = (i + offset) + ': ' + line;
       if (i === (offendingLine - 1)) {
         line = '\x1B[31m' + line + '\x1B[39m';
       } else {
