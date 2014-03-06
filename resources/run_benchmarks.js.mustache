@@ -1,8 +1,10 @@
 {{#globals}}
-global.{{variable}} = require('{{{library}}}');
+{{> global}}
 {{/globals}}
 
-global['{{{variable}}}'] = require('{{{filePath}}}');
+{{#variable}}
+{{> global}}
+{{/variable}}
 
 var path      = require('path'),
     utils     = require(path.join(__dirname, '../resources/javascripts/utils')),
