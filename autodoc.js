@@ -1364,6 +1364,9 @@
       case 'NullableType':
         return '?' + Autodoc.formatType(type.expression);
 
+      case 'NonNullableType':
+        return '!' + Autodoc.formatType(type.expression);
+
       default:
         throw 'Unable to format type ' + type.type + '!\n\n' + JSON.stringify(type, null, 2);
     }
