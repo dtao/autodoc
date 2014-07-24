@@ -1297,26 +1297,97 @@
    * autodoc.parsePair('// bar')             // => null
    * autodoc.parsePair('// custom pattern')  // => { left: '', right: 'custom pattern' }
    * autodoc.parsePair('foo //')             // => null
+   * autodoc.parsePair('foo // "http://example.com"') // => { left: 'foo', right: '"http://example.com"'}
    */
   Autodoc.prototype.parsePair = function(line) {
-    var parts = line.match(/^\s*(.*)\s*\/\/\s*(=>)?\s*([^\s].*)$/);
+    var parts = this.splitAtComment(line);
 
-    if (!parts) {
+    if (!parts || !parts[1]) {
       return null;
     }
 
     // The => is only optional for single-line pairs, unless there's a custom
     // handler that matches the right-hand side.
-    if (!parts[1] && !parts[2]) {
+    if (!parts[0] && !/^\s*=>/.test(parts[1])) {
       if (!Lazy(this.exampleHandlers).any(function(handler) {
-        return handler.pattern.test(parts[3]);
+        return handler.pattern.test(parts[1]);
       })) return null;
+    } else {
+      parts[1] = parts[1].replace(/^\s*=>\s*/, '');
     }
 
     return {
-      left: trim(parts[1]),
-      right: trim(parts[3])
+      left: parts[0],
+      right: parts[1]
     };
+  };
+
+  /**
+   * Splits a line w/ a trailing '//' comment into, basically, the code part and
+   * the comment part.
+   *
+   * @public
+   * @param {@string} line
+   * @return {Array.<string>}
+   *
+   * @example
+   * var autodoc = new Autodoc();
+   *
+   * autodoc.splitAtComment('foo // bar'); // => ['foo', 'bar']
+   * autodoc.splitAtComment('foo("//") // bar'); // => ['foo("//")', 'bar']
+   */
+  Autodoc.prototype.splitAtComment = function(line) {
+    // OK, here we go! We're going to read the sucker char-by-char until finding
+    // two consecutive slashes ('//') that are NOT inside a string! Whee!!!
+    var commentIndex = -1,
+        slashCount = 0,
+        stringState = null,
+        index = 0;
+
+    while (index < line.length) {
+      if (commentIndex !== -1)
+        break;
+
+      switch (line.charAt(index)) {
+        case '/':
+          if (stringState)
+            break;
+
+          ++slashCount;
+          if (slashCount === 2) {
+            commentIndex = index - 1;
+          }
+
+          break;
+
+        case '"':
+          if (stringState === '"' && line.charAt(index - 1) !== '\\')
+            stringState = null;
+          else if (!stringState)
+            stringState = '"';
+          break;
+
+        case "'":
+          if (stringState === "'" && line.charAt(index - 1) !== '\\')
+            stringState = null;
+          else if (!stringState)
+            stringState = "'";
+          break;
+
+        default:
+          slashCount = 0;
+      }
+
+      ++index;
+    }
+
+    if (commentIndex === -1)
+      return null;
+
+    return [
+      trim(line.substring(0, commentIndex)),
+      trim(line.substring(commentIndex + 2))
+    ];
   };
 
   /**
