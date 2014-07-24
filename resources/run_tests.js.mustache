@@ -39,6 +39,11 @@ function displayFailingSpec(spec, index) {
 // TODO: Roughly this same code is duplicated in bin/autodoc. Put it somewhere
 // shared.
 function displayLine(lineNumber) {
+  if (typeof lineNumber === 'undefined' || lineNumber !== lineNumber) {
+    console.error('    <unknown line number>\n');
+    return;
+  }
+
   var startingLine = Math.max(lineNumber - 5, 0);
   var endingLine   = lineNumber + 5;
 
