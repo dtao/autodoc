@@ -1327,7 +1327,7 @@
    * the comment part.
    *
    * @public
-   * @param {@string} line
+   * @param {string} line
    * @return {Array.<string>}
    *
    * @example
@@ -1342,43 +1342,35 @@
     var commentIndex = -1,
         slashCount = 0,
         stringState = null,
-        index = 0;
+        index = -1;
 
-    while (index < line.length) {
+    while (++index < line.length) {
       if (commentIndex !== -1)
         break;
 
       switch (line.charAt(index)) {
         case '/':
-          if (stringState)
-            break;
-
-          ++slashCount;
-          if (slashCount === 2) {
+          if (!stringState && (++slashCount === 2))
             commentIndex = index - 1;
-          }
-
           break;
 
         case '"':
-          if (stringState === '"' && line.charAt(index - 1) !== '\\')
-            stringState = null;
-          else if (!stringState)
+          if (!stringState)
             stringState = '"';
+          else if (stringState === '"' && line.charAt(index - 1) !== '\\')
+            stringState = null;
           break;
 
         case "'":
-          if (stringState === "'" && line.charAt(index - 1) !== '\\')
-            stringState = null;
-          else if (!stringState)
+          if (!stringState)
             stringState = "'";
+          else if (stringState === "'" && line.charAt(index - 1) !== '\\')
+            stringState = null;
           break;
 
         default:
           slashCount = 0;
       }
-
-      ++index;
     }
 
     if (commentIndex === -1)
