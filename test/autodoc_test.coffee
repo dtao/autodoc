@@ -117,10 +117,10 @@ describe 'Autodoc', ->
         data.description.should.match /^\s*<p>This is a description.<\/p>\s*$/
 
       it 'gets all namespaces', ->
-        listNamespaces(data).should.include 'Foo'
-        listNamespaces(data).should.include 'Foo.Bar'
-        listNamespaces(data).should.not.include 'privateFunction'
-        listNamespaces(data).should.include '[private]'
+        listNamespaces(data).should.containEql 'Foo'
+        listNamespaces(data).should.containEql 'Foo.Bar'
+        listNamespaces(data).should.not.containEql 'privateFunction'
+        listNamespaces(data).should.containEql '[private]'
 
       it 'groups functions by namespace', ->
         listMembersForNamespace(data, 'Foo').should.eql ['getName']
@@ -139,7 +139,7 @@ describe 'Autodoc', ->
       data = parseExampleFile('redundant.js')
 
       it 'can infer namespaces from object expressions', ->
-        listNamespaces(data).should.include 'R.objects'
+        listNamespaces(data).should.containEql 'R.objects'
 
       it 'also respects the @memberOf tag for explicitly defining namespaces', ->
         listMembersForNamespace(data, 'R.strings').should.eql ['split', 'toUpperCase']
@@ -160,14 +160,14 @@ describe 'Autodoc', ->
         parseExamples[12].should.have.property('expected', "NaN")
 
       it 'includes private methods with examples', ->
-        listPrivateFunctions(data).should.include 'privateWithExample'
+        listPrivateFunctions(data).should.containEql 'privateWithExample'
 
       it 'includes private constructors with members', ->
-        listPrivateFunctions(data).should.include 'PrivateWithMembers'
+        listPrivateFunctions(data).should.containEql 'PrivateWithMembers'
 
       it 'includes members of private methods', ->
         listMethodsOfPrivateFunction(data, 'PrivateWithMembers')
-          .should.include 'PrivateWithMembers.prototype.foo'
+          .should.containEql 'PrivateWithMembers.prototype.foo'
 
       describe 'multiline expressions', ->
         insertExamples = listExamplesForMember(data, 'insert')
@@ -218,7 +218,7 @@ describe 'Autodoc', ->
     data = parseFile('autodoc.js')
 
     it 'can read @typedefs', ->
-      getTypeDef(data, 'TypeInfo').should.include {
+      getTypeDef(data, 'TypeInfo').should.have.properties {
         name: 'TypeInfo',
         identifier: 'type-TypeInfo',
         description: '<p>A custom type defined by a library.</p>\n',
