@@ -23,7 +23,7 @@
     "bootscrap": "0.1.0",
     "codemirror": "3.20.0",
     "codemirror-highlight": "1.1.1",
-    "coffee-script": "1.6.1",
+    "coffee-script": "^1.7.1",
     "commander": "2.0.0",
     "doctrine": "git://github.com/dtao/doctrine.git#line-numbers-option",
     "esprima": "1.0.4",
@@ -37,7 +37,6 @@
     "string-table": "0.1.5"
   },
   "devDependencies": {
-    "coffee-script": ">= 1.7.1",
     "mocha": "1.14.0",
     "sinon": ">= 1.7.3",
     "should": ">= 2.0.2",
