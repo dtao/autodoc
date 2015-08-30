@@ -21,6 +21,8 @@
    * Checks if a number is an integer. Returns false for anything that isn't an
    * integer, including non-numbers.
    *
+   * @aka isInt, integer
+   *
    * @examples
    * Numbers.isInteger(5)     // => true
    * Numbers.isInteger(5.0)   // => true
@@ -31,6 +33,10 @@
    */
   Numbers.isInteger = function(x) {
     return isInteger(x);
+  };
+
+  Numbers.isInt = Numbers.integer = function(x) {
+    return Numbers.isInteger(x);
   };
 
   /**

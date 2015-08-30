@@ -46,6 +46,11 @@ getMemberName = (data, shortName) ->
     .findWhere({ shortName: shortName })
     .name
 
+getAliases = (data, shortName) ->
+  Lazy(data.docs)
+    .findWhere({ isPrivate: false, shortName: shortName })
+    .aliases
+
 listExamplesForMember = (data, shortName) ->
   examples = Lazy(data.docs)
     .findWhere({ shortName: shortName })
@@ -197,6 +202,13 @@ describe 'Autodoc', ->
       it 'captures "var" declarations', ->
         cloneExamples = listExamplesForMember(data, 'clone')
         cloneExamples.pop().should.have.property('statement', 'var arr3 = R.arrays.clone(arr2);')
+
+    describe '"numbers.js" example', ->
+      data = parseExampleFile('numbers.js')
+
+      it 'can get aliases from the @aka tag', ->
+        aliases = getAliases(data, 'isInteger')
+        aliases.should.eql ['isInt', 'integer']
 
     describe '"module.js" example', ->
       data = parseExampleFile('module.js')

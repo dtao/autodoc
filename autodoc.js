@@ -591,6 +591,7 @@
         description = this.parseMarkdown(doc.description),
         params      = this.getParams(doc),
         returns     = this.getReturns(doc),
+        aliases     = this.getAliases(doc),
         isCtor      = Autodoc.hasTag(doc, 'constructor'),
         isStatic    = nameInfo.name.indexOf('#') === -1, // That's right, hacky smacky
         isPublic    = Autodoc.hasTag(doc, 'public'),
@@ -618,6 +619,7 @@
       description: description,
       params: params,
       returns: returns,
+      aliases: aliases,
       isConstructor: isCtor,
       isGlobal: isGlobal,
       isStatic: isStatic,
@@ -692,6 +694,23 @@
       type: Autodoc.formatType(returnTag.type),
       description: this.parseMarkdown(returnTag.description || '')
     };
+  };
+
+  /**
+   * Gets an array of strings providing the aliases for the function definition.
+   *
+   * @param {Object} doc The doclet for the function.
+   * @returns {Array.<string>} An array of strings representing the function's
+   *     aliases.
+   */
+  Autodoc.prototype.getAliases = function(doc, tagName) {
+    var akaTag = Lazy(doc.tags).findWhere({ title: 'aka' });
+
+    if (typeof akaTag === 'undefined' || !akaTag.description) {
+      return [];
+    }
+
+    return akaTag.description.split(/\s*,\s*/);
   };
 
   /**
