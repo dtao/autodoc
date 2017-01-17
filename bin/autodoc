@@ -177,18 +177,18 @@ var filePaths       = argToList(process.argv.pop()),
     docHelperExists = fileExists(docHelperPath),
     theme           = _commander.theme || 'flatly';
 
+// TODO: This is just straight up wrong. I shouldn't be treating the first file
+// as THE library file. But... that's what I'm doing for now, because it will
+// sort of work...
+var filePath        = filePaths[0],
+    libraryFileName = path.basename(filePath);
+
 var options         = _Autodoc.options;
 options.namespaces  = _commander.namespaces;
 options.tags        = _commander.tags;
 options.grep        = _commander.grep;
 options.javascripts = _commander.javascripts || [];
 options.language    = _commander.language || inferLanguage(filePath);
-
-// TODO: This is just straight up wrong. I shouldn't be treating the first file
-// as THE library file. But... that's what I'm doing for now, because it will
-// sort of work...
-var filePath        = filePaths[0],
-    libraryFileName = path.basename(filePath);
 
 // Always include a reference to the library itself.
 // Down below, we'll copy the library to the output folder.
