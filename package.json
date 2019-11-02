@@ -30,7 +30,7 @@
     "jasmine-node": "1.12.0",
     "lazy.js": "git://github.com/dtao/lazy.js.git",
     "less": "1.6.0",
-    "marked": "0.3.2",
+    "marked": "0.7.0",
     "mustache": "0.7.2",
     "resolve": "0.6.1",
     "spiderman": "0.1.5",
